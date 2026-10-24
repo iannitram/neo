@@ -1,0 +1,56 @@
+
+> neo@1.6.0 test
+> node --test "scripts/*.test.js"
+
+✔ scripts/carried-align.test.js (95.843802ms)
+✔ scripts/daily-words.test.js (50.734622ms)
+✔ scripts/dashes.test.js (51.423997ms)
+✔ scripts/double-save.test.js (40.183825ms)
+✔ scripts/email-draft.test.js (55.123451ms)
+✔ scripts/filesystem.test.js (65.373944ms)
+✔ scripts/find.test.js (37.075524ms)
+✔ scripts/format-menu.test.js (488.949891ms)
+✔ scripts/fullscreen-keys.test.js (40.427183ms)
+✖ scripts/icloud.test.js (1942.437369ms)
+✔ scripts/import-chapters.test.js (78.880171ms)
+✔ scripts/import.test.js (80.472458ms)
+✔ scripts/library-folder.test.js (48.1934ms)
+✔ scripts/look-up.test.js (35.330098ms)
+✔ scripts/manuscript.test.js (35.668392ms)
+✔ scripts/non-breaking-marks.test.js (33.884877ms)
+✔ scripts/outline-paste.test.js (33.723337ms)
+✔ scripts/pocket-page.test.js (32.490664ms)
+✔ scripts/power-loss.test.js (65.523349ms)
+✔ scripts/print.test.js (88.187547ms)
+✔ scripts/quotes.test.js (53.461333ms)
+✔ scripts/screenplay-paste.test.js (37.007213ms)
+✔ scripts/screenplay.test.js (44.704696ms)
+✔ scripts/simple-neo.test.js (163.324273ms)
+✔ scripts/snapshots.test.js (37.76826ms)
+✔ scripts/spans.test.js (31.481116ms)
+✖ scripts/spellcheck.test.js (238.111172ms)
+✔ scripts/typing-style.test.js (35.648093ms)
+✖ scripts/window-icon.test.js (51.44568ms)
+✔ scripts/zoom-rules.test.js (32.651346ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 27
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4136.753713
+
+✖ failing tests:
+
+test at scripts/icloud.test.js:1:1
+✖ scripts/icloud.test.js (1942.437369ms)
+  'test failed'
+
+test at scripts/spellcheck.test.js:1:1
+✖ scripts/spellcheck.test.js (238.111172ms)
+  'test failed'
+
+test at scripts/window-icon.test.js:1:1
+✖ scripts/window-icon.test.js (51.44568ms)
+  'test failed'

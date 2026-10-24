@@ -1,0 +1,858 @@
+# Baseline symbol index
+
+Generated from `3f21d090662cbcbd441d5207292e2c175ee1a01a`. Top-level function declarations and IPC registrations; arrow functions and nested declarations are not exhaustive.
+
+## main.js
+
+- [function settingsPath()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L52) — line 52
+- [function readSettings()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L53) — line 53
+- [function writeSettings(obj)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L56) — line 56
+- [function readLocaleFile(code)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L73) — line 73
+- [function listLanguages()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L79) — line 79
+- [function resolveLanguage(wanted)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L101) — line 101
+- [function localeDict(code)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L114) — line 114
+- [function loadLanguage(code)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L122) — line 122
+- [function initLanguage()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L130) — line 130
+- [ipcMain.on('i18n:get', (e) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L138) — line 138
+- [function setUiLanguage(code)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L145) — line 145
+- [ipcMain.handle('i18n:reload', (e) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L159) — line 159
+- [async function chooseLibraryFolder()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L166) — line 166
+- [function folderWritable(dir)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L204) — line 204
+- [function blockedDetail(dir, err)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L222) — line 222
+- [function fallbackLibraryDir()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L233) — line 233
+- [function useLibraryDir(dir)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L243) — line 243
+- [function isDir(dir)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L256) — line 256
+- [function awaitChosenLibrary(chosen)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L257) — line 257
+- [function announceLibraryFallback()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L282) — line 282
+- [function checkLibraryWritable()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L295) — line 295
+- [function reportBlockedWrite(err)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L336) — line 336
+- [function libraryHasHistory()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L357) — line 357
+- [function ensureLibrary()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L361) — line 361
+- [function libName(name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L378) — line 378
+- [function bookDir(bookId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L385) — line 385
+- [function writeCatalog()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L392) — line 392
+- [function renameIntoPlace(from, to)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L443) — line 443
+- [function writeFileDurable(file, data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L452) — line 452
+- [function parseJSONFile(file)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L478) — line 478
+- [function cloudOnlyAmong(files)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L492) — line 492
+- [function isCloudOnly(file)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L510) — line 510
+- [async function fetchLibraryFromICloud()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L514) — line 514
+- [function cloudError(file)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L534) — line 534
+- [function requestDownload(files)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L542) — line 542
+- [function whenLocal(files, ms = CLOUD_WAIT)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L561) — line 561
+- [function afterLocal(files, read, away)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L577) — line 577
+- [function readJSON(file, fallback)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L582) — line 582
+- [function writeJSON(file, data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L600) — line 600
+- [function rebuildBookMeta(bookId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L612) — line 612
+- [ipcMain.handle('library:read', () =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L641) — line 641
+- [function readLibraryFile()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L645) — line 645
+- [ipcMain.handle('library:write', (_e, data) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L663) — line 663
+- [ipcMain.handle('book:create', (_e, meta) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L671) — line 671
+- [ipcMain.handle('book:duplicate', (_e, bookId, title) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L706) — line 706
+- [ipcMain.handle('library:listBooks', () =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L749) — line 749
+- [function listBooks()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L754) — line 754
+- [ipcMain.handle('book:readMeta', (_e, bookId) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L769) — line 769
+- [function readBookMeta(bookId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L775) — line 775
+- [ipcMain.handle('book:writeMeta', (_e, bookId, meta) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L789) — line 789
+- [ipcMain.handle('chapter:stamps', (_e, bookId) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L800) — line 800
+- [ipcMain.handle('chapter:read', (_e, bookId, chapterId) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L815) — line 815
+- [ipcMain.handle('chapter:write', (_e, bookId, chapterId, html, expected) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L828) — line 828
+- [function chapterDiverged(cur, expected, html)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L845) — line 845
+- [ipcMain.handle('chapter:delete', (_e, bookId, chapterId) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L859) — line 859
+- [ipcMain.handle('aux:read', (_e, bookId, name) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L865) — line 865
+- [ipcMain.handle('aux:write', (_e, bookId, name, html) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L872) — line 872
+- [function snapshotDir(bookId, name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L885) — line 885
+- [function snapshotFile(bookId, name, file)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L889) — line 889
+- [ipcMain.handle('snapshot:list', (_e, bookId) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L893) — line 893
+- [ipcMain.handle('snapshot:read', (_e, bookId, name, file) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L903) — line 903
+- [ipcMain.handle('snapshot:write', (_e, bookId, name, file, text) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L909) — line 909
+- [ipcMain.handle('snapshot:remove', (_e, bookId, name) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L916) — line 916
+- [ipcMain.handle('app:lookUp', (e) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L923) — line 923
+- [ipcMain.handle('json:read', (_e, bookId, name, fallback) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L930) — line 930
+- [ipcMain.handle('json:write', (_e, bookId, name, data) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L934) — line 934
+- [ipcMain.handle('book:delete', async (_e, bookId, title) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L939) — line 939
+- [ipcMain.handle('library:path', () => LIBRARY_DIR);](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L976) — line 976
+- [ipcMain.handle('cover:pick', async () =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L978) — line 978
+- [function clearCovers(dir)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L988) — line 988
+- [ipcMain.handle('cover:set', (_e, bookId, srcPath) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L994) — line 994
+- [ipcMain.handle('cover:remove', (_e, bookId) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1009) — line 1009
+- [ipcMain.handle('cover:read', (_e, bookId, fname) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1015) — line 1015
+- [function readCover(fp, fname)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1023) — line 1023
+- [function readSecret(name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1043) — line 1043
+- [ipcMain.handle('secret:set', (_e, name, value) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1058) — line 1058
+- [ipcMain.handle('secret:has', (_e, name) => !!readSecret(name));](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1072) — line 1072
+- [ipcMain.handle('cover:paint', (_e, bookId, text, options) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1078) — line 1078
+- [ipcMain.handle('fullscreen:toggle', (e) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1127) — line 1127
+- [ipcMain.handle('fullscreen:escape', (e) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1134) — line 1134
+- [function paperSize()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1154) — line 1154
+- [ipcMain.on('paper:get', (e) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1159) — line 1159
+- [function exportFolder()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1163) — line 1163
+- [function rememberExportFolder(file)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1168) — line 1168
+- [async function renderPDF(html, print)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1175) — line 1175
+- [function pdfAnchorPages(buf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1226) — line 1226
+- [async function buildZip(zipEntries)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1267) — line 1267
+- [ipcMain.handle('export:save', async (_e,](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1282) — line 1282
+- [function kdpGutterMin(pages)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1323) — line 1323
+- [function kdpGutter(pages)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1328) — line 1328
+- [function hyphenatorFor(lang)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1336) — line 1336
+- [function hyphenateWord(word, hy, nouns)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1348) — line 1348
+- [function hyphenateHtml(html, lang)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1364) — line 1364
+- [async function renderPaged(html,](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1387) — line 1387
+- [function exactPageBox(pdf, widthIn, heightIn)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1442) — line 1442
+- [function closePrintWindow()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1460) — line 1460
+- [function printWindow()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1464) — line 1464
+- [function kdpCoverHtml(](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1477) — line 1477
+- [ipcMain.handle('print:paperback', async (_e, job) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1535) — line 1535
+- [async function makePaperback(](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1546) — line 1546
+- [ipcMain.handle('print:manuscript', async (_e,](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1596) — line 1596
+- [ipcMain.handle('email:draft', async (_e,](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1620) — line 1620
+- [function docxFormatOn(rpr, tag)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1697) — line 1697
+- [function docxStyleFormats(stylesXml)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1708) — line 1708
+- [function docxParagraphToMarkdown(p, styles =](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1739) — line 1739
+- [function readTextFile(fp)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1830) — line 1830
+- [async function importFile(fp)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L1845) — line 1845
+- [ipcMain.handle('import:files', async (_e, paths) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2030) — line 2030
+- [ipcMain.handle('import:pick', async (_e, opts) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2046) — line 2046
+- [function logError(source, err)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2072) — line 2072
+- [ipcMain.handle('log:error', (_e, msg) => logError('renderer', msg));](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2086) — line 2086
+- [function dailyBackup()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2097) — line 2097
+- [function roomColor(theme)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2145) — line 2145
+- [function libraryPageTheme()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2148) — line 2148
+- [function createWindow()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2155) — line 2155
+- [function spellRequest(msg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2289) — line 2289
+- [function startSpellProcess()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2307) — line 2307
+- [async function loadSpellDictionary(code)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2329) — line 2329
+- [function chosenSpellLanguage()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2347) — line 2347
+- [function defaultSpellLanguage()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2352) — line 2352
+- [function initSpell()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2362) — line 2362
+- [ipcMain.handle('spell:setLanguage', async (_e, code) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2368) — line 2368
+- [ipcMain.handle('spell:check', async (_e, words) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2375) — line 2375
+- [ipcMain.handle('spell:suggest', async (_e, word) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2383) — line 2383
+- [ipcMain.handle('spell:learn', async (_e, word) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2388) — line 2388
+- [function sendToWindow(msg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2396) — line 2396
+- [ipcMain.on('script:context', (e, st) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2414) — line 2414
+- [ipcMain.on('script:state', (_e, st) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2418) — line 2418
+- [ipcMain.on('poetry:state', (_e, on) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2428) — line 2428
+- [ipcMain.on('flush:state', (_e, on) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2434) — line 2434
+- [ipcMain.on('typewriter:state', (_e, on) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2440) — line 2440
+- [ipcMain.on('nbspmarks:state', (_e, on) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2448) — line 2448
+- [ipcMain.on('pages:state', (_e, st) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2456) — line 2456
+- [ipcMain.on('pagewidth:state', (_e, v) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2465) — line 2465
+- [ipcMain.on('vim:state', (_e, on) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2473) — line 2473
+- [ipcMain.on('uizoom:state', (_e, z) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2481) — line 2481
+- [ipcMain.on('view:state', (e, st) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2492) — line 2492
+- [ipcMain.on('style:state', (_e, style) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2517) — line 2517
+- [ipcMain.on('more:state', (_e, on) =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2527) — line 2527
+- [function simpleTemplate(items, more)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2535) — line 2535
+- [function buildMenu()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L2549) — line 2549
+- [function objcRuntime()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3000) — line 3000
+- [function nativeEditMenu()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3035) — line 3035
+- [function hideForeignItems(edit)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3046) — line 3046
+- [function hideSystemEditItems()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3072) — line 3072
+- [function watchEditMenu()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3086) — line 3086
+- [function compareVersions(a, b)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3125) — line 3125
+- [ipcMain.handle('app:version', () => app.getVersion());](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3137) — line 3137
+- [function getUpdater()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3154) — line 3154
+- [function lookForUpdate()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3187) — line 3187
+- [async function latestReleaseFromGitHub()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3200) — line 3200
+- [ipcMain.handle('update:check', async () =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3210) — line 3210
+- [ipcMain.handle('update:install', () =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3246) — line 3246
+- [ipcMain.handle('update:openRelease', () =>](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3254) — line 3254
+- [function checkForUpdates()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/main.js#L3283) — line 3283
+
+## app.js
+
+- [function applyStaticI18n(root = document)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16) — line 16
+- [function chapterKind(chId, meta = book)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L65) — line 65
+- [function chapterRole(chId, meta = book)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L79) — line 79
+- [function kindCount(chId, kind, meta = book)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L84) — line 84
+- [function chapterName(chId, meta = book)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L96) — line 96
+- [function stickyChapterLabel(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L107) — line 107
+- [function headingDash()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L119) — line 119
+- [function chapterHeading(chId, meta = book, sep = ' ' + headingDash() + ' ')](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L122) — line 122
+- [function kindName(kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L129) — line 129
+- [function chapterMark(chId, meta = book)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L137) — line 137
+- [function numberedChapters(meta = book, chId = null)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L145) — line 145
+- [function soloStory(meta = book)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L161) — line 161
+- [function settleChapterKinds()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L167) — line 167
+- [function setChapterKind(chId, kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L185) — line 185
+- [function writeLibrary(lib = library)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L216) — line 216
+- [function deviceLookOf(lib)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L233) — line 233
+- [function rememberDeviceLook(lib)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L238) — line 238
+- [function applyDeviceLook(lib)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L243) — line 243
+- [function setText(el, text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L262) — line 262
+- [function showScrollbar(el, ms = 1200)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L349) — line 349
+- [function scrollbarUnder(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L360) — line 360
+- [function askInput(title, placeholder, value = '')](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L392) — line 392
+- [function optionModal(title, message, options)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L424) — line 424
+- [function popMenu(x, y, items,](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L455) — line 455
+- [function showWindowTitle()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L547) — line 547
+- [function toast(msg, ms = 4000)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L554) — line 554
+- [function countWords(text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L577) — line 577
+- [function cleanChapterEl(id)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L599) — line 599
+- [function plainText(root)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L614) — line 614
+- [function chapterWords(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L622) — line 622
+- [function forgetParaWords(rec)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L642) — line 642
+- [function paragraphWords(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L656) — line 656
+- [function paraEntry(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L685) — line 685
+- [function wordsBeforeCaret(body, node, offset)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L696) — line 696
+- [function coverUrl(meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L733) — line 733
+- [async function loadLibrary()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L742) — line 742
+- [function showFirstRun()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L762) — line 762
+- [function currentAuthor()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L853) — line 853
+- [function shelvesFor(authorId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L863) — line 863
+- [function displayAuthor()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L868) — line 868
+- [async function shelfMeta(bookId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L877) — line 877
+- [function writeBookMeta(bookId, meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L886) — line 886
+- [async function renderShelves()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L891) — line 891
+- [function fitBoundShelves()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1180) — line 1180
+- [function pageKindName(kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1232) — line 1232
+- [function roman(n)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1247) — line 1247
+- [function shelfAuthorName(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1256) — line 1256
+- [async function createPageBook(shelf, kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1269) — line 1269
+- [async function bodyRange(shelf, skipId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1298) — line 1298
+- [async function placeTitle(shelf, bookId, atStart)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1314) — line 1314
+- [async function bindShelf(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1325) — line 1325
+- [function restoreParked(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1348) — line 1348
+- [async function unbindShelf(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1364) — line 1364
+- [async function syncCoverTitle(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1390) — line 1390
+- [async function renderBoundRow(shelf, row, blank)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1402) — line 1402
+- [function missingPages(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1438) — line 1438
+- [function appendPageZone(row, shelf, have, kinds, offer)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1447) — line 1447
+- [function boundCoverTile(shelf, meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1457) — line 1457
+- [function pageTile(shelf, meta, label)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1469) — line 1469
+- [function ghostPage(shelf, kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1504) — line 1504
+- [function partSeam(shelf, beforeId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1516) — line 1516
+- [async function addPage(shelf, kind, beforeId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1529) — line 1529
+- [async function openPage(shelf, meta, label)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1570) — line 1570
+- [function normalizePageBody(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1587) — line 1587
+- [function sheetBackdrop(kind, label, inner)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1610) — line 1610
+- [async function openPageSheet(shelf, meta, label)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1626) — line 1626
+- [function caretToEnd(el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1696) — line 1696
+- [async function openTitlePage(shelf, coverMeta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1707) — line 1707
+- [async function boundShelfMenu(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1766) — line 1766
+- [function dropIndicator()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1808) — line 1808
+- [async function paintedArt(meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1822) — line 1822
+- [function coverMode(meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1844) — line 1844
+- [function dressTile(el, meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1852) — line 1852
+- [function bookTile(meta, opts =](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L1875) — line 1875
+- [async function duplicateBook(meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2073) — line 2073
+- [async function saveCoverImage(meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2110) — line 2110
+- [function paintable(meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2135) — line 2135
+- [function bookPlainText()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2149) — line 2149
+- [async function requestPaint(meta, text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2154) — line 2154
+- [function markPainting(bookId, on)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2206) — line 2206
+- [async function refreshCover(meta, el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2217) — line 2217
+- [async function createBookOnShelf(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2253) — line 2253
+- [function shelfAutoScrollStep()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2269) — line 2269
+- [async function moveBookToAuthor(bookId, authorId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2384) — line 2384
+- [async function undoShelfMove()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2404) — line 2404
+- [async function reshelveBook()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2430) — line 2430
+- [async function openBook(bookId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2503) — line 2503
+- [function renderChapters()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2598) — line 2598
+- [async function deleteChapterToDarlings(chId, quiet = false)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2731) — line 2731
+- [async function chapterMenu(chId, x = 0, y = 0, from = null)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2765) — line 2765
+- [function copyrightStarter()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2829) — line 2829
+- [function keepTypingStyle(doc, move)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2856) — line 2856
+- [function wireChapterBody(body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L2865) — line 2865
+- [function showEntry(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3145) — line 3145
+- [function focusChapterStart(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3155) — line 3155
+- [function focusChapterEnd(chId, reveal = true)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3174) — line 3174
+- [function emptyChapterBackspace(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3205) — line 3205
+- [function styleKeepScroll(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3229) — line 3229
+- [function nearestPageText(x, y)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3245) — line 3245
+- [function caretFromEmptyClick(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3264) — line 3264
+- [function gotoChapter(step)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3324) — line 3324
+- [function caretRect()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3340) — line 3340
+- [function caretHeight()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3359) — line 3359
+- [function keepCaretHeight(was)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3367) — line 3367
+- [function revealCaret()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3379) — line 3379
+- [function chapterStartBackspace(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3390) — line 3390
+- [function handleTabSpacing(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3477) — line 3477
+- [function flatOffset(p, container, offset)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3507) — line 3507
+- [function flatPoint(p, off)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3533) — line 3533
+- [function spaceSafeDelete(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3548) — line 3548
+- [function healSelectionSeams(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3585) — line 3585
+- [function guardMarkerDelete(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3600) — line 3600
+- [function stripJunkSpans(el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3695) — line 3695
+- [function splitChapterAt(body, chId, block, sel, was)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3715) — line 3715
+- [function handleEnter(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3754) — line 3754
+- [function caretBlock(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3920) — line 3920
+- [function italicize(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3931) — line 3931
+- [function romanize(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3939) — line 3939
+- [function caretIntoStart(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3948) — line 3948
+- [function placeCaret(node, offset)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3953) — line 3953
+- [function handlePoetry(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L3966) — line 3966
+- [function handleFlush(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4028) — line 4028
+- [function poetryBackspace(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4066) — line 4066
+- [function togglePoetry()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4090) — line 4090
+- [function toggleFlush()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4091) — line 4091
+- [function toggleParaKind(kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4092) — line 4092
+- [function poetryUnderHeading(body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4121) — line 4121
+- [function sceneBreakDelete(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4139) — line 4139
+- [function captureBody(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4186) — line 4186
+- [function dropJunkSpans(html)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4201) — line 4201
+- [function openingPara(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4222) — line 4222
+- [function markDialogueOpening(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4226) — line 4226
+- [function syncChapter(body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4238) — line 4238
+- [function caretEdges(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4304) — line 4304
+- [function cleanPasteHtml(html, dashes)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4328) — line 4328
+- [function mdEmphasisMatch(before, mark)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4416) — line 4416
+- [function balancedRuns(text, mark)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4436) — line 4436
+- [function pointAt(el, offset)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4442) — line 4442
+- [function selectChars(el, from, to)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4452) — line 4452
+- [function markdownStrike(e, body, range)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4463) — line 4463
+- [function markdownEmphasis(e, body, range)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4490) — line 4490
+- [function markdownInline(line)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4529) — line 4529
+- [function dialogueDashKey(e, body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4559) — line 4559
+- [function replaceBefore(n, text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4606) — line 4606
+- [function autoCapKey(e, body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4617) — line 4617
+- [function smartKeys(e, body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4669) — line 4669
+- [function quoteIsOpen(range, q, straight)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4731) — line 4731
+- [function quoteOpenIn(text, q, straight = '')](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4744) — line 4744
+- [function typedQuote(key, before, q, sq, isOpen)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4766) — line 4766
+- [function quoteOpensAfter(before)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4789) — line 4789
+- [function singleQuotes(el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4819) — line 4819
+- [function writingLanguage()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4828) — line 4828
+- [function quoteStyle()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4831) — line 4831
+- [function bookQuotes(el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4840) — line 4840
+- [function dialogueDashEdits(text, style,](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4877) — line 4877
+- [function dialogueDashes(text, style, edges)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4889) — line 4889
+- [function dashRuns(runs, style, edges)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4895) — line 4895
+- [function dashStyle()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4909) — line 4909
+- [function frenchTypography()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4917) — line 4917
+- [function goToTab(name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4925) — line 4925
+- [function titleEnter(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4957) — line 4957
+- [function showTitleStyle()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L4980) — line 4980
+- [function isSpellcheckShortcut(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5010) — line 5010
+- [function isLargerTextShortcut(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5017) — line 5017
+- [function isSmallerTextShortcut(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5021) — line 5021
+- [function isHelpShortcut(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5025) — line 5025
+- [function applyVim()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5136) — line 5136
+- [function toggleVim()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5141) — line 5141
+- [function vimRest()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5153) — line 5153
+- [function vimSetNav(on)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5156) — line 5156
+- [function vimBlock()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5165) — line 5165
+- [function vimAround()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5173) — line 5173
+- [function vimMove(dir, unit, times = 1)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5186) — line 5186
+- [function vimWord(key)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5191) — line 5191
+- [function vimLine(dir, unit)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5216) — line 5216
+- [function vimInclusive()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5242) — line 5242
+- [function vimHalfPage(dir)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5250) — line 5250
+- [function vimSearchAgain(dir, times = 1)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5266) — line 5266
+- [function vimKeyOf(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5297) — line 5297
+- [function vimKey(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5303) — line 5303
+- [function isFullScreenKey(e, mac)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5446) — line 5446
+- [function chapterAlign(html)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5465) — line 5465
+- [function newChapterHtml(order, at, htmlOf, story)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5482) — line 5482
+- [function createChapterAt(idx)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5491) — line 5491
+- [function newChapter()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5503) — line 5503
+- [async function deleteChapterQuiet(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5510) — line 5510
+- [function focusChapter(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5530) — line 5530
+- [function spBareName(t)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5584) — line 5584
+- [function spLooksLikeTransition(t)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5589) — line 5589
+- [function spLooksLikeCharacter(t)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5596) — line 5596
+- [function spParseHeading(t)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5604) — line 5604
+- [function spComplete(partial, pool)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5613) — line 5613
+- [function spNames(lines, skip)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5622) — line 5622
+- [function spLocations(lines, skip)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5634) — line 5634
+- [function spTimesUsed(lines, skip)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5644) — line 5644
+- [function spPartner(lines, i)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5655) — line 5655
+- [function spGhost(lines, i)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5669) — line 5669
+- [function spContd(lines, i)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5691) — line 5691
+- [function spPaginate(items, perPage = SP_LINES_PER_PAGE)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5708) — line 5708
+- [function spEighths(lines, perPage = SP_LINES_PER_PAGE)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5750) — line 5750
+- [function spToFountain(lines, title =](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5756) — line 5756
+- [function spFromFountain(src)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5819) — line 5819
+- [function spFountainTitle(src)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5875) — line 5875
+- [function spRunsFromFountain(t)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5903) — line 5903
+- [function spFdxParas(xml)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5941) — line 5941
+- [function spFromFdx(xml)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5960) — line 5960
+- [function spToFdx(lines, title =](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L5998) — line 5998
+- [function spType(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6049) — line 6049
+- [function spSetClass(p, type)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6054) — line 6054
+- [function spCleanMarks(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6060) — line 6060
+- [function spBodies()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6075) — line 6075
+- [function spParas()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6076) — line 6076
+- [function spCaretPara()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6084) — line 6084
+- [function spCaretAtEnd(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6096) — line 6096
+- [function spCaretAtStart(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6104) — line 6104
+- [function spCaretToEnd(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6112) — line 6112
+- [function spInsert(text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6119) — line 6119
+- [function spReplaceAll(p, text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6120) — line 6120
+- [function spSetType(p, type)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6128) — line 6128
+- [function spAfterChange(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6146) — line 6146
+- [function spSetElement(type)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6156) — line 6156
+- [function scriptKey(e, body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6169) — line 6169
+- [function spEnter(p, body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6232) — line 6232
+- [function spTab(p, back, ghost)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6297) — line 6297
+- [function scriptInput(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6332) — line 6332
+- [function spSceneNoteGhosts(ps, lines)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6365) — line 6365
+- [function spRefreshGhost()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6388) — line 6388
+- [function spSchedule(ms = 140)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6411) — line 6411
+- [function spMeasure(ps, live)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6418) — line 6418
+- [function spRepaginate()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6446) — line 6446
+- [function spLengthText()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6484) — line 6484
+- [function spEighthsText(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6488) — line 6488
+- [function spCurrentPage()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6494) — line 6494
+- [function spCurrentScene()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6504) — line 6504
+- [function spCounters()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6512) — line 6512
+- [function spShowElement()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6525) — line 6525
+- [function spHighlightScene()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6534) — line 6534
+- [function spReportState()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6538) — line 6538
+- [function spToggleStyle(key)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6544) — line 6544
+- [function spTogglePageBreak()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6570) — line 6570
+- [function renderScriptNav()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6579) — line 6579
+- [function spMoveScene(k, to)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6675) — line 6675
+- [async function deleteSceneToDarlings(cell, quiet = false)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6697) — line 6697
+- [function spTitlePage(on)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6742) — line 6742
+- [function spEditorMode()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6779) — line 6779
+- [function spPaste(e, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6812) — line 6812
+- [function spPasteMany(lines, body, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6902) — line 6902
+- [async function importScript(r, shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6951) — line 6951
+- [function spExportLines()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L6981) — line 6981
+- [function spApplyStyle()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7000) — line 7000
+- [function spRunsHtml(l)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7004) — line 7004
+- [async function spPdfHtml()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7008) — line 7008
+- [async function spFontFaces()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7078) — line 7078
+- [function markedRuns(runs, marks, esc)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7103) — line 7103
+- [function spFountain()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7129) — line 7129
+- [function spTitleFields()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7139) — line 7139
+- [async function spExport(format)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7149) — line 7149
+- [async function createScriptOnShelf(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7166) — line 7166
+- [function scriptTile(el, meta)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7179) — line 7179
+- [function caretOffFootnote(sel)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7212) — line 7212
+- [function footnoteMark(note)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7231) — line 7231
+- [function insertFootnote()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7243) — line 7243
+- [function openFootnote(mark)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7265) — line 7265
+- [function placeFootnoteBox()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7314) — line 7314
+- [function closeFootnote(back = false)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7330) — line 7330
+- [function queueFootnoteList(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7362) — line 7362
+- [function renderFootnoteList(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7367) — line 7367
+- [function renderAllFootnoteLists()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7398) — line 7398
+- [function footnoteToDarlings(mark, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7403) — line 7403
+- [function insertPlaceholder()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7422) — line 7422
+- [function returnToMark(sid)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7468) — line 7468
+- [function renderStickies()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7491) — line 7491
+- [function scheduleStickiesSave()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7534) — line 7534
+- [function flushStickiesSave()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7545) — line 7545
+- [function reconcileMarks()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7555) — line 7555
+- [function resolveSticky(sid)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7589) — line 7589
+- [function markCurrentSticky(sid)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7617) — line 7617
+- [function focusSticky(sid)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7623) — line 7623
+- [function renderNav()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7639) — line 7639
+- [function entryPeek(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7781) — line 7781
+- [async function addEntryMenu(at, x, y, from)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7791) — line 7791
+- [function addEntry(at, kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7797) — line 7797
+- [function bookContents(meta = book)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7819) — line 7819
+- [function partTitleOf(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7838) — line 7838
+- [function renderContentsLists()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7843) — line 7843
+- [function storyEnd()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7861) — line 7861
+- [function finishChapterDrag(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7891) — line 7891
+- [function navDropInd()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7911) — line 7911
+- [function highlightNav()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7976) — line 7976
+- [function scheduleNavRefresh()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7980) — line 7980
+- [function wireHoverPane(hotzone, pane, isPinnable)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L7986) — line 7986
+- [function closeUnpinnedPanes()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8020) — line 8020
+- [function pinPane(side, on, key = side)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8040) — line 8040
+- [function readNotesPage(bookId, page)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8083) — line 8083
+- [function loadNotesPeeks()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8095) — line 8095
+- [function notesLabel(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8114) — line 8114
+- [function notesNavList()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8120) — line 8120
+- [function renderNotesNav()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8136) — line 8136
+- [function openNotesPage(page)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8194) — line 8194
+- [function notesHeading()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8204) — line 8204
+- [function notesOutlineLine()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8224) — line 8224
+- [function notesSideList()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8236) — line 8236
+- [function copyToNotes(text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8253) — line 8253
+- [function renderNotesSide()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8268) — line 8268
+- [function notesTyped()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8374) — line 8374
+- [async function foldNotesPage(fromId, intoId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8391) — line 8391
+- [async function notesPageToDarlings(chId, label)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8408) — line 8408
+- [function bodyPlainText(body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8479) — line 8479
+- [function textPosToRange(body, pos)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8487) — line 8487
+- [function findDarlingPosition(body, d)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8504) — line 8504
+- [async function moveSelectionToDarlings(html, text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8524) — line 8524
+- [async function migrateDarlingAnchors()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8615) — line 8615
+- [function darlingFromKeyboard()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8645) — line 8645
+- [function switchTab(name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8665) — line 8665
+- [function focusAfterSectionRemoved(list, index, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8786) — line 8786
+- [function focusOutlineTextEnd(el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8792) — line 8792
+- [function renderOutline(focusTarget)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8802) — line 8802
+- [function outlinePartLine(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8849) — line 8849
+- [function storyBefore(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8866) — line 8866
+- [function outlineLine(kind, chId, secId, index, label, text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L8872) — line 8872
+- [function sectionWritten(chId, secId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9107) — line 9107
+- [function syncGhosts(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9116) — line 9116
+- [function segmentStartEl(body, el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9147) — line 9147
+- [function newSceneBreak(secId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9157) — line 9157
+- [function placeGhost(body, sec, before)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9165) — line 9165
+- [function removeGhost(body, p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9190) — line 9190
+- [function chapterSegments(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9223) — line 9223
+- [function orderSectionNotes(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9252) — line 9252
+- [function resolveStoredZoom(raw, fallback, min, max)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9279) — line 9279
+- [function readStoredZoom(key, fallback, range)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9285) — line 9285
+- [function rememberZoom(key, value)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9291) — line 9291
+- [function snapZoom(value, fallback = 1)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9300) — line 9300
+- [function nextZoomStep(current, direction)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9305) — line 9305
+- [function applyPageZoom()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9312) — line 9312
+- [function applyPageWidth()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9331) — line 9331
+- [function setPageWidth(value)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9340) — line 9340
+- [function applyPaged()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9346) — line 9346
+- [function pageWidthPx()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9353) — line 9353
+- [function fitSpread()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9367) — line 9367
+- [function queuePages(all, sec)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9378) — line 9378
+- [function fitPages()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9389) — line 9389
+- [function togglePaged()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9416) — line 9416
+- [function toggleTwoPage()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9422) — line 9422
+- [function cardZoom()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9431) — line 9431
+- [function applyShelfZoom()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9440) — line 9440
+- [function stepShelfZoom(dir)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9444) — line 9444
+- [function stepCardZoom(dir)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9454) — line 9454
+- [function outlineBoard()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9468) — line 9468
+- [function viewSwitch()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9527) — line 9527
+- [function showOutlineView()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9553) — line 9553
+- [function renderBoard()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9569) — line 9569
+- [function boardHint(board)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9609) — line 9609
+- [function boardPartRow(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9625) — line 9625
+- [function cardCell(kind, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9640) — line 9640
+- [function boardAddCard(board)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9666) — line 9666
+- [function chapterCard(chId, opening, solo)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9692) — line 9692
+- [function sectionCard(chId, seg, segIdx, letterIdx)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9717) — line 9717
+- [function fillCardText(cell, note)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9745) — line 9745
+- [function cardFlag()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9756) — line 9756
+- [function chapterHasFlag(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9762) — line 9762
+- [function openCard(cell,](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9771) — line 9771
+- [function cardNoteOf(cell)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9854) — line 9854
+- [function cardBlur()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9864) — line 9864
+- [function closeCardEditor(quiet = false)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9874) — line 9874
+- [function saveCard(cell, val)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9904) — line 9904
+- [function reindexChapterCards(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9963) — line 9963
+- [function cardKeys(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L9977) — line 9977
+- [function outlineLines(raw)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10061) — line 10061
+- [function outlineLevels(items)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10072) — line 10072
+- [function outlineFromHtml(html)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10080) — line 10080
+- [function pastedOutline(data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10110) — line 10110
+- [function pasteOutline(items)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10119) — line 10119
+- [function newCardAfter(cell)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10146) — line 10146
+- [function newChapterCard(at)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10154) — line 10154
+- [function renderBoardFocus(cell)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10165) — line 10165
+- [function slugKeys(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10171) — line 10171
+- [function renderBoardLater()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10189) — line 10189
+- [function makeNewCardAfter(cell, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10197) — line 10197
+- [function deleteSectionNote(chId, secId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10229) — line 10229
+- [function goToCard(cell)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10238) — line 10238
+- [function goToChapterTop(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10245) — line 10245
+- [function goToSegment(chId, seg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10251) — line 10251
+- [async function cardMenu(cell, x, y)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10267) — line 10267
+- [async function deleteSectionToDarlings(chId, segIdx, quiet = false)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10319) — line 10319
+- [function liftSegment(body, seg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10361) — line 10361
+- [function setSegmentDown(body, ps, brk, target)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10373) — line 10373
+- [function repointStickies(ps, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10398) — line 10398
+- [function moveSection(fromCh, segIdx, to)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10410) — line 10410
+- [function moveChapterCard(chId, index)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10447) — line 10447
+- [function sectionToChapter(chId, segIdx)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10460) — line 10460
+- [function sectionToLoose(chId, segIdx, virtualSec)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10493) — line 10493
+- [async function writtenSectionToLoose(chId, seg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10519) — line 10519
+- [function looseToSection(looseId, to)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10552) — line 10552
+- [async function joinChapter(chId, intoCh)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10596) — line 10596
+- [function cardPress(e, src)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10645) — line 10645
+- [function cardKey(cell)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10698) — line 10698
+- [function showCardSelection()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10706) — line 10706
+- [function clearCardSelection()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10709) — line 10709
+- [function selectCard(cell, how)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10715) — line 10715
+- [function cardLasso(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10729) — line 10729
+- [async function deleteSelectedCards()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10774) — line 10774
+- [function beginCardDrag(st)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10801) — line 10801
+- [function endCardDrag(st)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10822) — line 10822
+- [function dragOver(st)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10833) — line 10833
+- [function nearestCard(cells, x, y)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10850) — line 10850
+- [function dragTarget(st)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10864) — line 10864
+- [function showDropCaret(target)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10895) — line 10895
+- [function outlineFileTarget(x, y)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10935) — line 10935
+- [function showFileCaret(target)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10954) — line 10954
+- [function dropCard(src, target)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L10987) — line 10987
+- [function firstSectionIndex(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11053) — line 11053
+- [function moveVirtualNote(fromCh, secId, toCh)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11059) — line 11059
+- [function sceneNodes(s)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11078) — line 11078
+- [function scriptScenes()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11084) — line 11084
+- [function renderScriptBoard(board)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11104) — line 11104
+- [function rescueSceneNotes()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11112) — line 11112
+- [function sceneCard(sc)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11129) — line 11129
+- [function sceneOfCell(cell)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11159) — line 11159
+- [function insertScene(k, slug)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11165) — line 11165
+- [function saveSceneCard(cell, note, slug)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11195) — line 11195
+- [function looseToScene(looseId, before)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11245) — line 11245
+- [function goToScene(cell)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11263) — line 11263
+- [function goToSceneHeading(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11268) — line 11268
+- [function looseList()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11279) — line 11279
+- [function renderLooseCards()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11312) — line 11312
+- [function addLooseCard()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11351) — line 11351
+- [function saveLooseCard(id, val)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11360) — line 11360
+- [async function removeLooseCard(id, quiet = false)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11371) — line 11371
+- [function canSetChapterAside(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11408) — line 11408
+- [async function saveHeldCard(card)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11413) — line 11413
+- [async function chapterToLoose(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11426) — line 11426
+- [function looseToChapter(looseId, index)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11454) — line 11454
+- [async function sceneToLoose(cell)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11474) — line 11474
+- [function heldSceneBack(card, before)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11511) — line 11511
+- [function sidePaneForTab(name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11544) — line 11544
+- [function sectionIdAt(body, p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11572) — line 11572
+- [function hideWalkNote()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11594) — line 11594
+- [function sideCardsBox()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11610) — line 11610
+- [function sectionOf(body, p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11619) — line 11619
+- [function queueSideCards()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11636) — line 11636
+- [function sideCardsUpdate(force)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11641) — line 11641
+- [function walkNoteUpdate()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11748) — line 11748
+- [function placeWalkNote()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11795) — line 11795
+- [function queueWalkNote()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11810) — line 11810
+- [function scheduleAuxSave()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11838) — line 11838
+- [function flushAux()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11847) — line 11847
+- [function mergeSidecar(base, local, remote, newestFirst)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11877) — line 11877
+- [function writeSidecar(bookId, name, data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11886) — line 11886
+- [function runSidecar(key, job)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11892) — line 11892
+- [function flushSidecars()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11905) — line 11905
+- [function renderDarlings()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11912) — line 11912
+- [async function savedBeforeLettingGo(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11951) — line 11951
+- [async function restoreDarling(id)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L11962) — line 11962
+- [function bookWordCount()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12021) — line 12021
+- [function updateCounters()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12025) — line 12025
+- [function updateBookCounters(total, wc)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12054) — line 12054
+- [function writingDay(d = new Date())](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12080) — line 12080
+- [function nextDayCount(entry, total, seen)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12101) — line 12101
+- [function mergeDayCounts(ours, theirs)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12109) — line 12109
+- [function wordsFromDisk()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12127) — line 12127
+- [function trackDailyWords(total)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12133) — line 12133
+- [function currentPage(cur)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12168) — line 12168
+- [function persistChapter(chId, html)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12257) — line 12257
+- [function twinChapterTitle(title)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12296) — line 12296
+- [async function keepOtherDeviceVersion(bookId, chId, disk)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12300) — line 12300
+- [function scheduleChapterSave(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12331) — line 12331
+- [function metaSig(m)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12351) — line 12351
+- [function scheduleMetaSave()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12364) — line 12364
+- [async function saveMeta()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12368) — line 12368
+- [function flushAllSaves(e)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12379) — line 12379
+- [function snapName(ms, kind, changed, words, rand = Math.random().toString(36).slice(2, 6))](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12442) — line 12442
+- [function parseSnapName(name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12446) — line 12446
+- [function textHash(str)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12452) — line 12452
+- [function snapsToThin(snaps, now)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12466) — line 12466
+- [function snapHolder(snaps, i, chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12472) — line 12472
+- [function wordsGone(oldParas, curParas)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12481) — line 12481
+- [function snapHolderEl(html)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12519) — line 12519
+- [async function loadSnaps(bookId, fresh)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12533) — line 12533
+- [async function snapMeta(bookId, s)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12547) — line 12547
+- [function takeSnapshot(kind, htmlOf = (c) => chapterHTML[c] || '',](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12558) — line 12558
+- [async function takeSnapshotNow(kind, htmlOf,](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12564) — line 12564
+- [function maybeDailySnapshot()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12621) — line 12621
+- [async function snapshotNow()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12630) — line 12630
+- [function snapWhen(at)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12647) — line 12647
+- [function snapWhy(kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12655) — line 12655
+- [function snapList()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12664) — line 12664
+- [async function renderSnapList()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12681) — line 12681
+- [function snapView()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12746) — line 12746
+- [async function snapToDarling(range, text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12770) — line 12770
+- [function showDarlingsAgain()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12789) — line 12789
+- [async function snapshotBook(bookId, name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12803) — line 12803
+- [async function showSnapshot(name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12817) — line 12817
+- [function wordRanges(p, at)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12906) — line 12906
+- [async function restoreSnapshot(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L12932) — line 12932
+- [function onlyDrops(page, disk)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13006) — line 13006
+- [function wordsBeyond(a, b)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13020) — line 13020
+- [async function refreshFromDisk()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13032) — line 13032
+- [async function backToShelf()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13278) — line 13278
+- [function captureCaret()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13311) — line 13311
+- [function restoreCaret(caret)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13338) — line 13338
+- [function resumePosition(pos)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13377) — line 13377
+- [function resetNativeUndo()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13414) — line 13414
+- [function sealUndo(snap)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13427) — line 13427
+- [function sealUndoOnEdit()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13431) — line 13431
+- [function captureStructure(label, opts)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13439) — line 13439
+- [function snapshotStructure(label, opts)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13458) — line 13458
+- [async function structuralUndo(fromRedo)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13469) — line 13469
+- [async function structuralRedo()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13554) — line 13554
+- [function rejoinAtCaret()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13563) — line 13563
+- [function readVoice()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13646) — line 13646
+- [async function readVoicesReady()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13657) — line 13657
+- [function readParasFrom(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13675) — line 13675
+- [function readSentences(p, from)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13694) — line 13694
+- [function readRange(p, a, b)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13705) — line 13705
+- [async function toggleReadAloud()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13714) — line 13714
+- [function stopReadAloud(leaveCaret)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13782) — line 13782
+- [function editableOf(range)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13830) — line 13830
+- [function openSearch(fromVim = false)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13835) — line 13835
+- [function closeSearch()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13850) — line 13850
+- [function returnFromSearch()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13864) — line 13864
+- [function paintHighlights()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13881) — line 13881
+- [function searchRoots()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13895) — line 13895
+- [function lowerSameLength(s)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13908) — line 13908
+- [function matchSpans(texts, q)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13918) — line 13918
+- [function textRuns(root)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13949) — line 13949
+- [function findRanges(q)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13968) — line 13968
+- [function runSearch()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L13986) — line 13986
+- [function gotoMatch(i)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14002) — line 14002
+- [function freshSearchIfStale()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14014) — line 14014
+- [function replaceRange(range, rep)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14020) — line 14020
+- [function replaceCurrent()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14035) — line 14035
+- [function replaceAllMatches()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14062) — line 14062
+- [async function addImportedBooks(results, shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14125) — line 14125
+- [function importedChapterHTML(ch)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14174) — line 14174
+- [async function importChaptersIntoBook(results, beforeId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14186) — line 14186
+- [async function importDroppedChapters(files, beforeId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14235) — line 14235
+- [async function importChapters()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14247) — line 14247
+- [function importedEmphasis(text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14260) — line 14260
+- [async function importBooks()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14269) — line 14269
+- [function spellElFor(key)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14291) — line 14291
+- [async function spellScanEl(el, key)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14297) — line 14297
+- [function capitalSlips(el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14377) — line 14377
+- [function rebuildSpellHighlight()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14427) — line 14427
+- [function scanSpellingIn(el, key)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14434) — line 14434
+- [function scanSpellingHere()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14440) — line 14440
+- [function scheduleSpellRescan(key, el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14449) — line 14449
+- [function toggleSpellcheck()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14454) — line 14454
+- [async function changeSpellLanguage(code)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14477) — line 14477
+- [function showSpellMenu(x, y, word, suggestions, actions)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14570) — line 14570
+- [function lookUpWord(text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14639) — line 14639
+- [function applyTypewriter()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14667) — line 14667
+- [function typewriterRoom()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14672) — line 14672
+- [function applyNbspMarks()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14691) — line 14691
+- [function toggleNbspMarks()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14695) — line 14695
+- [function toggleTypewriter()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14704) — line 14704
+- [function currentAlign()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14758) — line 14758
+- [function brightNow()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14781) — line 14781
+- [function applyBright()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14786) — line 14786
+- [function reportViewState()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14791) — line 14791
+- [function applyFocus()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14807) — line 14807
+- [function setFocus(level)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14814) — line 14814
+- [function cycleFocus()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14822) — line 14822
+- [function focusParagraph()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14825) — line 14825
+- [function caretOffsetIn(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14839) — line 14839
+- [function rangeFromOffsets(p, start, end)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14848) — line 14848
+- [function sentenceRange(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14864) — line 14864
+- [function updateFocus()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14885) — line 14885
+- [function isBreakPara(p)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14904) — line 14904
+- [function statsChartSvg()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14925) — line 14925
+- [function openCoverArt()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L14991) — line 14991
+- [function hourLabel(h)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15078) — line 15078
+- [function openStats()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15090) — line 15090
+- [function applyFonts()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15194) — line 15194
+- [function bodyFontStack(name)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15222) — line 15222
+- [async function pickLocalFont()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15230) — line 15230
+- [function updateZoomDisplay()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15289) — line 15289
+- [function keepReadingPlace(change, at)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15300) — line 15300
+- [function setPageZoom(next, at)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15331) — line 15331
+- [function applyAlign(value)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15387) — line 15387
+- [function shortcutSections()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15411) — line 15411
+- [function bookShortcutSections()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15428) — line 15428
+- [function showHelp()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15509) — line 15509
+- [function safeName(s)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15575) — line 15575
+- [function parasFromHtml(html)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15585) — line 15585
+- [function exportChapters()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15623) — line 15623
+- [function bookExportData()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15668) — line 15668
+- [function manuscriptSections()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15707) — line 15707
+- [function manuscriptByline()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15717) — line 15717
+- [function manuscriptDefaults()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15722) — line 15722
+- [function manuscriptModel(v, sections)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15737) — line 15737
+- [async function manuscriptFontFaces(font)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15755) — line 15755
+- [function manuscriptDialog(v, words)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15779) — line 15779
+- [async function manuscriptKeep(v)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15845) — line 15845
+- [async function exportManuscript()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15858) — line 15858
+- [async function manuscriptRun(sections)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15874) — line 15874
+- [function buildPrintHtml(d, o)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L15925) — line 15925
+- [async function printPaperback()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16143) — line 16143
+- [function chapterExportData(chId)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16297) — line 16297
+- [function buildTxt(data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16314) — line 16314
+- [function buildMd(data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16334) — line 16334
+- [async function exportFontFaces(d)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16368) — line 16368
+- [function buildHtml(data, opts =](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16415) — line 16415
+- [function fnParas(paras, start, mark)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16631) — line 16631
+- [function runHtml(r, esc = escHtml)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16640) — line 16640
+- [function healStrayNbsp(root)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16656) — line 16656
+- [function nonBreakingRuns(text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16688) — line 16688
+- [function softHyphenOffsets(text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16710) — line 16710
+- [function softHyphenTick(rect, origin, em)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16719) — line 16719
+- [function paintNonBreakingMarks()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16733) — line 16733
+- [function queueSoftHyphenTicks(moved = true)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16765) — line 16765
+- [function softHyphenRect(node, i)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16770) — line 16770
+- [function drawSoftHyphenTicks()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16779) — line 16779
+- [function paraRuns(pHtml, flip)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16825) — line 16825
+- [function docxP(runs, opts =](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16876) — line 16876
+- [function buildDocxEntries(data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16914) — line 16914
+- [function docxFootnotesXml(notes)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16919) — line 16919
+- [function docxEntriesOf(data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L16924) — line 16924
+- [async function exportCover(d)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17050) — line 17050
+- [function chapterXhtml(ch, d)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17066) — line 17066
+- [async function buildEpubEntries(data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17140) — line 17140
+- [async function shelfBookData(shelf, opts =](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17304) — line 17304
+- [async function shelfPayload(data, format)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17454) — line 17454
+- [function shelfFormats()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17461) — line 17461
+- [async function exportShelfAnthology(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17469) — line 17469
+- [async function exportBoundBook(shelf)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17488) — line 17488
+- [async function boundCoverMenu(shelf, meta, el)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17504) — line 17504
+- [function tocTree(entries)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17544) — line 17544
+- [function plainError(err)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17560) — line 17560
+- [async function exportFromShelf(bookId, format)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17569) — line 17569
+- [async function doExport(format, chId = null)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17596) — line 17596
+- [function chooseEmailMethod()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17627) — line 17627
+- [async function emailSettings()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17659) — line 17659
+- [async function manuscriptHash()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17669) — line 17669
+- [async function doEmailDraft()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17676) — line 17676
+- [function updateDialogBox(res)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17714) — line 17714
+- [function updateDialogShow(state, info =](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17739) — line 17739
+- [async function checkForUpdate()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17776) — line 17776
+- [function updateNotice(title, line)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17792) — line 17792
+- [function updateMessage(msg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17816) — line 17816
+- [async function showAbout()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17822) — line 17822
+- [async function setEditorFontSize(value)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17844) — line 17844
+- [function reportError(msg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L17979) — line 17979
+- [function installLinuxBodyFonts()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18007) — line 18007
+- [function scrollBehavior()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18046) — line 18046
+- [function pressable(el, label)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18050) — line 18050
+- [function dialogify(bd)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18092) — line 18092
+- [function focusPage()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18132) — line 18132
+- [function openPaneFromKeyboard(pane, first)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18148) — line 18148
+- [function usesMoreFeatures(lib)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18232) — line 18232
+- [async function decideMoreFeatures()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18246) — line 18246
+- [function reportMore()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18266) — line 18266
+- [async function setMoreFeatures(on)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18270) — line 18270
+- [function applyLook()](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/app.js#L18295) — line 18295
+
+## preload.js
+
+
+## manuscript.js
+
+
+## covers.js
+
+
+## art.js
+
+- [function excerpt(text)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/art.js#L32) — line 32
+- [function isModelError(status, body)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/art.js#L42) — line 42
+- [async function post(url, headers, payload)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/art.js#L48) — line 48
+- [async function withModels(preferred, defaults, fn)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/art.js#L67) — line 67
+- [async function openaiModels(base, apiKey)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/art.js#L88) — line 88
+- [async function candidates(base, apiKey, preferred, defaults, kind)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/art.js#L101) — line 101
+- [function openaiStyle(](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/art.js#L110) — line 110
+- [async function paintCover(](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/art.js#L155) — line 155
+
+## backup-worker.js
+
+- [function readWithin(file, ms)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/backup-worker.js#L27) — line 27
+- [function cloudOnlyAmong(files)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/backup-worker.js#L39) — line 39
+- [async function writeDurable(file, data)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/backup-worker.js#L53) — line 53
+- [async function backup(](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/backup-worker.js#L65) — line 65
+
+## spell-worker.js
+
+- [function reply(msg, extra)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/spell-worker.js#L22) — line 22
+- [function correct(word)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/spell-worker.js#L26) — line 26
+- [async function load(msg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/spell-worker.js#L31) — line 31
+- [async function handle(msg)](https://github.com/iannitram/neo/blob/3f21d090662cbcbd441d5207292e2c175ee1a01a/spell-worker.js#L62) — line 62
+
+## i18n.js
+
+
+## pocket/www/pocket-bridge.js
+
+

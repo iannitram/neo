@@ -1,0 +1,4 @@
+B02 reproduced: remote reordering and bold overwritten without conflict
+B03 reproduced: stale metadata hides remote chapter; file remains recoverable
+B04 reproduced: stale notes replace remote notes, no backup
+B05 reproduced: failed page sheet save is not retried
