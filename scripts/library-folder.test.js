@@ -75,7 +75,7 @@ describe('a library folder that can\'t be written', { concurrency: 1 }, () => {
     const pc = computer();
     try {
       pc.run('checkLibraryWritable()');
-      const want = path.join(pc.home, 'Documents', 'NEO Library');
+      const want = path.join(pc.home, 'Documents', 'NeoCraft Library');
       assert.equal(pc.dir(), want);
       assert.equal(pc.settings().libraryDir, want); // the next launch finds it too
       assert.equal(pc.shown.sync.length, 0);        // no question with no answer
@@ -98,7 +98,7 @@ describe('a library folder that can\'t be written', { concurrency: 1 }, () => {
     const pc = computer({ documents: false });
     try {
       pc.run('checkLibraryWritable()');
-      assert.equal(pc.dir(), path.join(pc.home, 'NEO Library'));
+      assert.equal(pc.dir(), path.join(pc.home, 'NeoCraft Library'));
       assert.equal(fs.existsSync(path.join(pc.home, 'Documents')), false);
     } finally {
       pc.done();
@@ -113,7 +113,7 @@ describe('a library folder that can\'t be written', { concurrency: 1 }, () => {
       assert.equal(pc.dir(), chosen);
       assert.equal(pc.shown.sync.length, 1);
       assert.equal(pc.settings().libraryDir, chosen);
-      assert.equal(fs.existsSync(path.join(pc.home, 'Documents', 'NEO Library')), false);
+      assert.equal(fs.existsSync(path.join(pc.home, 'Documents', 'NeoCraft Library')), false);
     } finally {
       pc.done();
     }
