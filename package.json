@@ -3,7 +3,7 @@
   "productName": "NeoCraft",
   "version": "1.6.1",
   "description": "A word processor for authors. Distraction-free by default.",
-  "homepage": "https://github.com/hughhowey/neo",
+  "homepage": "https://github.com/iannitram/neo",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -98,7 +98,7 @@
           "Keywords": "writing;writer;novel;book;author;manuscript;wordprocessor;"
         }
       },
-      "maintainer": "Hugh Howey <hughhowey@gmail.com>"
+      "maintainer": "NeoCraft <4624371+iannitram@users.noreply.github.com>"
     },
     "nsis": {
       "oneClick": true,
