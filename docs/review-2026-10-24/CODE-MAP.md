@@ -140,3 +140,45 @@ Snapshots hold chapter history and chapter shape, not a complete backup of every
 - Book formatting: app typing/captureBody + CSS + export serializers; verify that transient UI marks never enter chapter HTML.
 - New host capability: explicit API and capability contract, adapter, call site and parity test. Document mode should use a smaller dedicated interface.
 - Nextcloud conversion: new document core/formats/host/app modules; keep books on their existing API while fixing reviewed defects. Do not expose the Electron bridge directly to a web page.
+
+## Planned 1.0 modules
+
+Added 2026-10-26 for the approved spec ([SPEC.md](../../SPEC.md)). None of these exists yet; each row names the issue that creates it. Layout follows [NEXTCLOUD-PLAN.md](NEXTCLOUD-PLAN.md), "Architecture decision".
+
+| Path (new) | Owns | Calls / called by | Issues |
+|---|---|---|---|
+| `document-session.js` | One open file: original bytes, base revision, dirty and saved generations, fidelity report, serial saves, recovery draft | called by the Document-mode view; calls a format adapter and a storage host | #18 |
+| autosave scheduler (in the session) | When to save: after a typing pause and on close | called by the session; calls `host.save` | #30 |
+| `editor/` | Editing behaviour extracted from `app.js` (typing, quotes, dashes, find, spellcheck), without book-only commands | used by the Document-mode view; `app.js` keeps books | #18 |
+| `formats/txt.js` | .txt reader/writer keeping line endings, BOM and encoding | used by the session | #19 |
+| `formats/markdown.js` | Byte-faithful .md: source spans, frontmatter held aside, wikilinks | used by the session | #20 |
+| `formats/docx.js` + fidelity scanner | Simple .docx read, package-patching write; lists features it cannot keep | used by the session; the scanner result drives the fallback | #21 |
+| `formats/rtf.js` | Bounded .rtf reader/writer with the same scanner | used by the session | #23 |
+| `hosts/nextcloud.js` | Browser storage host: authorized reads with ETag, If-Match saves, 412 -> exclusive copy | called by the session in the browser; talks to the `neocraft` PHP app and WebDAV | #22 |
+| `hosts/electron-document.js` | Desktop storage host: open by exact path, modified-time check, atomic replace, recovery | called by the session on the desktop; uses `main.js` over a small preload bridge | #25 |
+| `main.js` hooks (`// NEOCRAFT:`) | open-file / CLI / second-instance handling, `neocraft://` protocol, account and sync-folder mapping, WebDAV cache | calls `hosts/electron-document.js`; reads the Nextcloud client config | #25, #26 |
+| `nextcloud/neocraft/` | The Nextcloud PHP app: page route, authorized file operations, conflict copy, Files/Viewer actions, "+ New", excluded-folder delegation to Text, fallback to Collabora | serves the browser editor; called by Files | #17, #22, #24, #31 |
+| build and release config (`package.json` `build`, `.github/workflows/`) | NeoCraft identity, app id, own update feed, unsigned three-OS builds, PR tests | used by CI | #8, #16 |
+
+```mermaid
+flowchart LR
+  VIEW["Document-mode view"] --> SES["document-session.js (+ autosave)"]
+  SES --> FMT["formats/: txt, markdown, docx + scanner, rtf"]
+  SES --> HOSTB["hosts/nextcloud.js (browser)"]
+  SES --> HOSTD["hosts/electron-document.js (desktop)"]
+  HOSTB --> NCAPP["nextcloud/neocraft/ PHP app + WebDAV"]
+  HOSTD --> MAINH["main.js NEOCRAFT hooks: open-file, neocraft://, DAV cache"]
+  NCAPP -->|Launch external| MAINH
+```
+
+### Mac, PC and Linux
+
+- **Formats, session and editor** are plain JS with no OS code; their Node tests run on all three in CI (#16).
+- **Windows:** NSIS + portable builds; the Nextcloud client config is `%APPDATA%\Nextcloud\nextcloud.cfg`; SmartScreen warns on first launch (accepted, D8).
+- **macOS:** dmg for arm64 and x64, unsigned (right-click > Open); `open-file` events; the client uses File Provider placeholders, so open the exact path and never scan the folder; config in `~/Library/Preferences/Nextcloud/nextcloud.cfg`.
+- **Linux / SteamOS:** AppImage x64; the AppImage does not register `neocraft://` by itself, so the launcher installs a `.desktop` entry with `x-scheme-handler/neocraft`; the Flatpak client config is under `~/.var/app/com.nextcloud.desktopclient.nextcloud/config/Nextcloud/`.
+- **Browser:** the `neocraft` app targets Nextcloud 33; tested in a disposable server only.
+
+### Open-source pieces
+
+Upstream NEO itself (MIT; keep the credits), electron-builder (already used), Nextcloud's app scaffold and frontend tooling for the PHP app (NEXTCLOUD-PLAN.md), a maintained RTF parser for reading (#23 picks it after a licence check), and Nextcloud Login Flow v2 plus Electron `safeStorage` for the desktop app password (#26).
