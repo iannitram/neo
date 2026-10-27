@@ -1657,8 +1657,13 @@ async function openPageSheet(shelf, meta, label) {
     const out = body.cloneNode(true);
     out.querySelectorAll('[data-attr]').forEach((p) => p.removeAttribute('data-attr'));
     if (out.innerHTML === saved) return;
+    const writeResult = await window.neo.writeChapter(live.id, chId, out.innerHTML);
+    if (writeResult !== true) {
+      // If the write failed or was rejected, don't update saved
+      // and let the caller handle retry logic
+      return;
+    }
     saved = out.innerHTML;
-    await window.neo.writeChapter(live.id, chId, saved);
   };
   body.addEventListener('input', () => {
     settle();
