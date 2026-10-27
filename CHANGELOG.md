@@ -2,6 +2,7 @@
 
 Newest first. One line per change of stage, release or decision that the next session needs. Upstream's history is upstream's.
 
+- 2026-10-26 Hard issues split by RUBRIC.md: ten parents became trackers over 47 children (#32-#78; 23 Easy with Qwen briefs); #14 and #17 stay Hard. SPEC.md issue column updated.
 - 2026-10-26 Spec approved by the owner ("Approve, 1.0 = M5 (Recommended)"): SPEC.md from D1-D16 + M0-M5; code map gains the planned 1.0 modules; new issues #30 (autosave) and #31 (cutover); stage Dev Loop.
 - 2026-10-26 Normalized to pipeline v2 at Spec: PIPELINE.md, AGENTS.fork.md, this file. The decisions are settled; the spec still needs the owner's approval as SPEC.md.
 - 2026-10-25 Upstream main merged (#29).
