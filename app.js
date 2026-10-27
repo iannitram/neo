@@ -1650,6 +1650,9 @@ async function openPageSheet(shelf, meta, label) {
   settle();
   let timer = null;
   let saved = body.innerHTML;
+  let revision = saved;
+  let pendingSave = Promise.resolve();
+  let saveError = false;
   const save = async () => {
     clearTimeout(timer);
     timer = null;
@@ -1657,8 +1660,29 @@ async function openPageSheet(shelf, meta, label) {
     const out = body.cloneNode(true);
     out.querySelectorAll('[data-attr]').forEach((p) => p.removeAttribute('data-attr'));
     if (out.innerHTML === saved) return;
-    saved = out.innerHTML;
-    await window.neo.writeChapter(live.id, chId, saved);
+    const html = out.innerHTML;
+    const run = async () => {
+      let writeResult;
+      try {
+        writeResult = await window.neo.writeChapter(live.id, chId, html, revision);
+        if (writeResult && typeof writeResult.conflict === 'string') {
+          await keepOtherDeviceVersion(live.id, chId, writeResult.conflict);
+          revision = writeResult.conflict;
+          writeResult = await window.neo.writeChapter(live.id, chId, html, revision);
+        }
+        if (writeResult !== true) throw new Error('page sheet write failed');
+        saved = html;
+        revision = html;
+        saveError = false;
+        return true;
+      } catch (err) {
+        saveError = true;
+        return false;
+      }
+    };
+    const write = pendingSave.then(run, run);
+    pendingSave = write;
+    return write;
   };
   body.addEventListener('input', () => {
     settle();
@@ -1681,7 +1705,20 @@ async function openPageSheet(shelf, meta, label) {
   document.execCommand('defaultParagraphSeparator', false, 'p');
   const close = async () => {
     if (!bd.isConnected) return;
-    await save();
+    const ok = await save();
+    if (ok === false || saveError) {
+      const message = t('This page could not be saved. Your words are still here; try Done again.');
+      const error = bd.querySelector('.ps-save-error');
+      if (error) error.textContent = message;
+      else {
+        const note = document.createElement('p');
+        note.className = 'ps-save-error';
+        note.setAttribute('role', 'status');
+        note.textContent = message;
+        bd.appendChild(note);
+      }
+      return;
+    }
     bd.remove();
   };
   bd.querySelector('.ps-done').onclick = close;
