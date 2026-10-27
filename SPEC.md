@@ -2,6 +2,8 @@
 
 **Approval:** 2026-10-26, the owner, in the Project Manager session's question tool: "Approve, 1.0 = M5 (Recommended)". The spec is the decisions D1-D16 and milestones M0-M5 in [ROADMAP.md](ROADMAP.md), as written on 2026-10-23. A changed Must or Won't sets this back to "not yet".
 
+Must M17 added 2026-10-26 by the owner: "This will all apply to Neo as well" (with the bug-report answers given for the Craft web apps the same day: "Yes, a 1.0 Must (Recommended)", "Launcher set, browser version (Recommended)", "Same File Drop (Recommended)", "One shared module repo (Recommended)").
+
 **1.0 means:** the owner has used NeoCraft for a real week on his actual documents, in Nextcloud Files in the browser and on the desktop, and Collabora has then been uninstalled (milestone M5).
 
 NeoCraft is NEO plus a **Document mode** and a **Nextcloud web editor** (ROADMAP.md, "What NeoCraft is"). Books keep working exactly as upstream built them; Document mode sits beside them.
@@ -28,6 +30,7 @@ Each Must is checked by a test or by steps someone else can repeat. Milestone an
 | M14 | WHEN *Launch external* is pressed in the browser, THE APP SHALL open the file in the desktop app (local copy when synced, a WebDAV cache with If-Match when not), turn the browser tab read-only, and use only the server's Tailscale HTTPS name in every link it writes (M4, D10, D12, D16). | The golden task works for synced and unsynced files. | The golden task (ROADMAP.md) on Windows, SteamOS and macOS. | #74, #75, #76, #77, #78 (tracker #26) |
 | M15 | Books keep working as upstream built them, and the review's save-safety bugs are fixed before any default-handler cutover (D5; review gate R0). | Upstream's book tests pass; #9-#15 are closed with regression tests. | `npm test` plus each bug's failure-injection test. | #9, #37-#40 (tracker #10), #11, #12, #13, #41 then #14, #42-#44 (tracker #15) |
 | M16 | AFTER a real week of use with every friction point filed, the Collabora config is backed up, its reinstall recipe recorded, and only then are `richdocuments` and the Collabora container uninstalled; the complex-docx fallback becomes *Launch in WordCraft* (M5, D6). | The week's issues are filed; the backup and recipe exist; Collabora is gone and complex files open in WordCraft. | The owner's checklist in the M5 issue; the golden task's recorded evidence. | #31 |
+| M17 | WHEN I choose **Report a bug**, in the Nextcloud browser editor or in the desktop app, THE APP SHALL open the shared report form (craft-bugreport-web): what happened, what I expected, the app's recent errors, an optional screenshot and, only if I tick it that time, the open document sent as is; it SHALL show me every file and send the report to the bug File Drop only after I press Send. The drop address and token come from the server config (browser) or the app's settings (desktop), never from the source. | A report sent from each lands in the File Drop with the desktop launcher's layout, and the bug intake reads it unchanged. | Browser: in the disposable Nextcloud with the drop config set, make a report, check the consent screen, press Send, see the zip in the drop. Desktop: the same from a CI build on one OS, with the drop set in Settings. | #83, #84, #85 |
 
 ## Won'ts
 
