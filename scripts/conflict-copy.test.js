@@ -26,7 +26,7 @@ const mkFetch = (statuses) => {
   };
   return { fetch, calls };
 };
-const args = (fetch) => deepFreeze({ folderUrl: 'https://h.example/remote.php/dav/files/u/Docs', fileName: 'Notes.docx', bytes: 'B', date: D, requestToken: 'tok' });
+const args = () => deepFreeze({ folderUrl: 'https://h.example/remote.php/dav/files/u/Docs', fileName: 'Notes.docx', bytes: 'B', date: D, requestToken: 'tok' });
 
 test('1. names', () => {
   assert.equal(conflictCopyName('Notes.docx', D, 1), 'Notes ' + STAMP + '.docx');
