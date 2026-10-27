@@ -59,7 +59,7 @@
           // Some other error
           return { kind: 'error', status: response.status, name };
         }
-      } catch (err) {
+      } catch {
         // Network or fetch error - ambiguous result
         return { kind: 'ambiguous', name };
       }
@@ -74,9 +74,10 @@
     createExclusive
   };
 
-  if (typeof module === 'object' && module.exports) 
+  if (typeof module === 'object' && module.exports) {
     module.exports = api;
-  else 
+  } else {
     root.NeoCraft_conflictCopy = api;
+  }
 
 })(typeof globalThis !== 'undefined' ? globalThis : this);
