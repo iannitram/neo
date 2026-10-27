@@ -31,6 +31,8 @@ app.commandLine.appendSwitch('blink-settings', 'smartInsertDeleteEnabled=false')
 // through speech-dispatcher, and only when asked to. Without it Read Aloud
 // finds no voice at all (#287).
 if (process.platform === 'linux') app.commandLine.appendSwitch('enable-speech-dispatcher');
+// NEOCRAFT: set app name so userData and identity isolate from NEO
+if (app.setName) app.setName('NeoCraft');
 
 // ---------------------------------------------------------------------------
 // Library location: a folder of plain files the user can inspect, sync, back up.
@@ -39,7 +41,9 @@ if (process.platform === 'linux') app.commandLine.appendSwitch('enable-speech-di
 // covers any early access and non-redirected setups.
 // (Electron's Documents from the start, not the home folder's: the tests stand
 // in a throwaway folder there, and never write into a writer's real library)
-let LIBRARY_DIR = path.join((() => { try { return app.getPath('documents'); } catch { return path.join(os.homedir(), 'Documents'); } })(), 'NEO Library');
+// NEOCRAFT: fork uses its own library folder to install beside NEO without touching it
+const DEFAULT_LIBRARY_NAME = 'NeoCraft Library';
+let LIBRARY_DIR = path.join((() => { try { return app.getPath('documents'); } catch { return path.join(os.homedir(), 'Documents'); } })(), DEFAULT_LIBRARY_NAME);
 let LIBRARY_FILE = path.join(LIBRARY_DIR, 'library.json');
 // npm run try (scripts/try.js): NEO from source with settings of its own,
 // which point it at the throwaway copy of the library that script made, so
@@ -165,7 +169,7 @@ ipcMain.handle('i18n:reload', (e) => {
 // The library is plain files, so the writer moves them; NEO only follows.
 async function chooseLibraryFolder() {
   const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-  const defaultDir = path.join(app.getPath('documents'), 'NEO Library');
+  const defaultDir = path.join(app.getPath('documents'), DEFAULT_LIBRARY_NAME); // NEOCRAFT: fork library
   const custom = LIBRARY_DIR !== defaultDir;
   const ask = await dialog.showMessageBox(win, {
     type: 'question',
@@ -235,9 +239,9 @@ function fallbackLibraryDir() {
   const spots = [];
   try {
     const docs = path.join(home, 'Documents');
-    if (fs.statSync(docs).isDirectory()) spots.push(path.join(docs, 'NEO Library'));
+    if (fs.statSync(docs).isDirectory()) spots.push(path.join(docs, DEFAULT_LIBRARY_NAME)); // NEOCRAFT: fork library
   } catch { /* no plain Documents folder here */ }
-  spots.push(path.join(home, 'NEO Library'));
+  spots.push(path.join(home, DEFAULT_LIBRARY_NAME)); // NEOCRAFT: fork library
   return spots.find((dir) => dir !== LIBRARY_DIR && folderWritable(dir)) || null;
 }
 function useLibraryDir(dir) {
@@ -255,7 +259,7 @@ function useLibraryDir(dir) {
 // with the default folder for this session only; the choice stays saved.
 function isDir(dir) { try { return fs.statSync(dir).isDirectory(); } catch { return false; } }
 function awaitChosenLibrary(chosen) {
-  const fallback = path.join(app.getPath('documents'), 'NEO Library');
+  const fallback = path.join(app.getPath('documents'), DEFAULT_LIBRARY_NAME); // NEOCRAFT: fork library
   while (!isDir(chosen)) {
     const r = dialog.showMessageBoxSync({
       type: 'warning',
@@ -3157,6 +3161,12 @@ function getUpdater() {
   autoUpdater.logger = null;
   autoUpdater.autoDownload = true;       // found it? fetch it — nobody should have to ask
   autoUpdater.autoInstallOnAppQuit = true;
+  // NEOCRAFT: update check must use iannitram/neo, never hughhowey/neo
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'iannitram',
+    repo: 'neo'
+  });
   autoUpdater.on('update-available', (info) => {
     Object.assign(upd, { state: 'downloading', version: info && info.version || '', percent: 0, transferred: 0, total: 0, message: '' });
     sendToWindow({ type: 'update', ...upd });
@@ -3197,9 +3207,10 @@ function lookForUpdate() {
 }
 
 // what's on GitHub, for the fallback path and the release link
+// NEOCRAFT: query iannitram/neo releases instead of upstream
 async function latestReleaseFromGitHub() {
-  const res = await fetch('https://api.github.com/repos/hughhowey/neo/releases/latest', {
-    headers: { 'User-Agent': 'NEO-App' }
+  const res = await fetch('https://api.github.com/repos/iannitram/neo/releases/latest', {
+    headers: { 'User-Agent': 'NeoCraft-App' }
   });
   if (!res.ok) throw new Error('GitHub API returned ' + res.status);
   const data = await res.json();
@@ -3299,7 +3310,7 @@ app.whenReady().then(() => {
     if (process.platform === 'darwin' && fs.existsSync(devIcon)) {
       if (app.dock) app.dock.setIcon(devIcon);
       app.setAboutPanelOptions({
-        applicationName: 'NEO',
+        applicationName: 'NeoCraft', // NEOCRAFT: fork app name
         applicationVersion: app.getVersion(),
         iconPath: devIcon
       });
@@ -3311,7 +3322,7 @@ app.whenReady().then(() => {
   try {
     // the real Documents folder (handles OneDrive-redirected Windows setups)
     try {
-      LIBRARY_DIR = path.join(app.getPath('documents'), 'NEO Library');
+      LIBRARY_DIR = path.join(app.getPath('documents'), DEFAULT_LIBRARY_NAME); // NEOCRAFT: fork library
       // …unless the writer chose their own folder (File → Library Folder…)
       const chosen = readSettings().libraryDir;
       if (chosen) LIBRARY_DIR = awaitChosenLibrary(chosen);

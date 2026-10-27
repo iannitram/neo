@@ -1,6 +1,6 @@
 {
   "name": "neo",
-  "productName": "NEO",
+  "productName": "NeoCraft",
   "version": "1.6.1",
   "description": "A word processor for authors. Distraction-free by default.",
   "homepage": "https://github.com/hughhowey/neo",
@@ -33,11 +33,11 @@
     "package:all": "electron-builder --mac --win --linux"
   },
   "build": {
-    "appId": "com.hughhowey.neo",
-    "productName": "NEO",
+    "appId": "com.iannitram.neocraft",
+    "productName": "NeoCraft",
     "publish": {
       "provider": "github",
-      "owner": "hughhowey",
+      "owner": "iannitram",
       "repo": "neo"
     },
     "mac": {
@@ -58,11 +58,11 @@
           ]
         }
       ],
-      "hardenedRuntime": true,
+      "identity": null,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist",
-      "notarize": true
+      "entitlementsInherit": "build/entitlements.mac.plist"
+
     },
     "win": {
       "target": [
