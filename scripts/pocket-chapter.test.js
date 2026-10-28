@@ -93,4 +93,25 @@ describe('pocket chapter writes', { concurrency: 1 }, () => {
     );
     assert.equal(store.get(chapter), '<p>other device</p>');
   });
+test('an interrupted save leaves a .tmp: writeChapter compares with it, and keeps it as a twin', async () => {
+    // a save the system cut short leaves only the .tmp, which readChapter shows
+    const { neo, store } = loadBridge({ files: { [chapter + '.tmp']: '<p>saved only in tmp</p>' } });
+    assert.equal(
+      JSON.stringify(await neo.writeChapter('book-x', 'c1', '<p>mine</p>', '<p>old</p>')),
+      JSON.stringify({ conflict: '<p>saved only in tmp</p>' })
+    );
+    assert.equal(store.has(chapter), false);
+    // the window last read that text: the write goes through
+    assert.equal(await neo.writeChapter('book-x', 'c1', '<p>mine</p>', '<p>saved only in tmp</p>'), true);
+    assert.equal(store.get(chapter), '<p>mine</p>');
+  });
+
+  test('readChapter reads the .tmp only when the chapter is missing, and throws on other read errors', async () => {
+    const tmpOnly = loadBridge({ files: { [chapter + '.tmp']: '<p>tmp</p>' } });
+    assert.equal(await tmpOnly.neo.readChapter('book-x', 'c1'), '<p>tmp</p>');
+    const none = loadBridge({ files: {} });
+    assert.equal(await none.neo.readChapter('book-x', 'c1'), '');
+    const denied = loadBridge({ files: {}, readErrors: { [chapter]: 'Permission denied.' } });
+    await assert.rejects(denied.neo.readChapter('book-x', 'c1'), /Could not read chapter c1.*Permission denied/);
+  });
 });

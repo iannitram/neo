@@ -174,6 +174,13 @@
   // the same rule as main.js chapterDiverged: the disk copy is not exactly
   // what this device last knew, is not already the new text, and holds
   // words. Formatting, order and deletions are conflicts too.
+  // Capacitor says "File does not exist." for a file that isn't there
+  function isMissing(err) {
+    return /does not exist|no such file/i.test(String(err && (err.message || err)));
+  }
+  function errText(err) {
+    return String(err && (err.message || err));
+  }
   function chapterDiverged(cur, expected, html) {
     if (cur === expected || cur === html) return false;
     const words = String(cur || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
@@ -353,20 +360,29 @@
     readChapter: async (bookId, chId) => {
       await fetchCloud(p(bookId, 'chapters', chId + '.html'));
       // (a swap the system cut short leaves only the .tmp: the words are there)
-      try { return await readText(p(bookId, 'chapters', chId + '.html')); } catch { /* the spare, below */ }
-      try { return await readText(p(bookId, 'chapters', chId + '.html.tmp')); } catch { return ''; }
+      let mainErr = null;
+      try { return await readText(p(bookId, 'chapters', chId + '.html')); } catch (err) { mainErr = err; }
+      try { return await readText(p(bookId, 'chapters', chId + '.html.tmp')); } catch (err) {
+        // only a chapter with no file at all is empty; anything else is
+        // unknown text, and an empty page would be saved over it
+        if (isMissing(mainErr) && isMissing(err)) return '';
+        throw new Error(`Could not read chapter ${chId}: ${errText(isMissing(mainErr) ? err : mainErr)}`);
+      }
     },
     writeChapter: async (bookId, chId, html, expected) => {
       await ensureDir(bookDir(bookId) + '/chapters');
       const file = p(bookId, 'chapters', chId + '.html');
       if (typeof expected === 'string') {
+        // the disk text is what readChapter shows: the chapter, or the .tmp
+        // a save cut short left when the chapter itself is missing
         let cur = null;
         try { cur = await readText(file); } catch (err) {
           // Capacitor says "File does not exist." for a new chapter: nothing to
           // keep. Any other failure (denied, locked, I/O) leaves the disk text
           // unknown, so nothing is replaced (main.js does the same).
-          if (!/does not exist|no such file/i.test(String(err && (err.message || err)))) {
-            throw new Error(`Could not read chapter ${chId}: ${err && err.message || err}`);
+          if (!isMissing(err)) throw new Error(`Could not read chapter ${chId}: ${errText(err)}`);
+          try { cur = await readText(file + '.tmp'); } catch (tmpErr) {
+            if (!isMissing(tmpErr)) throw new Error(`Could not read chapter ${chId}: ${errText(tmpErr)}`);
           }
         }
         if (cur !== null && chapterDiverged(cur, expected, html)) return { conflict: cur };
