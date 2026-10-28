@@ -148,6 +148,9 @@ function loadMain() {
           if (next === 'ok') {
             // the renderer answers once its writes are done
             vSetTimeout(() => ipcOn.get('flush:reply')({}, id, { ok: true, failed: [] }), REPLY_MS);
+          } else if (next === 'timeout') {
+            // the renderer's own barrier gave up on a write that never settled
+            vSetTimeout(() => ipcOn.get('flush:reply')({}, id, { ok: false, failed: [], timedOut: ['save'] }), REPLY_MS);
           } else if (next === 'failed') {
             vSetTimeout(() => ipcOn.get('flush:reply')({}, id, { ok: false, failed, timedOut: [] }), REPLY_MS);
           }
@@ -318,14 +321,31 @@ describe('closing waits for the renderer to flush', () => {
 
   test('update restart while a close is already waiting does not flush the window twice', async () => {
     const main = loadMain();
+    const calls = [];
+    // the updater is ready, so update:install reaches the settling guard
+    vm.runInContext('updater = { quitAndInstall: () => { __calls.push(1); } }; updaterReady = true;',
+      Object.assign(main.context, { __calls: calls }));
     const w = main.open({ answer: 'stall' });
     w.fire('close', { preventDefault() {} });
     await main.advance(5);
     const pending = main.ipcHandlers.get('update:install')({});
     await main.advance(5);
+    assert.equal(w.sent.filter((s) => s[0] === 'flush:request').length, 1, 'the window was asked once, by the close');
     assert.equal(await pending, false, 'the close owns the window; the restart waits for another try');
-    assert.equal(w.sent.filter((s) => s[0] === 'flush:request').length, 1);
+    assert.equal(calls.length, 0, 'no restart');
     assert.equal(main.state.dialogs.length, 0);
+  });
+
+  test('a save the renderer timed out on is named in the dialog, not "unknown"', async () => {
+    const main = loadMain();
+    main.state.responses.push(2); // Close Anyway
+    const w = main.open({ answer: 'timeout' });
+    w.fire('close', { preventDefault() {} });
+    await main.advance(SETTLE);
+    assert.equal(main.state.dialogs.length, 1);
+    const detail = main.state.dialogs[0].detail;
+    assert.match(detail, /\(save\)/);
+    assert.doesNotMatch(detail, /unknown/);
   });
 
   test('update restart: a stalled save keeps NEO open and does not restart', async () => {

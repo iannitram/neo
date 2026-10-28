@@ -7585,7 +7585,11 @@ function flushStickiesSave() {
   if (!saveTimers.stickies || !book) return null;
   clearTimeout(saveTimers.stickies);
   delete saveTimers.stickies;
-  return writeSidecar(book.id, 'stickies', stickies);
+  const write = writeSidecar(book.id, 'stickies', stickies);
+  // a plain flush ignores the result: no unhandled rejection (runSidecar
+  // logged it); settleSaves gets the original promise and sees the failure
+  write.catch(() => {});
+  return write;
 }
 
 // Pair every mark in the manuscript with a note: pasted duplicates get their
@@ -11988,7 +11992,9 @@ function flushSidecars() {
   const out = [];
   for (const key of Object.keys(sidecarPending)) {
     const job = sidecarPending[key];
-    if (!job.inFlight) runSidecar(key, job);
+    // the catch keeps a blur or tick flush quiet (runSidecar logged it); the
+    // un-caught job.promise is what settleSaves tracks, so it still sees a failure
+    if (!job.inFlight) runSidecar(key, job).catch(() => {});
     if (job.promise) out.push(job.promise);
   }
   return out;

@@ -2505,6 +2505,8 @@ ipcMain.on('flush:reply', (_e, id, result) => {
   if (!done) return;
   flushWaiters.delete(id);
   const failed = result && Array.isArray(result.failed) ? result.failed.map(String) : [];
+  // a write the renderer gave up waiting on is named too, not "unknown"
+  if (result && Array.isArray(result.timedOut)) failed.push(...result.timedOut.map(String));
   done({ ok: !!result && result.ok === true, failed });
 });
 function askRendererToFlush(win) {

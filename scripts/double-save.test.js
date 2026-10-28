@@ -185,6 +185,45 @@ test('settleSaves reports a failed sticky write and leaves no unhandled rejectio
   assert.deepEqual(loose, []);
 });
 
+// a plain flush (blur, the 20 s tick) ignores what it returns, so a failing
+// write must not surface as an unhandled rejection (the "hiccup" toast)
+async function looseAfter(page, start) {
+  const loose = [];
+  const onLoose = (e) => loose.push(e);
+  process.on('unhandledRejection', onLoose);
+  try {
+    page.window.neo.writeJSON = async () => { throw new Error('disk full'); };
+    start();
+    // let the write's microtasks run, then one event-loop turn for Node to report
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
+  } finally {
+    process.off('unhandledRejection', onLoose);
+  }
+  return loose;
+}
+
+test('a tick flush with a failing sidecar write leaves no unhandled rejection', async () => {
+  const { page } = bookInMemory({ x: F });
+  heldTimers(page);
+  const loose = await looseAfter(page, () => {
+    page.sidecarPending['b/darlings'] = { bookId: 'b', name: 'darlings', data: [], inFlight: false, promise: null };
+    page.flushAllSaves('tick');
+  });
+  assert.deepEqual(loose.map(String), []);
+  assert.ok(page.sidecarPending['b/darlings'], 'the failed write stays queued for the next flush');
+});
+
+test('a tick flush with a failing sticky write leaves no unhandled rejection', async () => {
+  const { page } = bookInMemory({ x: F });
+  heldTimers(page);
+  const loose = await looseAfter(page, () => {
+    page.saveTimers.stickies = 1;
+    page.flushAllSaves('tick');
+  });
+  assert.deepEqual(loose.map(String), []);
+});
+
 test('settleSaves waits for a Darlings write that is already running', async () => {
   const { page } = bookInMemory({ x: F });
   let release;
