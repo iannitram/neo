@@ -70,13 +70,25 @@
     return r.data;
   }
 
+  // What a failed swap was, from its message: for the retry and the detail.
+  function classifyRenameError(err) {
+    const text = String((err && (err.message || err.code)) || err || '');
+    if (/exist/i.test(text)) return 'exists';
+    if (/permission|denied|EACCES|EPERM/i.test(text)) return 'denied';
+    if (/not (implemented|supported)|unimplemented/i.test(text)) return 'unsupported';
+    return 'unknown';
+  }
+
   // The desktop's rule on the phone too: the new text is written beside the
   // old file and swapped in whole, so a save cut short (the app killed in
   // the background, the battery gone) leaves the old version, never half
-  // of the new one. A system that won't do the swap gets a plain write.
+  // of the new one. If the swap fails, the old file is left untouched and
+  // the new text stays in the .tmp file for a retry; it is never written
+  // straight over the only good copy.
   async function writeText(path, data) {
     await ready;
     const tmp = path + '.tmp';
+    let err;
     try {
       await FS().writeFile({ ...at(tmp), data, encoding: 'utf8', recursive: true });
       try {
@@ -84,13 +96,20 @@
         const to = at(path);
         await FS().rename({ from: from.path, to: to.path, directory: from.directory, toDirectory: to.directory });
         return;
-      } catch { /* no swap here: the plain write below */ }
-      await FS().writeFile({ ...at(path), data, encoding: 'utf8', recursive: true });
-      try { await FS().deleteFile(at(tmp)); } catch { /* fine */ }
-    } catch (err) {
-      showErrorDetail(t('Could not save {file}: {error}', { file: path, error: String(err && err.message || err) }));
-      throw err;
+      } catch (cause) {
+        err = new Error(String((cause && cause.message) || cause));
+        err.name = 'RetryableSaveError';
+        err.retryable = true;
+        err.path = path;
+        err.tmp = tmp;
+        err.kind = classifyRenameError(cause);
+        err.cause = cause;
+      }
+    } catch (cause) {
+      err = cause;
     }
+    showErrorDetail(t('Could not save {file}: {error}', { file: path, error: String((err && err.message) || err) }));
+    throw err;
   }
 
   let permissionHelpShown = false;
