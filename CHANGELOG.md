@@ -2,6 +2,7 @@
 
 Newest first. One line per change of stage, release or decision that the next session needs. Upstream's history is upstream's.
 
+- 2026-10-28 Design review: 1.0 re-confirmed unchanged (owner: "Yes, update and file (Recommended)"); 1.1 modes release added (Books, Scripts, Notes; search; Pomodoro; typewriter across displays): SPEC "1.1: Modes" N1-N11, ROADMAP M6, code map "Planned 1.1 modules", issues #140-#153 (label after-1.0). M7 clarified (5-second pause), M11 clarified (excluded folders are the owner's agent and wiki folders).
 - 2026-10-26 End-of-night sweep: code map and roadmap checked against main (no planned module has landed; PR #89 for #12 is open); #83 resized to Medium (needs the private craft-bugreport-web package).
 - 2026-10-26 Must M18 added on the owner's word ("This will all apply to Neo as well"): the NeoCraft Nextcloud app updates from the Nextcloud admin panel through the merged private app-store feed (the app-store repo (private)); issues #86-#88. Desktop updates unchanged (D8).
 - 2026-10-26 Must M17 added on the owner's word ("This will all apply to Neo as well"): Report a bug in the browser editor and the desktop app, through the shared craft-bugreport-web module and the bug File Drop.
