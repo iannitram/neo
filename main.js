@@ -2273,6 +2273,7 @@ function createWindow() {
   win.on('move', rememberSoon);
   // B08: the close waits for the renderer to report its saves settled (see
   // closeWindowWhenSettled); remember() still runs on every try
+  editorWindows.add(win);
   win.on('close', (e) => {
     remember();
     if (settledWindows.has(win)) return;
@@ -2496,6 +2497,7 @@ const flushWaiters = new Map();
 let flushRequestSeq = 0;
 const settledWindows = new WeakSet(); // saves are on disk: the next close goes through
 const settlingWindows = new WeakSet();
+const editorWindows = new WeakSet(); // the windows createWindow made: the ones that can answer a flush
 let quitting = false;
 app.on('before-quit', () => { quitting = true; });
 ipcMain.on('flush:reply', (_e, id, result) => {
@@ -2555,6 +2557,9 @@ async function closeWindowWhenSettled(win) {
       win.close();
       // a Quit (Cmd-Q on a Mac) was waiting on this window: it goes on now
       if (quitting) app.quit();
+    } else {
+      // Keep Open: the Quit was abandoned, so a later ordinary close must not quit the app
+      quitting = false;
     }
   } catch (err) {
     logError('close', err);
@@ -2563,12 +2568,24 @@ async function closeWindowWhenSettled(win) {
   }
 }
 // an update's restart: every window settles first; false keeps NEO open
+// Only editor windows are asked (a hidden print window never answers), and
+// each goes through the same guard as the close path, so a close already
+// waiting on a window is not asked a second time (false: keep NEO open).
 async function settleWindowsBeforeRestart() {
-  for (const win of BrowserWindow.getAllWindows()) {
-    if (!(await settleWindowBeforeClose(win))) return false;
+  const wins = BrowserWindow.getAllWindows().filter((w) => editorWindows.has(w) && !w.isDestroyed());
+  const mine = [];
+  try {
+    for (const win of wins) {
+      if (settlingWindows.has(win)) return false;
+      settlingWindows.add(win);
+      mine.push(win);
+      if (!(await settleWindowBeforeClose(win))) return false;
+    }
+    for (const win of wins) settledWindows.add(win);
+    return true;
+  } finally {
+    for (const win of mine) settlingWindows.delete(win);
   }
-  for (const win of BrowserWindow.getAllWindows()) settledWindows.add(win);
-  return true;
 }
 
 ipcMain.on('flush:state', (_e, on) => {

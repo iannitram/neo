@@ -46,7 +46,7 @@ function loadMain() {
   const ipcHandlers = new Map();
   const ipcOn = new Map();
   const appHandlers = new Map();
-  const state = { win: null, dialogs: [], responses: [], quits: 0 };
+  const state = { win: null, extra: [], dialogs: [], responses: [], quits: 0 };
 
   // the virtual clock: timers wait in clock.timers until advance() reaches them
   const clock = { now: 0, seq: 0, timers: [] };
@@ -95,7 +95,7 @@ function loadMain() {
     }),
     BrowserWindow: class {
       constructor() { return state.win; }
-      static getAllWindows() { return state.win && !state.win.isDestroyed() ? [state.win] : []; }
+      static getAllWindows() { return [...(state.win && !state.win.isDestroyed() ? [state.win] : []), ...state.extra]; }
       static getFocusedWindow() { return state.win; }
     },
     Menu: mock({ buildFromTemplate: (items) => items, setApplicationMenu() {} }),
@@ -168,6 +168,12 @@ function loadMain() {
     state,
     advance,
     // makes a window and creates the way main does, returning its fake
+    // a hidden window main made for printing: it takes messages and never answers
+    openPrintWindow() {
+      const sent = [];
+      state.extra.push({ isDestroyed: () => false, webContents: { send: (ch) => sent.push(ch) } });
+      return sent;
+    },
     open(opts) {
       const w = fakeWindow(opts);
       state.win = w.win;
@@ -267,6 +273,21 @@ describe('closing waits for the renderer to flush', () => {
     assert.equal(main.state.quits, 0);
   });
 
+  test('quit then Keep Open: a later ordinary window close does not quit the app', async () => {
+    const main = loadMain();
+    main.state.responses.push(1); // Keep Open
+    const w = main.open({ answers: ['stall', 'ok'] });
+    main.appHandlers.get('before-quit')();
+    w.fire('close', { preventDefault() {} });
+    await main.advance(STALL_MS + 30);
+    assert.equal(w.isClosed(), false);
+    // the writer closes the window on its own afterwards
+    w.fire('close', { preventDefault() {} });
+    await main.advance(SETTLE);
+    assert.equal(w.isClosed(), true);
+    assert.equal(main.state.quits, 0, 'closing one window is not a Quit');
+  });
+
   test('update restart: the install waits for the window and only then quits', async () => {
     const main = loadMain();
     const calls = [];
@@ -278,6 +299,33 @@ describe('closing waits for the renderer to flush', () => {
     assert.equal(await pending, true);
     assert.equal(calls.length, 1, 'quitAndInstall ran once');
     assert.deepEqual(w.sent.map((s) => s[0]), ['flush:request'], 'the renderer was asked before the restart');
+  });
+
+  test('update restart: a hidden print window is not asked and cannot stall the restart', async () => {
+    const main = loadMain();
+    const calls = [];
+    vm.runInContext('updater = { quitAndInstall: () => { __calls.push(1); } }; updaterReady = true;',
+      Object.assign(main.context, { __calls: calls }));
+    const w = main.open({ answer: 'ok' });
+    const printSent = main.openPrintWindow();
+    const pending = main.ipcHandlers.get('update:install')({});
+    await main.advance(SETTLE);
+    assert.equal(await pending, true);
+    assert.deepEqual(printSent, [], 'the print window was never asked');
+    assert.equal(w.sent.length, 1);
+    assert.equal(main.state.dialogs.length, 0);
+  });
+
+  test('update restart while a close is already waiting does not flush the window twice', async () => {
+    const main = loadMain();
+    const w = main.open({ answer: 'stall' });
+    w.fire('close', { preventDefault() {} });
+    await main.advance(5);
+    const pending = main.ipcHandlers.get('update:install')({});
+    await main.advance(5);
+    assert.equal(await pending, false, 'the close owns the window; the restart waits for another try');
+    assert.equal(w.sent.filter((s) => s[0] === 'flush:request').length, 1);
+    assert.equal(main.state.dialogs.length, 0);
   });
 
   test('update restart: a stalled save keeps NEO open and does not restart', async () => {

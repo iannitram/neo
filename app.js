@@ -7577,15 +7577,15 @@ function scheduleStickiesSave() {
   clearTimeout(saveTimers.stickies);
   saveTimers.stickies = setTimeout(() => {
     delete saveTimers.stickies;
-    writeSidecar(bookId, 'stickies', list);
+    writeSidecar(bookId, 'stickies', list).catch(() => {}); // runSidecar already logged it
   }, 600);
 }
 
 function flushStickiesSave() {
-  if (!saveTimers.stickies || !book) return;
+  if (!saveTimers.stickies || !book) return null;
   clearTimeout(saveTimers.stickies);
   delete saveTimers.stickies;
-  writeSidecar(book.id, 'stickies', stickies);
+  return writeSidecar(book.id, 'stickies', stickies);
 }
 
 // Pair every mark in the manuscript with a note: pasted duplicates get their
@@ -11965,14 +11965,15 @@ function mergeSidecar(base, local, remote, newestFirst) {
 }
 function writeSidecar(bookId, name, data) {
   const key = bookId + '/' + name;
-  const job = { bookId, name, data, inFlight: false };
+  const job = { bookId, name, data, inFlight: false, promise: null };
   sidecarPending[key] = job;
   return runSidecar(key, job);
 }
 function runSidecar(key, job) {
   job.inFlight = true;
   const json = JSON.stringify(job.data);
-  return Promise.resolve().then(() => window.neo.writeJSON(job.bookId, job.name, job.data)).then((r) => {
+  // kept on the job so a flush can wait on a write that is already running
+  return job.promise = Promise.resolve().then(() => window.neo.writeJSON(job.bookId, job.name, job.data)).then((r) => {
     if (sidecarPending[key] === job) delete sidecarPending[key];
     sidecarBase[key] = json;
     return r;
@@ -11982,11 +11983,15 @@ function runSidecar(key, job) {
     throw err;
   });
 }
+// every write is returned (running ones too) for settleSaves to wait on
 function flushSidecars() {
+  const out = [];
   for (const key of Object.keys(sidecarPending)) {
     const job = sidecarPending[key];
-    if (!job.inFlight) runSidecar(key, job).catch(() => {});
+    if (!job.inFlight) runSidecar(key, job);
+    if (job.promise) out.push(job.promise);
   }
+  return out;
 }
 
 function renderDarlings() {
@@ -12497,8 +12502,9 @@ function flushAllSaves(e) {
   for (const job of Object.values(chapterChain)) pending.push(job);
   flushAux();
   pending.push(...Object.values(auxQueue));
-  flushStickiesSave();
-  flushSidecars();
+  const stickyWrite = flushStickiesSave();
+  if (stickyWrite) pending.push(stickyWrite);
+  pending.push(...flushSidecars());
   if (moved || metaSig(book) !== savedMetaSig) pending.push(saveMeta());
   return pending;
 }
@@ -12508,11 +12514,18 @@ function flushAllSaves(e) {
 // save the flush started has reached the disk. A failure or a stall is
 // reported as one, never as saved; a notes or Darlings write still queued
 // after a failure is reported too.
+function runningWrites() {
+  const out = [...Object.values(chapterChain), ...Object.values(auxQueue)];
+  for (const job of Object.values(sidecarPending)) if (job.promise) out.push(job.promise);
+  return out;
+}
 const FLUSH_SETTLE_MS = 6000; // main gives up after 8 s
 function settleSaves() {
   if (typeof NeoCraft_FlushBarrier === 'undefined') return Promise.resolve({ ok: true, failed: [] });
   const barrier = NeoCraft_FlushBarrier.createFlushBarrier();
-  const pending = book && !shelfExport ? flushAllSaves() : [];
+  // with no book open (back to shelf) the flush has nothing to start, but
+  // writes already running still count
+  const pending = book && !shelfExport ? flushAllSaves() : runningWrites();
   for (const p of pending) barrier.track(p, 'save');
   return barrier.flush(FLUSH_SETTLE_MS).then((r) => {
     const left = [...Object.keys(auxPending), ...Object.keys(sidecarPending)];
