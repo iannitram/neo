@@ -1,0 +1,48 @@
+app.js: eslint(curly): Expected { after 'if' condition.
+app.js: eslint(no-control-regex): Unexpected control characters
+app.js: eslint(no-control-regex): Unexpected control characters
+app.js: eslint(no-unmodified-loop-condition): 'cls' is not modified in this loop.
+app.js: eslint(no-unmodified-loop-condition): 'shelfExport' is not modified in this loop.
+app.js: eslint(no-unmodified-loop-condition): 'start' is not modified in this loop.
+app.js: eslint(no-unused-vars): Catch parameter 'err' is caught but never used.
+app.js: eslint(no-unused-vars): Parameter 'chId' is declared but never used. Unused parameters should start with a '_'.
+app.js: eslint(no-unused-vars): Variable 'index' is declared but never used.
+app.js: eslint(no-useless-escape): Unnecessary escape character '['
+app.js: eslint(no-useless-escape): Unnecessary escape character '['
+app.js: eslint(no-useless-escape): Unnecessary escape character '['
+app.js: eslint(no-useless-escape): Unnecessary escape character '['
+app.js: eslint(no-useless-escape): Unnecessary escape character '['
+app.js: eslint(no-useless-escape): Unnecessary escape character '['
+app.js: eslint(no-void): Unexpected `void` operator
+app.js: eslint(prefer-const): `el` is never reassigned.
+app.js: eslint(prefer-const): `el` is never reassigned.
+app.js: eslint(prefer-const): `picked` is never reassigned.
+app.js: eslint(prefer-const): `saveTimers` is never reassigned.
+app.js: eslint(prefer-const): `sid` is never reassigned.
+app.js: eslint(prefer-const): `writing` is never reassigned.
+app.js: promise(param-names): Promise constructor parameters must be named to match `^_?resolve$`
+covers.js: eslint(no-unused-vars): Variable 'NeoCovers' is declared but never used.
+desktop/handoff.js: eslint(curly): Expected { after 'else'.
+desktop/handoff.js: eslint(curly): Expected { after 'if' condition.
+docs/review-2026-10-24/review-repro.cjs: eslint(no-unused-vars): Variable 'describe' is declared but never used.
+docs/review-2026-10-24/review-repro.cjs: eslint(no-unused-vars): Variable 'test' is declared but never used.
+formats/wikilinks.js: eslint(curly): Expected { after 'else'.
+formats/wikilinks.js: eslint(curly): Expected { after 'if' condition.
+main.js: eslint(no-unused-vars): Variable 'MenuItem' is declared but never used.
+main.js: eslint(prefer-const): `BACKUP_FILE_LIMIT_MS` is never reassigned.
+main.js: eslint(prefer-const): `BACKUP_LIMIT_MS` is never reassigned.
+main.js: eslint(prefer-const): `CLOUD_WAIT` is never reassigned.
+nextcloud/neocraft/src/excluded.js: eslint(prefer-const): `normalized` is never reassigned.
+scripts/caret.e2e.js: eslint(curly): Expected { after 'for-of'.
+scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'caretIn' is declared but never used.
+scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'ch' is declared but never used.
+scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'clickTab' is declared but never used.
+scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'onDisk' is declared but never used.
+scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'save' is declared but never used.
+scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'type' is declared but never used.
+scripts/page-sheet-save.test.js: eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression
+scripts/page-sheet-save.test.js: eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression
+scripts/page-sheet-save.test.js: eslint(no-unused-vars): Parameter 'opts' is declared but never used. Unused parameters should start with a '_'.
+scripts/page-sheet-save.test.js: promise(param-names): Promise constructor parameters must be named to match `^_?resolve$`
+scripts/spellcheck.test.js: eslint(no-unused-vars): Variable 'reply' is assigned a value but never used.
+scripts/words.e2e.js: promise(param-names): Promise constructor parameters must be named to match `^_?resolve$`

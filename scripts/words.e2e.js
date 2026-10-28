@@ -22,8 +22,8 @@ for (const name of fs.readdirSync(os.tmpdir())) {
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `neo-words-test-${process.pid}-`));
 app.setPath('userData', path.join(tmp, 'app'));
 app.setPath('documents', tmp);
-fs.mkdirSync(path.join(tmp, 'NEO Library'));
-fs.writeFileSync(path.join(tmp, 'NEO Library', 'library.json'), JSON.stringify({
+fs.mkdirSync(path.join(tmp, 'NeoCraft Library'));
+fs.writeFileSync(path.join(tmp, 'NeoCraft Library', 'library.json'), JSON.stringify({
   authorName: '', penNames: [], firstRunDone: true, moreFeatures: true, pageTheme: 'night',
   shelves: [{ id: 'shelf-1', name: 'Works in Progress', bookIds: [] }]
 }));
@@ -370,7 +370,7 @@ test('a thousand random edits keep the count true', async () => {
 // The library is synced between two computers. Each book below comes in on
 // disk the way the other one leaves it, and today's count is read off the
 // screen.
-const LIB = path.join(tmp, 'NEO Library');
+const LIB = path.join(tmp, 'NeoCraft Library');
 const many = (n, word) => Array.from({ length: n }, () => word).join(' ');
 const folder = (id) => path.join(LIB, fs.readdirSync(LIB).find((d) => d.endsWith(id)));
 const bookJson = (id) => JSON.parse(fs.readFileSync(path.join(folder(id), 'book.json'), 'utf8'));

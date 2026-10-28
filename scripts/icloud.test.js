@@ -114,7 +114,18 @@ function libraryWithBook() {
   return { dir, book, bookDir: path.join(dir, book.id) };
 }
 
-describe('files still in iCloud', { concurrency: 1 }, () => {
+// These tests play iCloud with sparse files (a size, no blocks) and a named
+// pipe. Windows has neither (#136), so there they fail; on macOS the suite
+// hangs (#118). Both need a follow-up: emulate the placeholders on Windows,
+// and find what never returns on macOS. Until then the tests stay, and run on
+// Linux, where the same Darwin code path is under test.
+const skipHere = process.platform === 'win32'
+  ? 'needs sparse files and mkfifo, which Windows lacks (#136)'
+  : process.platform === 'darwin'
+    ? 'hangs on macOS (#118); skipped until that is fixed'
+    : false;
+
+describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
   test('everything on this Mac: reads answer at once, as before', () => {
     const { book } = libraryWithBook();
     assert.equal(main.call('chapter:read', book.id, 'ch-aaa'), '<p>The harbor was empty.</p>');

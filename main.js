@@ -818,15 +818,23 @@ ipcMain.handle('chapter:stamps', (_e, bookId) => {
 
 ipcMain.handle('chapter:read', (_e, bookId, chapterId) => {
   const file = path.join(bookDir(bookId), 'chapters', libName(chapterId) + '.html');
-  const read = () => { try { return fs.readFileSync(file, 'utf8'); } catch { return ''; } };
+  const read = () => {
+    try { return fs.readFileSync(file, 'utf8'); } catch (err) {
+      // only a missing chapter is empty. Locked, denied or I/O failures must
+      // not read as '': the window would open a blank page over the words,
+      // and the next save would write that blank back.
+      if (err && err.code === 'ENOENT') return '';
+      throw new Error(`Could not read chapter ${libName(chapterId)}: ${err && err.code || err}`);
+    }
+  };
   // (one iCloud never brings down reads as empty, like a missing file; a
   // save over it is refused below until it's here)
   return afterLocal([file], read, () => '');
 });
 
 // `expected` is the text the window last read or wrote for this chapter.
-// When the file holds something else (another device wrote it since, and
-// it isn't just an older copy of these words), nothing is written: the
+// When the file holds something else (another device wrote it since, even
+// if only formatting, order or a deletion changed), nothing is written: the
 // window is handed that text to keep as its own chapter first, so neither
 // version is lost to a save that happened before the next look at the disk.
 ipcMain.handle('chapter:write', (_e, bookId, chapterId, html, expected) => {
@@ -838,26 +846,25 @@ ipcMain.handle('chapter:write', (_e, bookId, chapterId, html, expected) => {
   if (isCloudOnly(file)) { requestDownload([file]); throw cloudError(file); }
   if (typeof expected === 'string') {
     let cur = null;
-    try { cur = fs.readFileSync(file, 'utf8'); } catch { /* not there: nothing to keep */ }
+    try { cur = fs.readFileSync(file, 'utf8'); } catch (err) {
+      // not there: a new chapter, nothing to keep. Any other failure (locked,
+      // denied, I/O) means the disk text is unknown, so nothing is replaced.
+      if (!err || err.code !== 'ENOENT') throw new Error(`Could not read chapter ${libName(chapterId)}: ${err && err.code || err}`);
+    }
     if (cur !== null && chapterDiverged(cur, expected, html)) return { conflict: cur };
   }
   writeFileDurable(file, html);
   return true;
 });
-// shared with Pocket's bridge (same rule): the disk copy differs from what
-// this device last knew, holds words, and has a word the new text lacks
+// shared with Pocket's bridge (same rule): the disk copy is not exactly what
+// this device last knew (`expected`) and is not already the new text (a
+// retry or an identical write), and it holds words. Any other revision,
+// formatting, order and deletions included, is a conflict: the disk text
+// is handed back to be kept as a twin before anything is replaced.
 function chapterDiverged(cur, expected, html) {
   if (cur === expected || cur === html) return false;
-  const bag = (h) => {
-    const m = new Map();
-    for (const w of String(h || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').split(/\s+/)) if (w) m.set(w, (m.get(w) || 0) + 1);
-    return m;
-  };
-  const there = bag(cur);
-  if (!there.size) return false;
-  const here = bag(html);
-  for (const [w, n] of there) if (n > (here.get(w) || 0)) return true;
-  return false;
+  const words = String(cur || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
+  return words !== '';
 }
 
 ipcMain.handle('chapter:delete', (_e, bookId, chapterId) => {
@@ -866,18 +873,49 @@ ipcMain.handle('chapter:delete', (_e, bookId, chapterId) => {
   return true;
 });
 
+// A notes or outline page (aux:*): the same revision contract as chapters.
+// A page the disk can't read is an error, never an empty page: an empty read
+// that is then saved would wipe the page.
+function readAuxFile(file) {
+  try { return fs.readFileSync(file, 'utf8'); } catch (err) {
+    if (err && err.code === 'ENOENT') return null;
+    throw err;
+  }
+}
+// The displaced disk text is kept as <page>.bak, or .bak2, .bak3 … when that
+// name holds other words. A retry that finds its own copy already there adds nothing.
+function keepAuxBackup(file, text) {
+  for (let n = 1; n < 1000; n++) {
+    const bak = file + (n === 1 ? '.bak' : '.bak' + n);
+    const have = readAuxFile(bak);
+    if (have === text) return bak;
+    if (have === null) { writeFileDurable(bak, text); return bak; }
+  }
+  throw new Error('too many kept copies of ' + path.basename(file));
+}
+
 ipcMain.handle('aux:read', (_e, bookId, name) => {
-  // name: 'notes' | 'outline'
+  // name: 'notes' | 'outline' | 'notes-<chapter>'
   const file = path.join(bookDir(bookId), libName(name) + '.html');
-  const read = () => { try { return fs.readFileSync(file, 'utf8'); } catch { return ''; } };
+  const read = () => readAuxFile(file) || '';
   return afterLocal([file], read, () => '');
 });
 
-ipcMain.handle('aux:write', (_e, bookId, name, html) => {
+// `expected` is the text the window last read or wrote for this page (as for
+// chapter:write). When the file holds words the new text lacks, another device
+// wrote it since: the file's text is kept as a .bak beside the page before the
+// new text goes in, so neither version is lost. Returns {kept: '<name>.bak'}
+// when that happened, else true.
+ipcMain.handle('aux:write', (_e, bookId, name, html, expected) => {
   const file = path.join(bookDir(bookId), libName(name) + '.html');
   if (isCloudOnly(file)) { requestDownload([file]); throw cloudError(file); }
+  let kept = null;
+  if (typeof expected === 'string') {
+    const cur = readAuxFile(file);
+    if (cur !== null && chapterDiverged(cur, expected, html)) kept = keepAuxBackup(file, cur);
+  }
   writeFileDurable(file, html);
-  return true;
+  return kept ? { kept: path.basename(kept) } : true;
 });
 
 // Snapshots of a book (SNAPSHOTS in app.js): book-…/snapshots/<name>/ holds the
@@ -904,11 +942,13 @@ ipcMain.handle('snapshot:list', (_e, bookId) => {
   }
   return out;
 });
+// A file that can't be read throws (missing, no permission, still in iCloud):
+// only a chapter that is really empty reads as ''. Thinning relies on telling
+// them apart, so it never carries an empty stand-in forward (#13).
 ipcMain.handle('snapshot:read', (_e, bookId, name, file) => {
-  let fp;
-  try { fp = snapshotFile(bookId, name, file); } catch { return ''; }
-  const read = () => { try { return fs.readFileSync(fp, 'utf8'); } catch { return ''; } };
-  return afterLocal([fp], read, () => '');
+  const fp = snapshotFile(bookId, name, file);
+  const read = () => fs.readFileSync(fp, 'utf8');
+  return afterLocal([fp], read, () => { throw cloudError(fp); });
 });
 ipcMain.handle('snapshot:write', (_e, bookId, name, file, text) => {
   const target = snapshotFile(bookId, name, file);
@@ -917,8 +957,21 @@ ipcMain.handle('snapshot:write', (_e, bookId, name, file, text) => {
   writeFileDurable(target, text);
   return true;
 });
+// Discards one chapter file of a snapshot so a corrupt carried copy can be
+// written again (#114). Never snapshot.json; throws if the file is still there.
+ipcMain.handle('snapshot:removeFile', (_e, bookId, name, file) => {
+  const fp = snapshotFile(bookId, name, file);
+  if (!file.endsWith('.html')) throw new Error('Only a chapter file can be removed');
+  try { fs.rmSync(fp, { force: true }); } catch (err) { logError('snapshot removeFile', err); }
+  if (fs.existsSync(fp)) throw new Error('snapshot removeFile: ' + file + ' is still on disk');
+  return true;
+});
+// Throws when the folder is still there afterwards, so thinning keeps the
+// source and stops (#114); a snapshot that is gone, or was never there, is fine.
 ipcMain.handle('snapshot:remove', (_e, bookId, name) => {
-  try { fs.rmSync(snapshotDir(bookId, name), { recursive: true, force: true }); } catch (err) { logError('snapshot remove', err); }
+  const dir = snapshotDir(bookId, name);
+  try { fs.rmSync(dir, { recursive: true, force: true }); } catch (err) { logError('snapshot remove', err); }
+  if (fs.existsSync(dir)) throw new Error('snapshot remove: ' + name + ' is still on disk');
   return true;
 });
 

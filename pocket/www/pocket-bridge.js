@@ -70,13 +70,25 @@
     return r.data;
   }
 
+  // What a failed swap was, from its message: for the retry and the detail.
+  function classifyRenameError(err) {
+    const text = String((err && (err.message || err.code)) || err || '');
+    if (/exist/i.test(text)) return 'exists';
+    if (/permission|denied|EACCES|EPERM/i.test(text)) return 'denied';
+    if (/not (implemented|supported)|unimplemented/i.test(text)) return 'unsupported';
+    return 'unknown';
+  }
+
   // The desktop's rule on the phone too: the new text is written beside the
   // old file and swapped in whole, so a save cut short (the app killed in
   // the background, the battery gone) leaves the old version, never half
-  // of the new one. A system that won't do the swap gets a plain write.
+  // of the new one. If the swap fails, the old file is left untouched and
+  // the new text stays in the .tmp file for a retry; it is never written
+  // straight over the only good copy.
   async function writeText(path, data) {
     await ready;
     const tmp = path + '.tmp';
+    let err;
     try {
       await FS().writeFile({ ...at(tmp), data, encoding: 'utf8', recursive: true });
       try {
@@ -84,13 +96,20 @@
         const to = at(path);
         await FS().rename({ from: from.path, to: to.path, directory: from.directory, toDirectory: to.directory });
         return;
-      } catch { /* no swap here: the plain write below */ }
-      await FS().writeFile({ ...at(path), data, encoding: 'utf8', recursive: true });
-      try { await FS().deleteFile(at(tmp)); } catch { /* fine */ }
-    } catch (err) {
-      showErrorDetail(t('Could not save {file}: {error}', { file: path, error: String(err && err.message || err) }));
-      throw err;
+      } catch (cause) {
+        err = new Error(String((cause && cause.message) || cause));
+        err.name = 'RetryableSaveError';
+        err.retryable = true;
+        err.path = path;
+        err.tmp = tmp;
+        err.kind = classifyRenameError(cause);
+        err.cause = cause;
+      }
+    } catch (cause) {
+      err = cause;
     }
+    showErrorDetail(t('Could not save {file}: {error}', { file: path, error: String((err && err.message) || err) }));
+    throw err;
   }
 
   let permissionHelpShown = false;
@@ -152,20 +171,39 @@
     await writeText(path, JSON.stringify(data, null, 2));
   }
 
-  // the same rule as main.js chapterDiverged: the disk copy differs from
-  // what this device last knew, holds words, and has a word the new text lacks
+  // null when the file isn't there; an existing file that can't be read throws
+  // (an empty read taken for an empty page would be saved over it)
+  async function readAuxText(path) {
+    try { return await readText(path); } catch (err) {
+      try { await FS().stat(at(path)); } catch { return null; }
+      throw err;
+    }
+  }
+  // the displaced disk text goes to <page>.bak, or .bak2 … when that holds other words
+  async function keepAuxBackup(file, text) {
+    for (let n = 1; n < 1000; n++) {
+      const bak = file + (n === 1 ? '.bak' : '.bak' + n);
+      const have = await readAuxText(bak);
+      if (have === text) return bak;
+      if (have === null) { await writeText(bak, text); return bak; }
+    }
+    throw new Error('too many kept copies of ' + file);
+  }
+
+  // the same rule as main.js chapterDiverged: the disk copy is not exactly
+  // what this device last knew, is not already the new text, and holds
+  // words. Formatting, order and deletions are conflicts too.
+  // Capacitor says "File does not exist." for a file that isn't there
+  function isMissing(err) {
+    return /does not exist|no such file/i.test(String(err && (err.message || err)));
+  }
+  function errText(err) {
+    return String(err && (err.message || err));
+  }
   function chapterDiverged(cur, expected, html) {
     if (cur === expected || cur === html) return false;
-    const bag = (h) => {
-      const m = new Map();
-      for (const w of String(h || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').split(/\s+/)) if (w) m.set(w, (m.get(w) || 0) + 1);
-      return m;
-    };
-    const there = bag(cur);
-    if (!there.size) return false;
-    const here = bag(html);
-    for (const [w, n] of there) if (n > (here.get(w) || 0)) return true;
-    return false;
+    const words = String(cur || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
+    return words !== '';
   }
 
   const bookDir = (bookId) => p(bookId);
@@ -341,15 +379,31 @@
     readChapter: async (bookId, chId) => {
       await fetchCloud(p(bookId, 'chapters', chId + '.html'));
       // (a swap the system cut short leaves only the .tmp: the words are there)
-      try { return await readText(p(bookId, 'chapters', chId + '.html')); } catch { /* the spare, below */ }
-      try { return await readText(p(bookId, 'chapters', chId + '.html.tmp')); } catch { return ''; }
+      let mainErr = null;
+      try { return await readText(p(bookId, 'chapters', chId + '.html')); } catch (err) { mainErr = err; }
+      try { return await readText(p(bookId, 'chapters', chId + '.html.tmp')); } catch (err) {
+        // only a chapter with no file at all is empty; anything else is
+        // unknown text, and an empty page would be saved over it
+        if (isMissing(mainErr) && isMissing(err)) return '';
+        throw new Error(`Could not read chapter ${chId}: ${errText(isMissing(mainErr) ? err : mainErr)}`);
+      }
     },
     writeChapter: async (bookId, chId, html, expected) => {
       await ensureDir(bookDir(bookId) + '/chapters');
       const file = p(bookId, 'chapters', chId + '.html');
       if (typeof expected === 'string') {
+        // the disk text is what readChapter shows: the chapter, or the .tmp
+        // a save cut short left when the chapter itself is missing
         let cur = null;
-        try { cur = await readText(file); } catch { /* not there */ }
+        try { cur = await readText(file); } catch (err) {
+          // Capacitor says "File does not exist." for a new chapter: nothing to
+          // keep. Any other failure (denied, locked, I/O) leaves the disk text
+          // unknown, so nothing is replaced (main.js does the same).
+          if (!isMissing(err)) throw new Error(`Could not read chapter ${chId}: ${errText(err)}`);
+          try { cur = await readText(file + '.tmp'); } catch (tmpErr) {
+            if (!isMissing(tmpErr)) throw new Error(`Could not read chapter ${chId}: ${errText(tmpErr)}`);
+          }
+        }
         if (cur !== null && chapterDiverged(cur, expected, html)) return { conflict: cur };
       }
       await writeText(file, html);
@@ -371,26 +425,62 @@
       }
       return out;
     },
+    // throws when the file can't be read: only an empty chapter reads as ''
+    // (the desktop's rule; thinning depends on it, #13)
     snapshotRead: async (bookId, name, file) => {
       await fetchCloud(p(bookId, 'snapshots', name, file));
-      try { return await readText(p(bookId, 'snapshots', name, file)); } catch { return ''; }
+      return readText(p(bookId, 'snapshots', name, file));
     },
+    // written once, as on the desktop: false when the file is already there
     snapshotWrite: async (bookId, name, file, text) => {
       await ensureDir(p(bookId, 'snapshots', name));
+      try { await FS().stat(at(p(bookId, 'snapshots', name, file))); return false; } catch { /* free */ }
       await writeText(p(bookId, 'snapshots', name, file), text);
       return true;
     },
+    // discards one chapter file so a corrupt carried copy can be written again (#114)
+    snapshotRemoveFile: async (bookId, name, file) => {
+      if (!/^[\w-][\w.-]*\.html$/.test(file) || !/^[A-Za-z0-9-]+$/.test(name)) throw new Error('Invalid snapshot file');
+      const rel = p(bookId, 'snapshots', name, file);
+      try { await FS().deleteFile(at(rel)); } catch { /* checked below */ }
+      let there = true;
+      try { await FS().stat(at(rel)); } catch (err) {
+        there = !/does not exist|not ?found|no such|ENOENT/i.test(String((err && err.message) || err));
+      }
+      if (there) throw new Error('snapshot removeFile: ' + file + ' is still there');
+      return true;
+    },
+    // throws when the folder is still there after the attempt, as the desktop
+    // does, so thinning keeps the source and stops (#114)
     snapshotRemove: async (bookId, name) => {
-      try { await FS().rmdir({ ...at(p(bookId, 'snapshots', name)), recursive: true }); } catch { /* already gone */ }
+      const rel = p(bookId, 'snapshots', name);
+      try { await FS().rmdir({ ...at(rel), recursive: true }); } catch { /* checked below */ }
+      let there = true;
+      try { await FS().stat(at(rel)); } catch (err) {
+        there = !/does not exist|not ?found|no such|ENOENT/i.test(String((err && err.message) || err));
+      }
+      if (there) throw new Error('snapshot remove: ' + name + ' is still there');
       return true;
     },
 
     /* ---------- notes / outline / json sidecars ---------- */
     readAux: async (bookId, name) => {
-      try { return await readText(p(bookId, name + '.html')); } catch { /* the spare, below */ }
+      const cur = await readAuxText(p(bookId, name + '.html'));
+      if (cur !== null) return cur;
       try { return await readText(p(bookId, name + '.html.tmp')); } catch { return ''; }
     },
-    writeAux: async (bookId, name, html) => { await writeText(p(bookId, name + '.html'), html); return true; },
+    // the same revision contract as main.js aux:write: a stale save keeps the
+    // disk's words as a .bak beside the page first, and says so
+    writeAux: async (bookId, name, html, expected) => {
+      const file = p(bookId, name + '.html');
+      let kept = null;
+      if (typeof expected === 'string') {
+        const cur = await readAuxText(file);
+        if (cur !== null && chapterDiverged(cur, expected, html)) kept = await keepAuxBackup(file, cur);
+      }
+      await writeText(file, html);
+      return kept ? { kept: kept.split('/').pop() } : true;
+    },
     readJSON: (bookId, name, fallback) => readJSONFile(p(bookId, name + '.json'), fallback),
     writeJSON: async (bookId, name, data) => { await writeJSONFile(p(bookId, name + '.json'), data); return true; },
 

@@ -559,6 +559,28 @@ function toast(msg, ms = 4000) {
   toast._t = setTimeout(() => { h.hidden = true; }, ms);
 }
 
+// Why a chapter would not read, in the writer's words: the reason comes from
+// the error's code or its message (it crosses IPC as text), and the chapter
+// is named as the writer sees it.
+function chapterReadProblem(chId, err, meta = book) {
+  const full = String((err && err.message) || err || '') + ' ' + String((err && err.code) || '');
+  let reason;
+  if (/ECLOUD|iCloud/i.test(full)) reason = t('it is still in the cloud and not on this device yet');
+  else if (/EACCES|EPERM|denied|permission/i.test(full)) reason = t('permission was denied');
+  else if (/EBUSY|EAGAIN|locked|busy/i.test(full)) reason = t('it is busy or locked');
+  else reason = t('it could not be read ({reason})', { reason: full.trim().replace(/^.*: /, '') });
+  let name;
+  try { name = chapterName(chId, meta); } catch { name = chId; }
+  return t('Could not read {chapter}: {reason}', { chapter: name, reason });
+}
+let readProblemShown = {}; // book id → the failure last told for it
+function toastReadProblem(msg) {
+  const key = book ? book.id : '';
+  if (readProblemShown[key] === msg) return; // the same failure on every look is told once
+  readProblemShown[key] = msg;
+  toast(msg, 8000);
+}
+
 // Scripts that do not separate words with spaces: a whitespace count reports
 // one "word" for a whole sentence, so word goals and statistics read far too
 // low. Intl.Segmenter knows their boundaries; the same API already runs the
@@ -2052,7 +2074,7 @@ function bookTile(meta, opts = {}) {
         { label: 'Fountain (.fountain)', value: 'fountain' }, { label: 'Final Draft (.fdx)', value: 'fdx' }
       ]);
       if (!fmt) return;
-      await openBook(meta.id);
+      if (!(await openBook(meta.id))) return;
       await doExport(fmt);
     } else if (choice === 'export') {
       const fmt = await optionModal(t('Export “{title}”', { title: escHtml(shownTitle(meta.title)) }), null, [
@@ -2063,7 +2085,7 @@ function bookTile(meta, opts = {}) {
       ]);
       if (!fmt) return;
       if (window.Capacitor || fmt === 'paperback') {
-        await openBook(meta.id);
+        if (!(await openBook(meta.id))) return;
         await doExport(fmt);
       } else {
         await exportFromShelf(meta.id, fmt);
@@ -2546,15 +2568,22 @@ async function openBook(bookId) {
   // read) never ends up with a mix of the two.
   const gen = ++openGeneration;
   const meta = await window.neo.readBookMeta(bookId);
-  if (!meta || gen !== openGeneration) return;
+  if (!meta || gen !== openGeneration) return false;
   const html = {};
   for (const chId of meta.chapterOrder) {
-    html[chId] = await window.neo.readChapter(bookId, chId);
-    if (gen !== openGeneration) return;
+    try {
+      html[chId] = await window.neo.readChapter(bookId, chId);
+    } catch (err) {
+      // nothing has changed yet: the shelf stays, and the writer is told why
+      if (gen === openGeneration) toast(chapterReadProblem(chId, err, meta), 8000);
+      return false;
+    }
+    if (gen !== openGeneration) return false;
   }
   const sideStickies = await window.neo.readJSON(bookId, 'stickies', []);
   const sideDarlings = await window.neo.readJSON(bookId, 'darlings', []);
-  if (gen !== openGeneration) return;
+  if (gen !== openGeneration) return false;
+  readProblemShown = {}; // a book that opens starts with nothing told
   tabPlaces = {}; // a fresh book starts with fresh places
   book = meta;
   showWindowTitle();
@@ -2626,6 +2655,7 @@ async function openBook(bookId) {
     setTimeout(() => toast(t('Enter twice = section break · three times = new chapter · {key} shows everything else', { key: KHELP }), 7000), 800);
   }
   spReportState();
+  return true;
 }
 
 // the pages that show a faint word until they have their own
@@ -8121,7 +8151,7 @@ const notesPageOk = (page) => page === 'book' || (!!book && book.chapterOrder.in
 // what a page holds: the text waiting to be saved, else the file
 function readNotesPage(bookId, page) {
   const pending = auxPending[bookId + '/' + notesKind(page)];
-  return pending ? Promise.resolve(pending.html) : window.neo.readAux(bookId, notesKind(page));
+  return pending ? Promise.resolve(pending.html) : auxRead(bookId, notesKind(page));
 }
 const htmlText = (html) => {
   const d = document.createElement('template');
@@ -8789,7 +8819,7 @@ function switchTab(name) {
     auxEditor.dataset.book = '';
     auxEditor.dataset.ph = notesPage === 'book' ? '' : t('Notes for this chapter');
     const pending = auxPending[bookId + '/' + kind];
-    (pending ? Promise.resolve(pending.html) : window.neo.readAux(bookId, kind)).then((html) => {
+    (pending ? Promise.resolve(pending.html) : auxRead(bookId, kind)).then((html) => {
       if (load !== auxLoad || !book || book.id !== bookId || currentTab !== name || notesKind(notesPage) !== kind) return;
       auxEditor.innerHTML = html || '';
       auxEditor.dataset.kind = kind;
@@ -11881,6 +11911,23 @@ function scheduleAuxSave() {
 // the next flush, and is what the page shows if the writer comes back to it
 // before then (not the older file).
 const auxPending = {};
+// The disk text each page was last read or written as (by book and page): the
+// base a save is checked against, as chapter:write checks its own. A refresh
+// compares with it too. auxSeq counts the writes, so a read that was out
+// while one landed does not set the base back to older text.
+const auxBase = {};
+const auxSeq = {};
+// one page's saves go to the disk one at a time, each with the base the one
+// before it left; a newer text waiting behind an older one is never sent first
+const auxQueue = {};
+function auxRead(bookId, kind) {
+  const key = bookId + '/' + kind;
+  const seq = auxSeq[key] || 0;
+  return window.neo.readAux(bookId, kind).then((html) => {
+    if ((auxSeq[key] || 0) === seq) auxBase[key] = html;
+    return html;
+  });
+}
 function flushAux() {
   const ed = $('#aux-editor');
   if (auxDirty && ed.dataset.kind && ed.dataset.book) {
@@ -11892,13 +11939,39 @@ function flushAux() {
     const job = auxPending[key];
     if (job.inFlight) continue;
     job.inFlight = true;
-    Promise.resolve().then(() => window.neo.writeAux(job.bookId, job.kind, job.html)).then(() => {
-      if (auxPending[key] === job) delete auxPending[key];
-    }, (err) => {
+    const run = (auxQueue[key] || Promise.resolve()).then(() => saveAuxJob(key, job));
+    auxQueue[key] = run.catch(() => {});
+    run.catch((err) => {
       job.inFlight = false;
       window.neo.logError('notes save: ' + (err && err.message || err));
     });
   }
+}
+function saveAuxJob(key, job) {
+  return window.neo.writeAux(job.bookId, job.kind, job.html, auxBase[key]).then((r) => {
+    auxBase[key] = job.html;
+    auxSeq[key] = (auxSeq[key] || 0) + 1;
+    if (auxPending[key] === job) delete auxPending[key];
+    // another device's words for this page were in the way: they are kept beside it
+    if (r && r.kept) toast(t('This page also changed on another device. That version is kept beside it as {file}.', { file: r.kept }), 8000);
+  });
+}
+// An open notes or outline page that nothing has been typed on since it was
+// read takes what another device saved. A page with words waiting keeps them;
+// its save keeps the other device's version (see aux:write).
+async function refreshOpenAux() {
+  const ed = $('#aux-editor');
+  const bookId = ed.dataset.book;
+  const kind = ed.dataset.kind;
+  if (!bookId || !kind || !book || book.id !== bookId) return;
+  const key = bookId + '/' + kind;
+  if (auxDirty || auxPending[key] || auxBase[key] === undefined) return;
+  const seq = auxSeq[key] || 0;
+  const html = await window.neo.readAux(bookId, kind);
+  if (ed.dataset.book !== bookId || ed.dataset.kind !== kind || auxDirty || auxPending[key]) return;
+  if ((auxSeq[key] || 0) !== seq || html === auxBase[key]) return;
+  auxBase[key] = html;
+  ed.innerHTML = html;
 }
 
 // The same promise for the JSON beside a book (comments, Darlings): the
@@ -12504,6 +12577,54 @@ function snapsToThin(snaps, now) {
   const newest = snaps.reduce((a, s) => (!a || s.at > a.at ? s : a), null);
   return snaps.filter((s) => s !== newest && s.kind !== SNAP_KEPT && now - s.at > SNAP_KEEP_DAYS * 86400000).map((s) => s.name);
 }
+// Hands each thinned snapshot's chapters on to the next one, then removes it.
+// A chapter the next snapshot lacks is read from the old one (a read that
+// fails throws; an empty chapter is '' and goes on as ''), written, and read
+// back to match before anything is removed. A next snapshot that already has
+// a chapter keeps its own version, which is what readers see from there on.
+// Any failure stops the pass with the source still in place, so the next
+// snapshot tries again (#13). A remove that fails throws too (#114).
+// A file the next snapshot holds is its own only if its snapshot.json lists
+// that chapter as changed; any other file there was carried forward by an
+// earlier pass, so it is read back and compared like a fresh copy (#114).
+async function thinSnapshots(neo, bookId, snaps, now) {
+  for (const gone of snapsToThin(snaps, now)) {
+    const i = snaps.findIndex((s) => s.name === gone);
+    const next = snaps[i + 1];
+    if (i < 0 || !next) continue;
+    for (const f of snaps[i].files) {
+      if (!f.endsWith('.html')) continue;
+      const listed = next.files.has(f);
+      if (listed && !(await isCarriedCopy(neo, bookId, next, f))) continue; // its own version
+      const text = await neo.snapshotRead(bookId, snaps[i].name, f);
+      if (!listed && (await neo.snapshotWrite(bookId, next.name, f, text)) === false && !(await isCarriedCopy(neo, bookId, next, f))) {
+        next.files.add(f); // another device's own version
+        continue;
+      }
+      let copy = await neo.snapshotRead(bookId, next.name, f);
+      if (copy !== text) {
+        // a corrupt carried copy: discard it, copy again, and check again; the
+        // source stays if that copy is no better (#114)
+        await neo.snapshotRemoveFile(bookId, next.name, f);
+        await neo.snapshotWrite(bookId, next.name, f, text);
+        copy = await neo.snapshotRead(bookId, next.name, f);
+        if (copy !== text) throw new Error(`snapshot thinning: ${f} did not copy to ${next.name} intact`);
+      }
+      next.files.add(f);
+    }
+    await neo.snapshotRemove(bookId, gone);
+    snaps.splice(i, 1);
+  }
+}
+// true when the file in `snap` was carried forward by thinning rather than
+// written by that snapshot (its snapshot.json does not list the chapter as
+// changed). A snapshot.json that cannot be read counts as the snapshot's own.
+async function isCarriedCopy(neo, bookId, snap, f) {
+  let meta = null;
+  try { meta = JSON.parse(await neo.snapshotRead(bookId, snap.name, 'snapshot.json')); } catch { return false; }
+  if (!meta || !Array.isArray(meta.changed)) return false;
+  return !meta.changed.includes(f.slice(0, -'.html'.length));
+}
 // where a chapter's text at snapshots[i] is: the newest snapshot at or
 // before it holding the file (snapshots oldest first, each with `files`)
 function snapHolder(snaps, i, chId) {
@@ -12634,19 +12755,12 @@ async function takeSnapshotNow(kind, htmlOf, { ifNoneToday }) {
   snap.files = new Set([...changed.map((c) => c + '.html'), 'snapshot.json']);
   snap.meta = meta;
   snaps.push(snap);
-  // NEO's own old ones go, each handing its chapters on to the next first
-  for (const gone of snapsToThin(snaps, now)) {
-    const i = snaps.findIndex((s) => s.name === gone);
-    const next = snaps[i + 1];
-    if (i < 0 || !next) continue;
-    for (const f of snaps[i].files) {
-      if (!f.endsWith('.html') || next.files.has(f)) continue;
-      const text = await window.neo.snapshotRead(bookId, snaps[i].name, f);
-      await window.neo.snapshotWrite(bookId, next.name, f, text);
-      next.files.add(f);
-    }
-    await window.neo.snapshotRemove(bookId, gone);
-    snaps.splice(i, 1);
+  // NEO's own old ones go, each handing its chapters on to the next first. A
+  // failure leaves them where they are; the next snapshot tries again.
+  try {
+    await thinSnapshots(window.neo, bookId, snaps, now);
+  } catch (err) {
+    logSnap(err);
   }
   renderSnapList();
   return { snap, same: false };
@@ -13082,6 +13196,7 @@ async function refreshFromDisk() {
   if (refreshing || shelfExport) return;
   refreshing = true;
   bookMetaCache.clear(); // whatever another device wrote, the next redraw reads
+  refreshOpenAux().catch((err) => window.neo.logError('notes refresh: ' + (err && err.message || err)));
   try {
     if (!book) {
       if (library && !$('#bookshelf-view').hidden) {
@@ -13117,7 +13232,10 @@ async function refreshFromDisk() {
     if (theirs) {
       for (const chId of meta.chapterOrder) {
         if (chapterHTML[chId] !== undefined) continue;
-        incoming[chId] = await window.neo.readChapter(bookId, chId);
+        try { incoming[chId] = await window.neo.readChapter(bookId, chId); } catch (err) {
+          toastReadProblem(chapterReadProblem(chId, err, meta));
+          return;
+        }
         if (!book || book.id !== bookId) return;
       }
     }
@@ -13133,11 +13251,16 @@ async function refreshFromDisk() {
       const st = stamps ? stamps[chId] : undefined;
       if (st !== undefined && st === diskStamps[chId]) continue;
       const before = savedHTML[chId];
-      const disk = await window.neo.readChapter(bookId, chId);
+      let disk;
+      try { disk = await window.neo.readChapter(bookId, chId); } catch (err) {
+        toastReadProblem(chapterReadProblem(chId, err));
+        return;
+      }
       if (!book || book.id !== bookId) return;
       fresh.push({ chId, st, before, disk });
     }
     if (!book || book.id !== bookId) return;
+    delete readProblemShown[bookId]; // every chapter read: a later failure is news again
     // Comments and Darlings are looked at every time, on their own: another
     // device can change them without touching book.json
     const sides = {};
