@@ -7,7 +7,10 @@
       if (platform === 'win32') {
         return [env.APPDATA + '\\Nextcloud\\nextcloud.cfg'];
       } else if (platform === 'darwin') {
-        return [env.HOME + '/Library/Preferences/Nextcloud/nextcloud.cfg'];
+        return [
+          env.HOME + '/Library/Containers/com.nextcloud.desktopclient/Data/Library/Preferences/Nextcloud/nextcloud.cfg',
+          env.HOME + '/Library/Preferences/Nextcloud/nextcloud.cfg',
+        ];
       } else if (platform === 'linux') {
         return [
           env.HOME + '/.var/app/com.nextcloud.desktopclient.nextcloud/config/Nextcloud/nextcloud.cfg',
