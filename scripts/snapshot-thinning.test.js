@@ -119,6 +119,68 @@ describe('preload.js forwards every snapshot argument', () => {
   });
 });
 
+describe('snapshot:remove says when a snapshot is still there (#114)', { concurrency: 1 }, () => {
+  test('a remove that throws reports it and leaves the snapshot in place', () => {
+    const { bookId, name, snapDir } = snapshotWithFiles({ 'ch-a.html': '<p>A</p>' });
+    const real = fs.rmSync;
+    fs.rmSync = () => { throw Object.assign(new Error('EPERM: busy'), { code: 'EPERM' }); };
+    try {
+      assert.throws(() => main.call('snapshot:remove', bookId, name), /still on disk|EPERM/);
+    } finally {
+      fs.rmSync = real;
+    }
+    assert.ok(fs.existsSync(snapDir));
+  });
+
+  test('a remove that leaves the folder behind throws, it does not report success', () => {
+    const { bookId, name, snapDir } = snapshotWithFiles({ 'ch-a.html': '<p>A</p>' });
+    const real = fs.rmSync;
+    fs.rmSync = () => {};
+    try {
+      assert.throws(() => main.call('snapshot:remove', bookId, name), /still on disk/);
+    } finally {
+      fs.rmSync = real;
+    }
+    assert.ok(fs.existsSync(snapDir));
+  });
+
+  test('a snapshot that is removed reports true and is gone', () => {
+    const { bookId, name, snapDir } = snapshotWithFiles({ 'ch-a.html': '<p>A</p>' });
+    assert.equal(main.call('snapshot:remove', bookId, name), true);
+    assert.equal(fs.existsSync(snapDir), false);
+  });
+});
+
+describe('preload.js forwards snapshotRemove', () => {
+  test('snapshotRemove passes bookId and name through', () => {
+    const calls = [];
+    let api = null;
+    const electron = {
+      contextBridge: { exposeInMainWorld: (key, value) => { if (key === 'neo') api = value; } },
+      ipcRenderer: { sendSync: () => null, invoke: (...args) => { calls.push(args); return Promise.resolve(null); } },
+      webUtils: {}
+    };
+    const preload = fs.readFileSync(path.join(root, 'preload.js'), 'utf8');
+    vm.runInContext(preload, vm.createContext({ require: (n) => (n === 'electron' ? electron : {}), process: { platform: 'test' } }));
+    api.snapshotRemove('book-x', '20261001T000000Z-d-1-10-aaaa');
+    api.snapshotRemoveFile('book-x', '20261001T000000Z-d-1-10-aaaa', 'ch-a.html');
+    assert.deepEqual(calls, [
+      ['snapshot:remove', 'book-x', '20261001T000000Z-d-1-10-aaaa'],
+      ['snapshot:removeFile', 'book-x', '20261001T000000Z-d-1-10-aaaa', 'ch-a.html']
+    ]);
+  });
+
+  test('snapshot:removeFile removes one chapter file, refuses snapshot.json and path escapes', () => {
+    const { bookId, name, snapDir } = snapshotWithFiles({ 'ch-a.html': '<p>A</p>', 'ch-b.html': '<p>B</p>', 'snapshot.json': '{}' });
+    assert.equal(main.call('snapshot:removeFile', bookId, name, 'ch-a.html'), true);
+    assert.equal(fs.existsSync(path.join(snapDir, 'ch-a.html')), false);
+    assert.ok(fs.existsSync(path.join(snapDir, 'ch-b.html')));
+    assert.throws(() => main.call('snapshot:removeFile', bookId, name, 'snapshot.json'));
+    assert.throws(() => main.call('snapshot:removeFile', bookId, name, '../book.json'));
+    assert.ok(fs.existsSync(path.join(snapDir, 'snapshot.json')));
+  });
+});
+
 // ---- thinSnapshots in app.js, against an in-memory library ----
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const appContext = vm.createContext({});
@@ -150,8 +212,15 @@ function fakeNeo(library, faults = {}) {
       library[name][file] = faults.corrupt && faults.corrupt(name, file) ? '' : text;
       return true;
     },
+    async snapshotRemoveFile(bookId, name, file) {
+      log.push(['removeFile', name, file]);
+      if (faults.removeFile && faults.removeFile(name, file)) throw new Error('EBUSY: ' + file);
+      if (library[name]) delete library[name][file];
+      return true;
+    },
     async snapshotRemove(bookId, name) {
       log.push(['remove', name]);
+      if (faults.remove && faults.remove(name)) throw new Error('EBUSY: ' + name);
       delete library[name];
       return true;
     }
@@ -269,5 +338,73 @@ describe('thinSnapshots copies verified text forward, then removes the source', 
     assert.equal(read(1, 'ch-a'), '<p>A3</p>', 'ch-a at the newest');
     assert.equal(read(1, 'ch-b'), '<p>B2</p>', 'ch-b carried from the middle snapshot');
     assert.equal(read(1, 'ch-c'), '', 'ch-c carried as empty');
+  });
+
+  test('a corrupt carried copy is discarded, copied again and verified before the source goes (#114)', async () => {
+    const library = {
+      [OLD_SNAP]: { 'ch-a.html': '<p>A1</p>' },
+      [NEW_SNAP]: { 'ch-a.html': '<p>A1 but cut sh', 'snapshot.json': JSON.stringify({ changed: [] }) },
+      [NEWEST]: {}
+    };
+    const neo = fakeNeo(library);
+    const list = snaps(library, [[OLD_SNAP, OLD, 'd'], [NEW_SNAP, OLD + 20 * DAY, 'd'], [NEWEST, NOW, 'k']]);
+    await thinSnapshots(neo, 'book-x', list, NOW);
+    assert.equal(library[OLD_SNAP], undefined, 'the source is finally removed');
+    assert.equal(library[NEW_SNAP]['ch-a.html'], '<p>A1</p>', 'the next snapshot holds the verified text');
+    assert.ok(neo.log.findIndex((e) => e[0] === 'removeFile') < neo.log.findIndex((e) => e[0] === 'remove'));
+  });
+
+  test('a corrupt carried copy that cannot be replaced keeps the source (#114)', async () => {
+    const mk = () => ({
+      [OLD_SNAP]: { 'ch-a.html': '<p>A1</p>' },
+      [NEW_SNAP]: { 'ch-a.html': 'bad', 'snapshot.json': JSON.stringify({ changed: [] }) },
+      [NEWEST]: {}
+    });
+    let library = mk();
+    let list = snaps(library, [[OLD_SNAP, OLD, 'd'], [NEW_SNAP, OLD + 20 * DAY, 'd'], [NEWEST, NOW, 'k']]);
+    await assert.rejects(thinSnapshots(fakeNeo(library, { removeFile: () => true }), 'book-x', list, NOW), /EBUSY/);
+    assert.ok(library[OLD_SNAP]);
+    library = mk();
+    list = snaps(library, [[OLD_SNAP, OLD, 'd'], [NEW_SNAP, OLD + 20 * DAY, 'd'], [NEWEST, NOW, 'k']]);
+    await assert.rejects(thinSnapshots(fakeNeo(library, { corrupt: () => true }), 'book-x', list, NOW), /did not copy/);
+    assert.ok(library[OLD_SNAP], 'a re-copy that still does not verify keeps the source');
+  });
+
+  test('a source whose remove fails stops the pass and stays; the list keeps it (#114)', async () => {
+    const library = { [OLD_SNAP]: { 'ch-a.html': '<p>A1</p>' }, [NEW_SNAP]: {}, [NEWEST]: {} };
+    const list = snaps(library, [[OLD_SNAP, OLD, 'd'], [NEW_SNAP, OLD + 20 * DAY, 'd'], [NEWEST, NOW, 'k']]);
+    await assert.rejects(thinSnapshots(fakeNeo(library, { remove: (name) => name === OLD_SNAP }), 'book-x', list, NOW), /EBUSY/);
+    assert.equal(library[OLD_SNAP]['ch-a.html'], '<p>A1</p>');
+    assert.equal(list.length, 3, 'the failed snapshot is not dropped from the list');
+  });
+
+  test('a retry replaces an unverified copy from an earlier pass, then the source goes (#114)', async () => {
+    // pass one wrote ch-a to NEW but the read-back failed; the bad copy is left there
+    const meta = JSON.stringify({ v: 1, changed: ['ch-b'], hashes: {} });
+    const library = { [OLD_SNAP]: { 'ch-a.html': '<p>A1</p>', 'ch-b.html': '<p>B1</p>' }, [NEW_SNAP]: { 'ch-b.html': '<p>B2</p>', 'ch-a.html': '', 'snapshot.json': meta }, [NEWEST]: {} };
+    const list = snaps(library, [[OLD_SNAP, OLD, 'd'], [NEW_SNAP, OLD + 20 * DAY, 'd'], [NEWEST, NOW, 'k']]);
+    await thinSnapshots(fakeNeo(library), 'book-x', list, NOW);
+    assert.equal(library[OLD_SNAP], undefined);
+    assert.equal(library[NEW_SNAP]['ch-a.html'], '<p>A1</p>');
+    assert.equal(library[NEW_SNAP]['ch-b.html'], '<p>B2</p>', 'its own chapter is untouched');
+    assert.equal(list.length, 2);
+  });
+
+  test('a retry over an earlier copy that verifies is adopted, and the source goes', async () => {
+    const meta = JSON.stringify({ v: 1, changed: ['ch-b'], hashes: {} });
+    const library = { [OLD_SNAP]: { 'ch-a.html': '<p>A1</p>', 'ch-b.html': '<p>B1</p>' }, [NEW_SNAP]: { 'ch-b.html': '<p>B2</p>', 'ch-a.html': '<p>A1</p>', 'snapshot.json': meta }, [NEWEST]: {} };
+    const list = snaps(library, [[OLD_SNAP, OLD, 'd'], [NEW_SNAP, OLD + 20 * DAY, 'd'], [NEWEST, NOW, 'k']]);
+    await thinSnapshots(fakeNeo(library), 'book-x', list, NOW);
+    assert.equal(library[OLD_SNAP], undefined);
+    assert.equal(library[NEW_SNAP]['ch-a.html'], '<p>A1</p>');
+  });
+
+  test('a chapter the next snapshot changed itself is its own, even if it differs (#114)', async () => {
+    const meta = JSON.stringify({ v: 1, changed: ['ch-a'], hashes: {} });
+    const library = { [OLD_SNAP]: { 'ch-a.html': '<p>A1</p>' }, [NEW_SNAP]: { 'ch-a.html': '<p>own</p>', 'snapshot.json': meta }, [NEWEST]: {} };
+    const list = snaps(library, [[OLD_SNAP, OLD, 'd'], [NEW_SNAP, OLD + 20 * DAY, 'd'], [NEWEST, NOW, 'k']]);
+    await thinSnapshots(fakeNeo(library), 'book-x', list, NOW);
+    assert.equal(library[OLD_SNAP], undefined);
+    assert.equal(library[NEW_SNAP]['ch-a.html'], '<p>own</p>');
   });
 });
