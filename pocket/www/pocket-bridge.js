@@ -342,7 +342,14 @@
       const file = p(bookId, 'chapters', chId + '.html');
       if (typeof expected === 'string') {
         let cur = null;
-        try { cur = await readText(file); } catch { /* not there */ }
+        try { cur = await readText(file); } catch (err) {
+          // Capacitor says "File does not exist." for a new chapter: nothing to
+          // keep. Any other failure (denied, locked, I/O) leaves the disk text
+          // unknown, so nothing is replaced (main.js does the same).
+          if (!/does not exist|no such file/i.test(String(err && (err.message || err)))) {
+            throw new Error(`Could not read chapter ${chId}: ${err && err.message || err}`);
+          }
+        }
         if (cur !== null && chapterDiverged(cur, expected, html)) return { conflict: cur };
       }
       await writeText(file, html);

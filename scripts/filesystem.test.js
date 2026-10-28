@@ -290,5 +290,54 @@ describe('filesystem', { concurrency: 1 }, () => {
         fs.rmSync(dir, { recursive: true, force: true });
       }
     });
+
+    // Reads of one chapter file fail with `code` for the duration of fn.
+    function failingReads(file, code, fn) {
+      const realRead = fs.readFileSync;
+      fs.readFileSync = function (f, ...rest) {
+        if (path.resolve(String(f)) === path.resolve(file)) {
+          const err = new Error(`${code}: read failed`);
+          err.code = code;
+          throw err;
+        }
+        return realRead.call(this, f, ...rest);
+      };
+      try { return fn(); } finally { fs.readFileSync = realRead; }
+    }
+
+    test('a chapter the disk cannot read is refused, not taken as empty', () => {
+      const dir = tempLibrary();
+      try {
+        const book = main.call('book:create', { title: 'Hello', author: 'Ada' });
+        const file = path.join(dir, book.id, 'chapters', 'c1.html');
+        main.call('chapter:write', book.id, 'c1', '<p>real words</p>');
+        for (const code of ['EACCES', 'EPERM', 'EBUSY', 'EIO']) {
+          assert.throws(
+            () => failingReads(file, code, () => main.call('chapter:write', book.id, 'c1', '<p>replaces</p>', '<p>real words</p>')),
+            new RegExp(code),
+            code
+          );
+          // the words on disk are untouched, and a later save still sees them
+          assert.equal(fs.readFileSync(file, 'utf8'), '<p>real words</p>', code);
+        }
+        assert.equal(main.call('chapter:write', book.id, 'c1', '<p>replaces</p>', '<p>real words</p>'), true);
+        assert.equal(main.call('chapter:read', book.id, 'c1'), '<p>replaces</p>');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    test('a chapter file that does not exist is still a new chapter', () => {
+      const dir = tempLibrary();
+      try {
+        const book = main.call('book:create', { title: 'Hello', author: 'Ada' });
+        const file = path.join(dir, book.id, 'chapters', 'c9.html');
+        const write = () => main.call('chapter:write', book.id, 'c9', '<p>first</p>', '<p>old</p>');
+        assert.equal(failingReads(file, 'ENOENT', write), true);
+        assert.equal(main.call('chapter:read', book.id, 'c9'), '<p>first</p>');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
   });
 });
