@@ -26,7 +26,7 @@ contextBridge.exposeInMainWorld('neo', {
   snapshotRead: (bookId, name, file) => ipcRenderer.invoke('snapshot:read', bookId, name, file),
   snapshotWrite: (bookId, name, file, text) => ipcRenderer.invoke('snapshot:write', bookId, name, file, text),
   snapshotRemoveFile: (bookId, name, file) => ipcRenderer.invoke('snapshot:removeFile', bookId, name, file),
-  snapshotRemove:(bookId, name) => ipcRenderer.invoke('snapshot:remove', bookId, name),
+  snapshotRemove: (bookId, name) => ipcRenderer.invoke('snapshot:remove', bookId, name),
 
   readJSON: (bookId, name, fallback) => ipcRenderer.invoke('json:read', bookId, name, fallback),
   writeJSON: (bookId, name, data) => ipcRenderer.invoke('json:write', bookId, name, data),
