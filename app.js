@@ -559,6 +559,28 @@ function toast(msg, ms = 4000) {
   toast._t = setTimeout(() => { h.hidden = true; }, ms);
 }
 
+// Why a chapter would not read, in the writer's words: the reason comes from
+// the error's code or its message (it crosses IPC as text), and the chapter
+// is named as the writer sees it.
+function chapterReadProblem(chId, err, meta = book) {
+  const full = String((err && err.message) || err || '') + ' ' + String((err && err.code) || '');
+  let reason;
+  if (/ECLOUD|iCloud/i.test(full)) reason = t('it is still in the cloud and not on this device yet');
+  else if (/EACCES|EPERM|denied|permission/i.test(full)) reason = t('permission was denied');
+  else if (/EBUSY|EAGAIN|locked|busy/i.test(full)) reason = t('it is busy or locked');
+  else reason = t('it could not be read ({reason})', { reason: full.trim().replace(/^.*: /, '') });
+  let name;
+  try { name = chapterName(chId, meta); } catch { name = chId; }
+  return t('Could not read {chapter}: {reason}', { chapter: name, reason });
+}
+let readProblemShown = {}; // book id → the failure last told for it
+function toastReadProblem(msg) {
+  const key = book ? book.id : '';
+  if (readProblemShown[key] === msg) return; // the same failure on every look is told once
+  readProblemShown[key] = msg;
+  toast(msg, 8000);
+}
+
 // Scripts that do not separate words with spaces: a whitespace count reports
 // one "word" for a whole sentence, so word goals and statistics read far too
 // low. Intl.Segmenter knows their boundaries; the same API already runs the
@@ -2052,7 +2074,7 @@ function bookTile(meta, opts = {}) {
         { label: 'Fountain (.fountain)', value: 'fountain' }, { label: 'Final Draft (.fdx)', value: 'fdx' }
       ]);
       if (!fmt) return;
-      await openBook(meta.id);
+      if (!(await openBook(meta.id))) return;
       await doExport(fmt);
     } else if (choice === 'export') {
       const fmt = await optionModal(t('Export “{title}”', { title: escHtml(shownTitle(meta.title)) }), null, [
@@ -2063,7 +2085,7 @@ function bookTile(meta, opts = {}) {
       ]);
       if (!fmt) return;
       if (window.Capacitor || fmt === 'paperback') {
-        await openBook(meta.id);
+        if (!(await openBook(meta.id))) return;
         await doExport(fmt);
       } else {
         await exportFromShelf(meta.id, fmt);
@@ -2546,15 +2568,22 @@ async function openBook(bookId) {
   // read) never ends up with a mix of the two.
   const gen = ++openGeneration;
   const meta = await window.neo.readBookMeta(bookId);
-  if (!meta || gen !== openGeneration) return;
+  if (!meta || gen !== openGeneration) return false;
   const html = {};
   for (const chId of meta.chapterOrder) {
-    html[chId] = await window.neo.readChapter(bookId, chId);
-    if (gen !== openGeneration) return;
+    try {
+      html[chId] = await window.neo.readChapter(bookId, chId);
+    } catch (err) {
+      // nothing has changed yet: the shelf stays, and the writer is told why
+      if (gen === openGeneration) toast(chapterReadProblem(chId, err, meta), 8000);
+      return false;
+    }
+    if (gen !== openGeneration) return false;
   }
   const sideStickies = await window.neo.readJSON(bookId, 'stickies', []);
   const sideDarlings = await window.neo.readJSON(bookId, 'darlings', []);
-  if (gen !== openGeneration) return;
+  if (gen !== openGeneration) return false;
+  readProblemShown = {}; // a book that opens starts with nothing told
   tabPlaces = {}; // a fresh book starts with fresh places
   book = meta;
   showWindowTitle();
@@ -2629,6 +2658,7 @@ async function openBook(bookId) {
     setTimeout(() => toast(t('Enter twice = section break · three times = new chapter · {key} shows everything else', { key: KHELP }), 7000), 800);
   }
   spReportState();
+  return true;
 }
 
 // the pages that show a faint word until they have their own
@@ -13280,7 +13310,10 @@ async function refreshFromDisk() {
     if (theirs) {
       for (const chId of meta.chapterOrder) {
         if (chapterHTML[chId] !== undefined) continue;
-        incoming[chId] = await window.neo.readChapter(bookId, chId);
+        try { incoming[chId] = await window.neo.readChapter(bookId, chId); } catch (err) {
+          toastReadProblem(chapterReadProblem(chId, err, meta));
+          return;
+        }
         if (!book || book.id !== bookId) return;
       }
     }
@@ -13296,11 +13329,16 @@ async function refreshFromDisk() {
       const st = stamps ? stamps[chId] : undefined;
       if (st !== undefined && st === diskStamps[chId]) continue;
       const before = savedHTML[chId];
-      const disk = await window.neo.readChapter(bookId, chId);
+      let disk;
+      try { disk = await window.neo.readChapter(bookId, chId); } catch (err) {
+        toastReadProblem(chapterReadProblem(chId, err));
+        return;
+      }
       if (!book || book.id !== bookId) return;
       fresh.push({ chId, st, before, disk });
     }
     if (!book || book.id !== bookId) return;
+    delete readProblemShown[bookId]; // every chapter read: a later failure is news again
     // Comments and Darlings are looked at every time, on their own: another
     // device can change them without touching book.json
     const sides = {};
