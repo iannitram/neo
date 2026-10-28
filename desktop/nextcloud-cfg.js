@@ -22,11 +22,20 @@
       const lines = text.split(/\r?\n/);
       
       const accounts = [];
-      
+      let section = '';
+
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line || line.startsWith(';')) continue;
-        
+
+        // Section headers like "[General]". Only [Accounts] holds account keys.
+        const sectionMatch = line.match(/^\[(.*)\]$/);
+        if (sectionMatch) {
+          section = sectionMatch[1];
+          continue;
+        }
+        if (section !== 'Accounts') continue;
+
         // Match account properties like "0\url=https://..."
         const accountMatch = line.match(/^(\d+)\\(.+?)=(.+)$/);
         if (accountMatch) {
@@ -69,8 +78,6 @@
               }
             }
           }
-        } else if (line === '[Accounts]') {
-          // Start of accounts section, do nothing
         }
       }
       
@@ -123,11 +130,17 @@
       // If no matching folder found, return null
       if (!bestFolder) return null;
       
-      // Return the local path joined with the remaining remote path
-      const remainingPath = remotePath.substring(bestFolder.targetPath.length);
-      // Ensure we don't have double slashes
-      const joinedPath = bestFolder.localPath + (remainingPath.startsWith('/') ? remainingPath.substring(1) : remainingPath);
-      return joinedPath;
+      // Remote path below the folder, without its leading slashes
+      const rest = remotePath.substring(bestFolder.targetPath.length).replace(/^\/+/, '');
+      // The folder itself: give back its localPath as it was written
+      if (!rest) return bestFolder.localPath;
+
+      // Join in the localPath's own separator style: backslashes for a Windows path
+      const localPath = bestFolder.localPath;
+      const sep = localPath.includes('\\') ? '\\' : '/';
+      // Exactly one separator between the localPath and the rest, whether or not it ends with one
+      const base = localPath ? localPath.replace(/[\\/]+$/, '') + sep : '';
+      return base + (sep === '\\' ? rest.replace(/\//g, '\\') : rest);
     }
   };
 
