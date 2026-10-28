@@ -418,7 +418,7 @@
   "Move to Trash": "Mover a la Papelera",
   "Move “{title}” to the Recycle Bin?": "¿Mover «{title}» a la Papelera de reciclaje?",
   "Move “{title}” to the Trash?": "¿Mover «{title}» a la Papelera?",
-  "Moves the book folder to Deleted Books in your NEO Library, where you can recover it.": "Mueve la carpeta del libro a Deleted Books en tu biblioteca de NEO, desde donde puedes recuperarlo.",
+  "Moves the book folder to Deleted Books in your NeoCraft Library, where you can recover it.": "Mueve la carpeta del libro a Deleted Books en tu biblioteca de NEO, desde donde puedes recuperarlo.",
   "Name": "Nombre",
   "Name in the header": "Nombre en el encabezado",
   "NEO can't save in your library folder": "NEO no puede guardar en la carpeta de tu biblioteca",
@@ -725,7 +725,7 @@
   "Take the gray suggestion": "Aceptar la sugerencia gris",
   "Take the gray suggestion, or step to the next element": "Aceptar la sugerencia gris o pasar al siguiente elemento",
   "Taken by you": "Creada por ti",
-  "Takes it off your shelves. The files stay safe in your NEO Library folder on disk.": "Lo quita de tus estanterías. Los archivos siguen a salvo en la carpeta de tu biblioteca de NEO.",
+  "Takes it off your shelves. The files stay safe in your NeoCraft Library folder on disk.": "Lo quita de tus estanterías. Los archivos siguen a salvo en la carpeta de tu biblioteca de NEO.",
   "Tap a card to write on it · hold a card to move it · hold and let go for more · + adds a card": "Toca una ficha para escribir en ella · mantenla pulsada para moverla · mantén y suelta para más · + añade una ficha",
   "Text": "Texto",
   "Text (.txt)": "Texto (.txt)",
@@ -960,7 +960,7 @@
   "“{title}” is back on the shelf": "«{title}» vuelve a estar en la estantería",
   "“{title}” is back where it was": "«{title}» ha vuelto a su sitio",
   "“{title}” now sits on {name}’s top shelf — Esc puts it back": "«{title}» está ahora en la estantería superior de {name}: Esc para deshacer",
-  "“{title}” removed from the shelves — its files are still in your NEO Library": "«{title}» retirado de las estanterías: los archivos siguen en tu biblioteca de NEO",
+  "“{title}” removed from the shelves — its files are still in your NeoCraft Library": "«{title}» retirado de las estanterías: los archivos siguen en tu biblioteca de NEO",
   "⌃Scroll": "⌃scroll",
   "⌘ Command · ⇧ Shift · ⌥ Option · ⌃ Control": "⌘ Comando · ⇧ Mayúsculas · ⌥ Opción · ⌃ Control"
 }

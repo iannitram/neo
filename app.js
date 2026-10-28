@@ -870,7 +870,7 @@ function showFirstRun() {
 }
 
 // Pen names: each author owns a set of shelves. Books all live in the one
-// NEO Library folder on disk regardless of name — switching or deleting a
+// NeoCraft Library folder on disk regardless of name — switching or deleting a
 // pen name never touches files.
 function currentAuthor() {
   if (!library.authors || !library.authors.length) {
@@ -1508,7 +1508,7 @@ function pageTile(shelf, meta, label) {
       {
         label: t('Remove page'),
         desc: window.Capacitor
-          ? t('Moves the book folder to Deleted Books in your NEO Library, where you can recover it.')
+          ? t('Moves the book folder to Deleted Books in your NeoCraft Library, where you can recover it.')
           : t('Sends the page to your system trash, where you can recover it.'),
         danger: true, value: 'remove'
       }
@@ -2044,8 +2044,8 @@ function bookTile(meta, opts = {}) {
         if (meta.coverImage) options.push({ label: t('Remove cover art'), desc: t('Deletes the image from the book folder. (To just hide it, use the ↻ on the book.)'), danger: true, value: 'uncover' });
       }
       options.push(
-        { label: t('Remove from bookshelf'), desc: t('Takes it off your shelves. The files stay safe in your NEO Library folder on disk.'), value: 'remove' },
-        { label: trashLabel, desc: window.Capacitor ? t('Moves the book folder to Deleted Books in your NEO Library, where you can recover it.') : t('Sends the book folder to your system trash, where you can recover it.'), danger: true, value: 'trash' }
+        { label: t('Remove from bookshelf'), desc: t('Takes it off your shelves. The files stay safe in your NeoCraft Library folder on disk.'), value: 'remove' },
+        { label: trashLabel, desc: window.Capacitor ? t('Moves the book folder to Deleted Books in your NeoCraft Library, where you can recover it.') : t('Sends the book folder to your system trash, where you can recover it.'), danger: true, value: 'trash' }
       );
       choice = await optionModal(t('“{title}”', { title: escHtml(shownTitle(meta.title)) }), null, options);
       if (choice === 'coverMenu') choice = await optionModal(t('Cover'), null, coverItems.filter((x) => x !== '-'));
@@ -2113,7 +2113,7 @@ function bookTile(meta, opts = {}) {
       for (const s of library.shelves) s.bookIds = s.bookIds.filter((b) => b !== meta.id);
       await writeLibrary(library);
       renderShelves();
-      toast(t('“{title}” removed from the shelves — its files are still in your NEO Library', { title: shownTitle(meta.title) }));
+      toast(t('“{title}” removed from the shelves — its files are still in your NeoCraft Library', { title: shownTitle(meta.title) }));
     } else if (choice === 'trash') {
       const ok = await window.neo.deleteBook(meta.id, meta.title);
       if (ok) {

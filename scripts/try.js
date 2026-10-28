@@ -97,8 +97,8 @@ const userData = process.platform === 'darwin'
     : path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), 'NEO');
 let settings = {};
 try { settings = JSON.parse(fs.readFileSync(path.join(userData, 'settings.json'), 'utf8')); } catch { /* none yet */ }
-const realLibrary = settings.libraryDir || path.join(os.homedir(), 'Documents', 'NEO Library');
-const library = path.join(home, 'NEO Library');
+const realLibrary = settings.libraryDir || path.join(os.homedir(), 'Documents', 'NeoCraft Library');
+const library = path.join(home, 'NeoCraft Library');
 
 // a copy of the books, read only from the real library. The backups, past
 // exports and sync leftovers stay behind. A file still in iCloud, or one
