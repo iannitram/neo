@@ -17,16 +17,17 @@
     }
     
     // Add items that were added locally but not in base
-    for (const id of local) {
+    for (let i = 0; i < local.length; i++) {
+      const id = local[i];
       if (!base.includes(id) && !result.includes(id)) {
-        // Find the nearest preceding id that exists in result
+        // Walk local backwards from the added id to find the nearest preceding id that exists in result
         let insertIndex = 0;
-        for (let i = 0; i < local.length; i++) {
-          if (local[i] === id) break;
-          const prevId = local[i];
+        for (let j = i - 1; j >= 0; j--) {
+          const prevId = local[j];
           const prevIndex = result.indexOf(prevId);
-          if (prevIndex !== -1 && prevIndex >= insertIndex) {
+          if (prevIndex !== -1) {
             insertIndex = prevIndex + 1;
+            break;
           }
         }
         
