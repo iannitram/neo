@@ -825,8 +825,8 @@ ipcMain.handle('chapter:read', (_e, bookId, chapterId) => {
 });
 
 // `expected` is the text the window last read or wrote for this chapter.
-// When the file holds something else (another device wrote it since, and
-// it isn't just an older copy of these words), nothing is written: the
+// When the file holds something else (another device wrote it since, even
+// if only formatting, order or a deletion changed), nothing is written: the
 // window is handed that text to keep as its own chapter first, so neither
 // version is lost to a save that happened before the next look at the disk.
 ipcMain.handle('chapter:write', (_e, bookId, chapterId, html, expected) => {
