@@ -732,6 +732,18 @@
     });
   }
 
+  // Going to the background: the page keeps a recovery draft on 'pause'
+  // (app.js), because the system can end the app before a disk write does.
+  // Android's webview already fires it; iOS gets it from the App plugin.
+  try {
+    const AppPlugin = window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if (AppPlugin && AppPlugin.addListener) {
+      const pause = () => document.dispatchEvent(new window.Event('pause'));
+      AppPlugin.addListener('pause', pause);
+      AppPlugin.addListener('appStateChange', (st) => { if (st && st.isActive === false) pause(); });
+    }
+  } catch { /* no App plugin in this shell */ }
+
   // The keyboard's height becomes a CSS variable, and Pocket's own bar and
   // panes sit above it (pocket.css). iOS is told nothing about resizing;
   // its own attempts left a black band behind when the keyboard went away.

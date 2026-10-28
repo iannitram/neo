@@ -2571,6 +2571,8 @@ async function openBook(bookId) {
   darlings = sideDarlings;
   sidecarBase[bookId + '/stickies'] = JSON.stringify(stickies);
   sidecarBase[bookId + '/darlings'] = JSON.stringify(darlings);
+  const recovered = recoverDrafts(bookId, meta.chapterOrder, chapterHTML, darlings);
+  if (recovered) setTimeout(() => toast(t('Words typed just before NEO closed were recovered.'), 8000), 600);
 
   $('#bookshelf-view').hidden = true;
   $('#editor-view').hidden = false;
@@ -12332,6 +12334,73 @@ let shelfExport = false; // see exportFromShelf
 // is never taken for another device's.
 const diskKnown = {};
 const knowDisk = (bookId, chId, html) => { diskKnown[bookId + '/' + chId] = html; };
+// ---- recovery drafts ----
+// A chapter's words are also kept in this device's localStorage, not the
+// library, from the edit until the disk confirms the write. A background
+// kill (iOS, Android, a closed tab) can arrive before the 800 ms save;
+// unload is never trusted to finish a disk write, so the draft is the
+// durable copy. A draft that is gone from storage was saved.
+const DRAFT_PREFIX = 'neo-draft:';
+const draftKey = (bookId, chId) => DRAFT_PREFIX + bookId + '/' + chId;
+function draftStore() { try { return window.localStorage || null; } catch { return null; } }
+function saveDraft(chId) {
+  const ls = draftStore();
+  if (!ls || !book || chapterHTML[chId] === undefined) return;
+  const html = chapterHTML[chId];
+  const known = diskKnown[book.id + '/' + chId];
+  try {
+    if (html === known) ls.removeItem(draftKey(book.id, chId));
+    else ls.setItem(draftKey(book.id, chId), JSON.stringify({ html, base: known === undefined ? '' : known, at: Date.now() }));
+  } catch { /* storage can be full or off; the disk save still runs */ }
+}
+function saveAllDrafts() {
+  if (!book || shelfExport) return;
+  for (const chId of book.chapterOrder) saveDraft(chId);
+}
+function clearDraft(bookId, chId, html) {
+  const ls = draftStore();
+  if (!ls) return;
+  try {
+    const raw = ls.getItem(draftKey(bookId, chId));
+    if (!raw) return;
+    // a newer draft (typed while this write was on its way) stays
+    if (JSON.parse(raw).html === html) ls.removeItem(draftKey(bookId, chId));
+  } catch { /* unreadable draft */ }
+}
+// On opening: a draft that differs from the file is adopted when the file
+// is still the one it grew from (the draft is newer). If the file changed
+// since (another device), the file stays and the draft goes to Darlings.
+// Returns how many chapters came back.
+function recoverDrafts(bookId, order, html, darlingList) {
+  const ls = draftStore();
+  if (!ls) return 0;
+  let n = 0;
+  for (const chId of order) {
+    const key = draftKey(bookId, chId);
+    let d = null;
+    try { d = JSON.parse(ls.getItem(key) || 'null'); } catch { d = null; }
+    if (!d || typeof d.html !== 'string') { try { ls.removeItem(key); } catch { /* off */ } continue; }
+    const disk = html[chId] || '';
+    if (d.html !== disk) {
+      if ((d.base || '') === disk) { html[chId] = d.html; n++; }
+      else {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = d.html;
+        darlingList.unshift({
+          id: 'dr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),
+          html: d.html, text: tmp.textContent || '', chapterId: chId,
+          chapterLabel: (book && book.chapterTitles && book.chapterTitles[chId]) || t('Manuscript'),
+          anchorPrefix: '', anchorSuffix: '', date: new Date().toISOString()
+        });
+        n++;
+      }
+    }
+    try { ls.removeItem(key); } catch { /* off */ }
+  }
+  return n;
+}
+// ---- end of recovery drafts ----
+
 // One write at a time per chapter, in the order they were asked for
 const chapterChain = {};
 function persistChapter(chId, html) {
@@ -12353,6 +12422,7 @@ function persistChapter(chId, html) {
     }
     if (r && typeof r.conflict === 'string') throw new Error('chapter keeps changing on disk');
     knowDisk(bookId, chId, html);
+    clearDraft(bookId, chId, html);
     return r;
   };
   const p = (chapterChain[key] || Promise.resolve()).catch(() => {}).then(run);
@@ -12410,6 +12480,7 @@ async function keepOtherDeviceVersion(bookId, chId, disk) {
 
 function scheduleChapterSave(chId) {
   maybeDailySnapshot(); // SNAPSHOTS: the first change of the day keeps the day's start
+  saveDraft(chId); // kept at once; the disk write below waits 800 ms
   clearTimeout(saveTimers[chId]);
   const bookId = book && book.id;
   saveTimers[chId] = setTimeout(() => {
@@ -13401,8 +13472,13 @@ window.addEventListener('focus', () => setTimeout(refreshFromDisk, 300));
 setInterval(() => { if (document.visibilityState === 'visible') refreshFromDisk(); }, 30000);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') setTimeout(refreshFromDisk, 300);
-  else if (book) flushAllSaves(); // iOS may end a backgrounded app without warning
+  else if (book) { saveAllDrafts(); flushAllSaves(); } // iOS may end a backgrounded app without warning
 });
+// pagehide and Capacitor's pause (Pocket's bridge raises it): the draft is
+// written synchronously, since the disk write may never finish
+const keepDrafts = () => { if (book) { saveAllDrafts(); flushAllSaves(); } };
+window.addEventListener('pagehide', keepDrafts);
+document.addEventListener('pause', keepDrafts);
 
 window.addEventListener('beforeunload', flushAllSaves);
 // flush whenever focus leaves NEO, and every 20 seconds
