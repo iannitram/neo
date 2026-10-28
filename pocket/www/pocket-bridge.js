@@ -396,8 +396,16 @@
       await writeText(p(bookId, 'snapshots', name, file), text);
       return true;
     },
+    // throws when the folder is still there after the attempt, as the desktop
+    // does, so thinning keeps the source and stops (#114)
     snapshotRemove: async (bookId, name) => {
-      try { await FS().rmdir({ ...at(p(bookId, 'snapshots', name)), recursive: true }); } catch { /* already gone */ }
+      const rel = p(bookId, 'snapshots', name);
+      try { await FS().rmdir({ ...at(rel), recursive: true }); } catch { /* checked below */ }
+      let there = true;
+      try { await FS().stat(at(rel)); } catch (err) {
+        there = !/does not exist|not ?found|no such|ENOENT/i.test(String((err && err.message) || err));
+      }
+      if (there) throw new Error('snapshot remove: ' + name + ' is still there');
       return true;
     },
 

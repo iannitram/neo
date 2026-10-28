@@ -945,8 +945,12 @@ ipcMain.handle('snapshot:write', (_e, bookId, name, file, text) => {
   writeFileDurable(target, text);
   return true;
 });
+// Throws when the folder is still there afterwards, so thinning keeps the
+// source and stops (#114); a snapshot that is gone, or was never there, is fine.
 ipcMain.handle('snapshot:remove', (_e, bookId, name) => {
-  try { fs.rmSync(snapshotDir(bookId, name), { recursive: true, force: true }); } catch (err) { logError('snapshot remove', err); }
+  const dir = snapshotDir(bookId, name);
+  try { fs.rmSync(dir, { recursive: true, force: true }); } catch (err) { logError('snapshot remove', err); }
+  if (fs.existsSync(dir)) throw new Error('snapshot remove: ' + name + ' is still on disk');
   return true;
 });
 
