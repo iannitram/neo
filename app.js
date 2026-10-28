@@ -2571,8 +2571,9 @@ async function openBook(bookId) {
   darlings = sideDarlings;
   sidecarBase[bookId + '/stickies'] = JSON.stringify(stickies);
   sidecarBase[bookId + '/darlings'] = JSON.stringify(darlings);
-  const recovered = recoverDrafts(bookId, meta.chapterOrder, chapterHTML, darlings);
-  if (recovered) setTimeout(() => toast(t('Words typed just before NEO closed were recovered.'), 8000), 600);
+  const recovered = await recoverDrafts(bookId, meta.chapterOrder, chapterHTML, darlings);
+  if (recovered.darlings) setTimeout(() => toast(t('Updated from your other device — the text it replaced is in Darlings'), 8000), 600);
+  else if (recovered.restored) setTimeout(() => toast(t('Words typed just before NEO closed were recovered.'), 8000), 600);
 
   $('#bookshelf-view').hidden = true;
   $('#editor-view').hidden = false;
@@ -12351,7 +12352,11 @@ function saveDraft(chId) {
   try {
     if (html === known) ls.removeItem(draftKey(book.id, chId));
     else ls.setItem(draftKey(book.id, chId), JSON.stringify({ html, base: known === undefined ? '' : known, at: Date.now() }));
-  } catch { /* storage can be full or off; the disk save still runs */ }
+  } catch {
+    // storage can be full or off; the disk save still runs. An older draft
+    // must not outlive this failure, or it would be restored over newer words.
+    try { ls.removeItem(draftKey(book.id, chId)); } catch { /* off */ }
+  }
 }
 function saveAllDrafts() {
   if (!book || shelfExport) return;
@@ -12370,34 +12375,36 @@ function clearDraft(bookId, chId, html) {
 // On opening: a draft that differs from the file is adopted when the file
 // is still the one it grew from (the draft is newer). If the file changed
 // since (another device), the file stays and the draft goes to Darlings.
-// Returns how many chapters came back.
-function recoverDrafts(bookId, order, html, darlingList) {
+// A restored chapter keeps its draft: persistChapter's clearDraft removes it
+// once the disk confirms the write. A draft sent to Darlings is removed only
+// after darlings.json is written. Resolves { restored, darlings }.
+async function recoverDrafts(bookId, order, html, darlingList) {
   const ls = draftStore();
-  if (!ls) return 0;
-  let n = 0;
+  const out = { restored: 0, darlings: 0 };
+  if (!ls) return out;
   for (const chId of order) {
     const key = draftKey(bookId, chId);
     let d = null;
     try { d = JSON.parse(ls.getItem(key) || 'null'); } catch { d = null; }
     if (!d || typeof d.html !== 'string') { try { ls.removeItem(key); } catch { /* off */ } continue; }
     const disk = html[chId] || '';
-    if (d.html !== disk) {
-      if ((d.base || '') === disk) { html[chId] = d.html; n++; }
-      else {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = d.html;
-        darlingList.unshift({
-          id: 'dr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),
-          html: d.html, text: tmp.textContent || '', chapterId: chId,
-          chapterLabel: (book && book.chapterTitles && book.chapterTitles[chId]) || t('Manuscript'),
-          anchorPrefix: '', anchorSuffix: '', date: new Date().toISOString()
-        });
-        n++;
-      }
-    }
-    try { ls.removeItem(key); } catch { /* off */ }
+    if (d.html === disk) { try { ls.removeItem(key); } catch { /* off */ } continue; }
+    if ((d.base || '') === disk) { html[chId] = d.html; out.restored++; continue; }
+    const tmp = document.createElement('div');
+    tmp.innerHTML = d.html;
+    darlingList.unshift({
+      id: 'dr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),
+      html: d.html, text: (tmp.textContent || '').slice(0, 2000), chapterId: chId,
+      chapterLabel: (book && book.chapterTitles && book.chapterTitles[chId]) || t('Manuscript'),
+      anchorPrefix: '', anchorSuffix: '', date: new Date().toISOString()
+    });
+    try {
+      await writeSidecar(bookId, 'darlings', darlingList);
+      out.darlings++;
+      try { ls.removeItem(key); } catch { /* off */ }
+    } catch { /* the draft stays; the next opening tries again */ }
   }
-  return n;
+  return out;
 }
 // ---- end of recovery drafts ----
 
