@@ -12457,7 +12457,9 @@ async function saveMeta() {
 }
 
 function flushAllSaves(e) {
-  if (!book || shelfExport) return;
+  if (!book || shelfExport) return [];
+  // every write this flush starts is returned, for settleSaves to wait on
+  const pending = [];
   // remember where you were, for next session and for the other device:
   // the chapter, the paragraph and the letter (the same place on any
   // screen) plus the scroll (this screen's). `at` changes only when the
@@ -12488,14 +12490,41 @@ function flushAllSaves(e) {
   }
   for (const chId of book.chapterOrder) {
     if (chapterHTML[chId] !== undefined && chapterHTML[chId] !== savedHTML[chId]) {
-      persistChapter(chId);
+      pending.push(persistChapter(chId));
     }
   }
+  // writes still running from before this flush count too (a chapter in its chain)
+  for (const job of Object.values(chapterChain)) pending.push(job);
   flushAux();
+  pending.push(...Object.values(auxQueue));
   flushStickiesSave();
   flushSidecars();
-  if (moved || metaSig(book) !== savedMetaSig) saveMeta();
+  if (moved || metaSig(book) !== savedMetaSig) pending.push(saveMeta());
+  return pending;
 }
+
+// B08: main asks for this before the window closes, NEO quits or an update
+// restarts (main.js settleWindowBeforeClose). It resolves ok only when every
+// save the flush started has reached the disk. A failure or a stall is
+// reported as one, never as saved; a notes or Darlings write still queued
+// after a failure is reported too.
+const FLUSH_SETTLE_MS = 6000; // main gives up after 8 s
+function settleSaves() {
+  if (typeof NeoCraft_FlushBarrier === 'undefined') return Promise.resolve({ ok: true, failed: [] });
+  const barrier = NeoCraft_FlushBarrier.createFlushBarrier();
+  const pending = book && !shelfExport ? flushAllSaves() : [];
+  for (const p of pending) barrier.track(p, 'save');
+  return barrier.flush(FLUSH_SETTLE_MS).then((r) => {
+    const left = [...Object.keys(auxPending), ...Object.keys(sidecarPending)];
+    return r.ok && left.length ? { ok: false, failed: left } : r;
+  });
+}
+if (window.neo.onFlushRequest) {
+  window.neo.onFlushRequest((id) => {
+    settleSaves().then((r) => window.neo.flushReply(id, r), () => window.neo.flushReply(id, { ok: false, failed: ['settle'] }));
+  });
+}
+
 
 /* ================================================================== */
 /*  SNAPSHOTS                                                          */

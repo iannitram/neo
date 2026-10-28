@@ -57,6 +57,9 @@ contextBridge.exposeInMainWorld('neo', {
 
   poetryState: (on) => ipcRenderer.send('poetry:state', on),
   flushState: (on) => ipcRenderer.send('flush:state', on),
+  // B08: main asks before a close, quit or update restart; the reply says whether the saves are on disk
+  onFlushRequest: (cb) => ipcRenderer.on('flush:request', (_e, id) => cb(id)),
+  flushReply: (id, result) => ipcRenderer.send('flush:reply', id, result),
   scriptState: (st) => ipcRenderer.send('script:state', st),
   printPaperback: (job) => ipcRenderer.invoke('print:paperback', job),
   printManuscript: (job) => ipcRenderer.invoke('print:manuscript', job), // File → Export → Manuscript Format… as a PDF

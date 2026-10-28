@@ -40,7 +40,10 @@ function bookInMemory(chapters) {
     captureCaret: () => null,
     saveMeta: async () => {},
     maybeDailySnapshot: none,
-    flushAux: none, flushStickiesSave: none, flushSidecars: none
+    flushAux: none, flushStickiesSave: none, flushSidecars: none,
+    // B08: settleSaves (the close's wait) uses the barrier and the notes and Darlings queues
+    auxQueue: {}, auxPending: {}, sidecarPending: {},
+    NeoCraft_FlushBarrier: require('../flush-barrier.js')
   });
   for (const [from, to] of SLICES) {
     const at = app.indexOf(from);
@@ -115,4 +118,36 @@ test('a save that comes due while a write is on its way writes when that write f
   assert.equal(await flushed, 'failed');
   await settled(page);
   assert.deepEqual(writes, [{ chId: 'x', html: F + '<p>Typed.</p>' }]);
+});
+
+// B08: the window's close, quit and update restart ask settleSaves first. It
+// resolves ok only when every save it started (or that was already running)
+// is on the disk; a failed write is reported, never called saved.
+test('settleSaves waits for a save still queued and reports ok once it is on disk', async () => {
+  const { page, writes } = bookInMemory({ x: F });
+  heldTimers(page);
+  page.chapterHTML.x = F + '<p>Typed.</p>';
+  page.scheduleChapterSave('x');
+  const r = await page.settleSaves();
+  assert.equal(r.ok, true, 'the close may go on');
+  assert.deepEqual(writes, [{ chId: 'x', html: F + '<p>Typed.</p>' }], 'the words were written before the answer');
+});
+
+test('settleSaves reports a chapter write that fails as not saved', async () => {
+  const { page } = bookInMemory({ x: F });
+  heldTimers(page);
+  page.window.neo.writeChapter = async () => { throw new Error('disk full'); };
+  page.chapterHTML.x = F + '<p>Typed.</p>';
+  page.scheduleChapterSave('x');
+  const r = await page.settleSaves();
+  assert.equal(r.ok, false);
+  assert.deepEqual([...new Set(r.failed)], ['save']);
+});
+
+test('settleSaves keeps a notes write that is still queued after a failure as not saved', async () => {
+  const { page } = bookInMemory({ x: F });
+  page.auxPending['b/notes'] = { bookId: 'b', kind: 'notes', html: '<p>n</p>', inFlight: false };
+  const r = await page.settleSaves();
+  assert.equal(r.ok, false);
+  assert.deepEqual([...r.failed], ['b/notes']);
 });
