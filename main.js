@@ -818,7 +818,15 @@ ipcMain.handle('chapter:stamps', (_e, bookId) => {
 
 ipcMain.handle('chapter:read', (_e, bookId, chapterId) => {
   const file = path.join(bookDir(bookId), 'chapters', libName(chapterId) + '.html');
-  const read = () => { try { return fs.readFileSync(file, 'utf8'); } catch { return ''; } };
+  const read = () => {
+    try { return fs.readFileSync(file, 'utf8'); } catch (err) {
+      // only a missing chapter is empty. Locked, denied or I/O failures must
+      // not read as '': the window would open a blank page over the words,
+      // and the next save would write that blank back.
+      if (err && err.code === 'ENOENT') return '';
+      throw new Error(`Could not read chapter ${libName(chapterId)}: ${err && err.code || err}`);
+    }
+  };
   // (one iCloud never brings down reads as empty, like a missing file; a
   // save over it is refused below until it's here)
   return afterLocal([file], read, () => '');
