@@ -97,7 +97,7 @@
         await FS().rename({ from: from.path, to: to.path, directory: from.directory, toDirectory: to.directory });
         return;
       } catch (cause) {
-        err = new Error(t('Could not save {file}: {error}', { file: path, error: String((cause && cause.message) || cause) }));
+        err = new Error(String((cause && cause.message) || cause));
         err.name = 'RetryableSaveError';
         err.retryable = true;
         err.path = path;
