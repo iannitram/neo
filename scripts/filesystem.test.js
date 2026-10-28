@@ -381,6 +381,27 @@ describe('filesystem', { concurrency: 1 }, () => {
       }
     });
 
+    test('a chapter read the disk refuses throws, and is not read back as empty', () => {
+      const dir = tempLibrary();
+      try {
+        const book = main.call('book:create', { title: 'Hello', author: 'Ada' });
+        const file = path.join(dir, book.id, 'chapters', 'c1.html');
+        main.call('chapter:write', book.id, 'c1', '<p>real words</p>');
+        for (const code of ['EACCES', 'EPERM', 'EBUSY', 'EIO']) {
+          assert.throws(
+            () => failingReads(file, code, () => main.call('chapter:read', book.id, 'c1')),
+            new RegExp(code),
+            code
+          );
+        }
+        // the words are still there, and a chapter that is simply missing still reads as empty
+        assert.equal(fs.readFileSync(file, 'utf8'), '<p>real words</p>');
+        assert.equal(main.call('chapter:read', book.id, 'c2'), '');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
     test('a chapter file that does not exist is still a new chapter', () => {
       const dir = tempLibrary();
       try {
