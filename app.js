@@ -12582,23 +12582,47 @@ function snapsToThin(snaps, now) {
 // back to match before anything is removed. A next snapshot that already has
 // a chapter keeps its own version, which is what readers see from there on.
 // Any failure stops the pass with the source still in place, so the next
-// snapshot tries again (#13).
+// snapshot tries again (#13). A remove that fails throws too (#114).
+// A file the next snapshot holds is its own only if its snapshot.json lists
+// that chapter as changed; any other file there was carried forward by an
+// earlier pass, so it is read back and compared like a fresh copy (#114).
 async function thinSnapshots(neo, bookId, snaps, now) {
   for (const gone of snapsToThin(snaps, now)) {
     const i = snaps.findIndex((s) => s.name === gone);
     const next = snaps[i + 1];
     if (i < 0 || !next) continue;
     for (const f of snaps[i].files) {
-      if (!f.endsWith('.html') || next.files.has(f)) continue;
+      if (!f.endsWith('.html')) continue;
+      const listed = next.files.has(f);
+      if (listed && !(await isCarriedCopy(neo, bookId, next, f))) continue; // its own version
       const text = await neo.snapshotRead(bookId, snaps[i].name, f);
-      if ((await neo.snapshotWrite(bookId, next.name, f, text)) === false) { next.files.add(f); continue; } // already there: its own
-      const copy = await neo.snapshotRead(bookId, next.name, f);
-      if (copy !== text) throw new Error(`snapshot thinning: ${f} did not copy to ${next.name} intact`);
+      if (!listed && (await neo.snapshotWrite(bookId, next.name, f, text)) === false && !(await isCarriedCopy(neo, bookId, next, f))) {
+        next.files.add(f); // another device's own version
+        continue;
+      }
+      let copy = await neo.snapshotRead(bookId, next.name, f);
+      if (copy !== text) {
+        // a corrupt carried copy: discard it, copy again, and check again; the
+        // source stays if that copy is no better (#114)
+        await neo.snapshotRemoveFile(bookId, next.name, f);
+        await neo.snapshotWrite(bookId, next.name, f, text);
+        copy = await neo.snapshotRead(bookId, next.name, f);
+        if (copy !== text) throw new Error(`snapshot thinning: ${f} did not copy to ${next.name} intact`);
+      }
       next.files.add(f);
     }
     await neo.snapshotRemove(bookId, gone);
     snaps.splice(i, 1);
   }
+}
+// true when the file in `snap` was carried forward by thinning rather than
+// written by that snapshot (its snapshot.json does not list the chapter as
+// changed). A snapshot.json that cannot be read counts as the snapshot's own.
+async function isCarriedCopy(neo, bookId, snap, f) {
+  let meta = null;
+  try { meta = JSON.parse(await neo.snapshotRead(bookId, snap.name, 'snapshot.json')); } catch { return false; }
+  if (!meta || !Array.isArray(meta.changed)) return false;
+  return !meta.changed.includes(f.slice(0, -'.html'.length));
 }
 // where a chapter's text at snapshots[i] is: the newest snapshot at or
 // before it holding the file (snapshots oldest first, each with `files`)

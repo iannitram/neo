@@ -361,7 +361,14 @@
       const file = p(bookId, 'chapters', chId + '.html');
       if (typeof expected === 'string') {
         let cur = null;
-        try { cur = await readText(file); } catch { /* not there */ }
+        try { cur = await readText(file); } catch (err) {
+          // Capacitor says "File does not exist." for a new chapter: nothing to
+          // keep. Any other failure (denied, locked, I/O) leaves the disk text
+          // unknown, so nothing is replaced (main.js does the same).
+          if (!/does not exist|no such file/i.test(String(err && (err.message || err)))) {
+            throw new Error(`Could not read chapter ${chId}: ${err && err.message || err}`);
+          }
+        }
         if (cur !== null && chapterDiverged(cur, expected, html)) return { conflict: cur };
       }
       await writeText(file, html);
@@ -396,8 +403,28 @@
       await writeText(p(bookId, 'snapshots', name, file), text);
       return true;
     },
+    // discards one chapter file so a corrupt carried copy can be written again (#114)
+    snapshotRemoveFile: async (bookId, name, file) => {
+      if (!/^[\w-][\w.-]*\.html$/.test(file) || !/^[A-Za-z0-9-]+$/.test(name)) throw new Error('Invalid snapshot file');
+      const rel = p(bookId, 'snapshots', name, file);
+      try { await FS().deleteFile(at(rel)); } catch { /* checked below */ }
+      let there = true;
+      try { await FS().stat(at(rel)); } catch (err) {
+        there = !/does not exist|not ?found|no such|ENOENT/i.test(String((err && err.message) || err));
+      }
+      if (there) throw new Error('snapshot removeFile: ' + file + ' is still there');
+      return true;
+    },
+    // throws when the folder is still there after the attempt, as the desktop
+    // does, so thinning keeps the source and stops (#114)
     snapshotRemove: async (bookId, name) => {
-      try { await FS().rmdir({ ...at(p(bookId, 'snapshots', name)), recursive: true }); } catch { /* already gone */ }
+      const rel = p(bookId, 'snapshots', name);
+      try { await FS().rmdir({ ...at(rel), recursive: true }); } catch { /* checked below */ }
+      let there = true;
+      try { await FS().stat(at(rel)); } catch (err) {
+        there = !/does not exist|not ?found|no such|ENOENT/i.test(String((err && err.message) || err));
+      }
+      if (there) throw new Error('snapshot remove: ' + name + ' is still there');
       return true;
     },
 

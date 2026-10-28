@@ -838,7 +838,11 @@ ipcMain.handle('chapter:write', (_e, bookId, chapterId, html, expected) => {
   if (isCloudOnly(file)) { requestDownload([file]); throw cloudError(file); }
   if (typeof expected === 'string') {
     let cur = null;
-    try { cur = fs.readFileSync(file, 'utf8'); } catch { /* not there: nothing to keep */ }
+    try { cur = fs.readFileSync(file, 'utf8'); } catch (err) {
+      // not there: a new chapter, nothing to keep. Any other failure (locked,
+      // denied, I/O) means the disk text is unknown, so nothing is replaced.
+      if (!err || err.code !== 'ENOENT') throw new Error(`Could not read chapter ${libName(chapterId)}: ${err && err.code || err}`);
+    }
     if (cur !== null && chapterDiverged(cur, expected, html)) return { conflict: cur };
   }
   writeFileDurable(file, html);
@@ -945,8 +949,21 @@ ipcMain.handle('snapshot:write', (_e, bookId, name, file, text) => {
   writeFileDurable(target, text);
   return true;
 });
+// Discards one chapter file of a snapshot so a corrupt carried copy can be
+// written again (#114). Never snapshot.json; throws if the file is still there.
+ipcMain.handle('snapshot:removeFile', (_e, bookId, name, file) => {
+  const fp = snapshotFile(bookId, name, file);
+  if (!file.endsWith('.html')) throw new Error('Only a chapter file can be removed');
+  try { fs.rmSync(fp, { force: true }); } catch (err) { logError('snapshot removeFile', err); }
+  if (fs.existsSync(fp)) throw new Error('snapshot removeFile: ' + file + ' is still on disk');
+  return true;
+});
+// Throws when the folder is still there afterwards, so thinning keeps the
+// source and stops (#114); a snapshot that is gone, or was never there, is fine.
 ipcMain.handle('snapshot:remove', (_e, bookId, name) => {
-  try { fs.rmSync(snapshotDir(bookId, name), { recursive: true, force: true }); } catch (err) { logError('snapshot remove', err); }
+  const dir = snapshotDir(bookId, name);
+  try { fs.rmSync(dir, { recursive: true, force: true }); } catch (err) { logError('snapshot remove', err); }
+  if (fs.existsSync(dir)) throw new Error('snapshot remove: ' + name + ' is still on disk');
   return true;
 });
 
