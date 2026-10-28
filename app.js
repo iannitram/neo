@@ -905,9 +905,14 @@ async function shelfMeta(bookId) {
 // Saves a book's meta and drops the cached copy. This used to be done by
 // replacing window.neo.writeBookMeta, but on desktop that object is
 // read-only, so the assignment threw and app.js stopped loading.
-function writeBookMeta(bookId, meta) {
+// The disk's answer is the book as it now stands (a stale save merged with a
+// newer one, at its new revision): it is copied into the caller's object, so
+// the live book takes the merged chapters and the revision. Returns the stamp.
+async function writeBookMeta(bookId, meta) {
   bookMetaCache.delete(bookId);
-  return window.neo.writeBookMeta(bookId, meta);
+  const saved = await window.neo.writeBookMeta(bookId, meta);
+  Object.assign(meta, saved);
+  return saved.modified;
 }
 
 async function renderShelves() {
@@ -12462,7 +12467,7 @@ function metaSig(m) {
   if (!m) return '';
   const c = {};
   for (const k of Object.keys(m).sort()) {
-    if (k === 'lastPosition' || k === 'modified' || k === 'wordCount' || k === 'dailyCounts') continue; // bookkeeping, not the book
+    if (k === 'lastPosition' || k === 'modified' || k === 'revision' || k === 'wordCount' || k === 'dailyCounts') continue; // bookkeeping, not the book
     const v = m[k];
     if (v === undefined || v === null || v === '') continue;
     if (typeof v === 'object' && Object.keys(v).length === 0) continue;

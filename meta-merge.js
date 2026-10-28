@@ -91,6 +91,23 @@
     return { meta, conflicts };
   }
 
+  // The revision rule for a save of book.json (shared by main.js and Pocket).
+  // `base` is the book as this page loaded it at meta.revision (null if not
+  // known), `disk` is what the file holds now. A save that is current, or
+  // ahead of the disk, writes one revision more. A stale save (the disk has
+  // moved on) is merged with the disk and writes the disk's revision + 1.
+  // The result is a new object: nothing passed in is changed.
+  function reviseBookMeta(base, meta, disk) {
+    const revOf = (m) => (m && typeof m.revision === 'number' ? m.revision : 0);
+    const withOrder = (m) => ({ ...m, chapterOrder: Array.isArray(m && m.chapterOrder) ? m.chapterOrder : [] });
+    const baseRev = revOf(meta);
+    const diskRev = revOf(disk);
+    if (!disk || diskRev <= baseRev) return { ...meta, revision: Math.max(baseRev, diskRev) + 1 };
+    const known = base ? withOrder(base) : { chapterOrder: [] };
+    const { meta: merged } = mergeBookMeta(known, withOrder(meta), withOrder(disk));
+    return { ...merged, revision: diskRev + 1 };
+  }
+
   // Clone helper to avoid mutating or referencing frozen/original objects
   function cloneVal(v) {
     return v && typeof v === 'object' ? JSON.parse(JSON.stringify(v)) : v;
@@ -303,7 +320,7 @@
     return { library, conflicts };
   }
 
-  const api = { mergeOrder, mergeBookMeta, mergeLibrary };
+  const api = { mergeOrder, mergeBookMeta, mergeLibrary, reviseBookMeta };
 
   if (typeof module === 'object' && module.exports) 
     {module.exports = api;}
