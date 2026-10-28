@@ -1,0 +1,56 @@
+# Checks every pull request before it can merge (R29: neo is public, so the
+# runners are GitHub's). The unit tests run on all three desktop platforms;
+# lint fails only for errors a pull request adds to the baseline in
+# scripts/lint-baseline.txt. The electron e2e scripts stay out of this job.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        run: npm ci
+        timeout-minutes: 15
+      # A hang (see the iCloud tests, #118) should fail this job, not hold it
+      # open for hours.
+      - name: Unit tests
+        run: npm test
+        timeout-minutes: 30
+
+  lint:
+    name: Lint (new errors only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        run: npm ci
+        timeout-minutes: 15
+      - name: oxlint against the baseline
+        run: npm run lint:ci
+        timeout-minutes: 10
