@@ -73,3 +73,13 @@ test('modified is the later of local and remote', () => {
 test('9. a local addition goes after its nearest preceding id in local order, even when remote reorders', () => {
   assert.deepEqual(mergeOrder(deepFreeze(['a', 'b']), deepFreeze(['a', 'b', 'X']), deepFreeze(['b', 'a'])), ['b', 'X', 'a']);
 });
+
+test('10. modified and revision follow their own rules and never appear in conflicts', () => {
+  const base = { title: 'A', chapterOrder: [], revision: 1, modified: '2026-01-01T00:00:00.000Z' };
+  const local = { ...base, revision: 3, modified: '2026-03-01T00:00:00.000Z' };
+  const remote = { ...base, revision: 5, modified: '2026-02-01T00:00:00.000Z' };
+  const r = mergeBookMeta(deepFreeze(clone(base)), deepFreeze(clone(local)), deepFreeze(clone(remote)));
+  assert.equal(r.meta.revision, 6);
+  assert.equal(r.meta.modified, '2026-03-01T00:00:00.000Z');
+  assert.deepEqual(r.conflicts, []);
+});
