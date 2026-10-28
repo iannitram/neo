@@ -72,7 +72,7 @@ The browser editor *is* Document mode, so this comes first even though desktop d
 - **Fallback (D3/D6):** if the fidelity scanner flags a file, the user gets *Open in Collabora* (opens the file with `richdocuments`), *Save my edits as a copy*, or *Cancel*.
 - **Demote Collabora:** NeoCraft becomes the default .docx handler, and Collabora stays installed for the fallback.
 - **Spike first (half a day):** confirm how Nextcloud 33 resolves two apps claiming the same type (Viewer handler order and file-action priority), and how richdocuments takes the default. This is the riskiest unknown in the whole plan, so it's measured before M2 starts.
-- **Updates from the admin panel** (SPEC M18): the `neocraft` Nextcloud app ships as signed releases through the merged app-store feed (craft-nc-appstore), offered on the Apps page and installed by its scheduled job (#86, #87, #88). Desktop updates stay as D8 says.
+- **Updates from the admin panel** (SPEC M18): the `neocraft` Nextcloud app ships as signed releases through the merged app-store feed (the app-store repo (private)), offered on the Apps page and installed by its scheduled job (#86, #87, #88). Desktop updates stay as D8 says.
 - **Done when:** clicking a simple .docx in Nextcloud Files opens NeoCraft, edits save back as a new Nextcloud version, a complex one routes to Collabora, and two tabs on the same file never overwrite each other.
 
 ### M3 — The rest of the browser: .rtf, .md, .txt, and "+ New"
