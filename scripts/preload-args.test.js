@@ -36,3 +36,9 @@ test('writeChapter forwards the expected stamp to chapter:write', () => {
   api.writeChapter('b', 'c1', '<p>x</p>', 'stamp');
   assert.deepStrictEqual(calls[0], ['chapter:write', 'b', 'c1', '<p>x</p>', 'stamp']);
 });
+
+test('readChapter forwards the book and chapter to chapter:read', () => {
+  const { api, calls } = loadPreload();
+  api.readChapter('b', 'c1');
+  assert.deepStrictEqual(calls[0], ['chapter:read', 'b', 'c1']);
+});
