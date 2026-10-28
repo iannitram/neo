@@ -12007,7 +12007,7 @@ function runSidecar(key, job) {
   job.inFlight = true;
   const json = JSON.stringify(job.data);
   // kept on the job so a flush can wait on a write that is already running
-  return job.promise = Promise.resolve().then(() => window.neo.writeJSON(job.bookId, job.name, job.data)).then((r) => {
+  const promise = Promise.resolve().then(() => window.neo.writeJSON(job.bookId, job.name, job.data)).then((r) => {
     if (sidecarPending[key] === job) delete sidecarPending[key];
     sidecarBase[key] = json;
     return r;
@@ -12016,6 +12016,8 @@ function runSidecar(key, job) {
     window.neo.logError('save ' + job.name + ': ' + (err && err.message || err));
     throw err;
   });
+  job.promise = promise;
+  return promise;
 }
 // every write is returned (running ones too) for settleSaves to wait on
 function flushSidecars() {
