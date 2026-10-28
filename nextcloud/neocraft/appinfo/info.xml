@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<info>
+	<id>neocraft</id>
+	<name>NeoCraft</name>
+	<namespace>NeoCraft</namespace>
+	<licence>MIT</licence>
+	<version>0.1.0</version>
+	<dependencies>
+		<nextcloud min-version="33" max-version="33"/>
+	</dependencies>
+</info>

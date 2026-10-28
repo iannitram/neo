@@ -1,0 +1,24 @@
+{
+    "name": "iannitram/neocraft",
+    "description": "Nextcloud integration for Neo editor",
+    "type": "project",
+    "license": "MIT",
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^10",
+        "nextcloud/ocp": "^33"
+    },
+    "autoload": {
+        "psr-4": {
+            "OCA\\NeoCraft\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OCA\\NeoCraft\\Tests\\": "tests/"
+        },
+        "classmap": [
+            "vendor/nextcloud/ocp/OCP/"
+        ]
+    }
+}
