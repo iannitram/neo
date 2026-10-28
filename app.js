@@ -12571,8 +12571,15 @@ async function thinSnapshots(neo, bookId, snaps, now) {
         next.files.add(f); // another device's own version
         continue;
       }
-      const copy = await neo.snapshotRead(bookId, next.name, f);
-      if (copy !== text) throw new Error(`snapshot thinning: ${f} did not copy to ${next.name} intact`);
+      let copy = await neo.snapshotRead(bookId, next.name, f);
+      if (copy !== text) {
+        // a corrupt carried copy: discard it, copy again, and check again; the
+        // source stays if that copy is no better (#114)
+        await neo.snapshotRemoveFile(bookId, next.name, f);
+        await neo.snapshotWrite(bookId, next.name, f, text);
+        copy = await neo.snapshotRead(bookId, next.name, f);
+        if (copy !== text) throw new Error(`snapshot thinning: ${f} did not copy to ${next.name} intact`);
+      }
       next.files.add(f);
     }
     await neo.snapshotRemove(bookId, gone);

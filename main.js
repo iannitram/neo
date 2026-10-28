@@ -945,6 +945,15 @@ ipcMain.handle('snapshot:write', (_e, bookId, name, file, text) => {
   writeFileDurable(target, text);
   return true;
 });
+// Discards one chapter file of a snapshot so a corrupt carried copy can be
+// written again (#114). Never snapshot.json; throws if the file is still there.
+ipcMain.handle('snapshot:removeFile', (_e, bookId, name, file) => {
+  const fp = snapshotFile(bookId, name, file);
+  if (!file.endsWith('.html')) throw new Error('Only a chapter file can be removed');
+  try { fs.rmSync(fp, { force: true }); } catch (err) { logError('snapshot removeFile', err); }
+  if (fs.existsSync(fp)) throw new Error('snapshot removeFile: ' + file + ' is still on disk');
+  return true;
+});
 // Throws when the folder is still there afterwards, so thinning keeps the
 // source and stops (#114); a snapshot that is gone, or was never there, is fine.
 ipcMain.handle('snapshot:remove', (_e, bookId, name) => {
