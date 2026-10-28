@@ -838,7 +838,11 @@ ipcMain.handle('chapter:write', (_e, bookId, chapterId, html, expected) => {
   if (isCloudOnly(file)) { requestDownload([file]); throw cloudError(file); }
   if (typeof expected === 'string') {
     let cur = null;
-    try { cur = fs.readFileSync(file, 'utf8'); } catch { /* not there: nothing to keep */ }
+    try { cur = fs.readFileSync(file, 'utf8'); } catch (err) {
+      // not there: a new chapter, nothing to keep. Any other failure (locked,
+      // denied, I/O) means the disk text is unknown, so nothing is replaced.
+      if (!err || err.code !== 'ENOENT') throw new Error(`Could not read chapter ${libName(chapterId)}: ${err && err.code || err}`);
+    }
     if (cur !== null && chapterDiverged(cur, expected, html)) return { conflict: cur };
   }
   writeFileDurable(file, html);
