@@ -102,6 +102,78 @@ test('6. configPaths on Linux lists the Flatpak path first', () => {
 
 test('configPaths on Windows, macOS and with XDG_CONFIG_HOME', () => {
   assert.deepEqual(configPaths('win32', { APPDATA: 'C:\\Users\\u\\AppData\\Roaming' }), ['C:\\Users\\u\\AppData\\Roaming\\Nextcloud\\nextcloud.cfg']);
-  assert.deepEqual(configPaths('darwin', { HOME: '/Users/u' }), ['/Users/u/Library/Preferences/Nextcloud/nextcloud.cfg']);
+  assert.deepEqual(configPaths('darwin', { HOME: '/Users/u' }), ['/Users/u/Library/Containers/com.nextcloud.desktopclient/Data/Library/Preferences/Nextcloud/nextcloud.cfg', '/Users/u/Library/Preferences/Nextcloud/nextcloud.cfg']);
   assert.equal(configPaths('linux', { HOME: '/h', XDG_CONFIG_HOME: '/x' })[1], '/x/Nextcloud/nextcloud.cfg');
+});
+
+// ---- extended 2026-10-27 after PR #98's review: separators, trailing separators, [Accounts] only ----
+const CLOUD = 'https://cloud.x.ts.net';
+const folder = (localPath, targetPath = '/') => ({ localPath, targetPath, paused: false });
+const lp = (localPath, remote, targetPath) => localPathFor(acct([folder(localPath, targetPath)]), CLOUD, remote);
+
+test('Windows localPath: backslashes throughout, with or without a trailing backslash', () => {
+  assert.equal(lp('C:\\Users\\u\\Nextcloud\\', '/Docs/a.md'), 'C:\\Users\\u\\Nextcloud\\Docs\\a.md');
+  assert.equal(lp('C:\\Users\\u\\Nextcloud', '/Docs/a.md'), 'C:\\Users\\u\\Nextcloud\\Docs\\a.md');
+});
+
+test('Windows localPath: nested remote paths use backslashes at every level', () => {
+  const want = 'C:\\Users\\u\\Nextcloud\\Docs\\Sub\\deep\\a.md';
+  assert.equal(lp('C:\\Users\\u\\Nextcloud\\', '/Docs/Sub/deep/a.md'), want);
+  assert.equal(lp('C:\\Users\\u\\Nextcloud', '/Docs/Sub/deep/a.md'), want);
+});
+
+test('Windows localPath: a non-root targetPath is stripped and the rest joined with backslashes', () => {
+  assert.equal(lp('D:\\Sync\\Docs\\', '/Docs/Sub/a.md', '/Docs'), 'D:\\Sync\\Docs\\Sub\\a.md');
+  assert.equal(lp('D:\\Sync\\Docs', '/Docs/Sub/a.md', '/Docs'), 'D:\\Sync\\Docs\\Sub\\a.md');
+});
+
+test('Windows localPath parsed from a cfg maps end to end', () => {
+  assert.equal(localPathFor(deepFreeze(parseNextcloudCfg(WIN)), CLOUD, '/Docs/Sub/a.md'), 'C:\\Users\\u\\Nextcloud\\Docs\\Sub\\a.md');
+});
+
+test('POSIX localPath: slashes throughout, with or without a trailing slash', () => {
+  assert.equal(lp('/home/u/Nextcloud/', '/Docs/a.md'), '/home/u/Nextcloud/Docs/a.md');
+  assert.equal(lp('/home/u/Nextcloud', '/Docs/a.md'), '/home/u/Nextcloud/Docs/a.md');
+});
+
+test('POSIX localPath: nested remote paths and a non-root targetPath', () => {
+  assert.equal(lp('/home/u/Nextcloud', '/Docs/Sub/deep/a.md'), '/home/u/Nextcloud/Docs/Sub/deep/a.md');
+  assert.equal(lp('/home/u/Docs/', '/Docs/Sub/a.md', '/Docs'), '/home/u/Docs/Sub/a.md');
+  assert.equal(lp('/home/u/Docs', '/Docs/Sub/a.md', '/Docs'), '/home/u/Docs/Sub/a.md');
+  assert.equal(lp('/home/u/Docs', '/Docs/Sub/a.md', '/Docs/Sub'), '/home/u/Docs/a.md');
+});
+
+// the same-looking keys in other sections must be ignored, before and after [Accounts]
+const MULTI = lines([
+  '[Other]',
+  String.raw`0\url=https://wrong.x.ts.net`,
+  String.raw`5\url=https://ghost.x.ts.net`,
+  String.raw`5\dav_user=ghost`,
+  '[Accounts]',
+  String.raw`0\url=https://cloud.x.ts.net`,
+  String.raw`0\dav_user=u`,
+  String.raw`0\Folders\1\localPath=/home/u/Nextcloud/`,
+  String.raw`0\Folders\1\targetPath=/`,
+  String.raw`0\Folders\1\paused=false`,
+  '[Proxy]',
+  String.raw`0\url=https://proxy.x.ts.net`,
+  String.raw`0\dav_user=proxyuser`,
+  String.raw`0\Folders\1\localPath=/tmp/elsewhere/`,
+  String.raw`0\Folders\1\paused=true`,
+  String.raw`0\Folders\2\localPath=/tmp/extra/`,
+  String.raw`7\url=https://ghost2.x.ts.net`,
+], '\n');
+
+test('only keys in [Accounts] are parsed; other sections cannot add or change accounts or folders', () => {
+  const a = parseNextcloudCfg(MULTI);
+  assert.deepEqual(a, [{
+    index: 0, url: 'https://cloud.x.ts.net', user: 'u',
+    folders: [{ localPath: '/home/u/Nextcloud/', targetPath: '/', paused: false }],
+  }]);
+});
+
+test('a cfg with no [Accounts] section gives no accounts, and CRLF does not hide the header', () => {
+  assert.deepEqual(parseNextcloudCfg(lines(['[General]', String.raw`0\url=https://cloud.x.ts.net`], '\n')), []);
+  const crlf = lines(['[Other]', String.raw`0\url=https://wrong.x.ts.net`, '[Accounts]', String.raw`1\url=https://cloud.x.ts.net`], '\r\n');
+  assert.deepEqual(parseNextcloudCfg(crlf).map((x) => x.index), [1]);
 });
