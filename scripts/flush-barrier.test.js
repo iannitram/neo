@@ -71,3 +71,48 @@ test('5. pending lists running labels in order and drops settled ones; track ret
   await settle();
   assert.deepEqual(b.pending(), ['b']);
 });
+
+test('6. a write tracked while flush is waiting that rejects is reported', async () => {
+  const { b } = make();
+  const a = deferred(); const late = deferred();
+  b.track(a.promise, 'a');
+  const p = b.flush(1000);
+  await settle();
+  b.track(late.promise, 'late').catch(() => {});
+  late.reject(new Error('x'));
+  a.resolve();
+  assert.deepEqual(await p, { ok: false, failed: ['late'], timedOut: [] });
+});
+
+test('7. a write that rejected before flush is reported by the next flush, once', async () => {
+  const { b } = make();
+  b.track(Promise.reject(new Error('x')), 'early').catch(() => {});
+  await settle();
+  assert.deepEqual(b.pending(), []);
+  assert.deepEqual(await b.flush(1000), { ok: false, failed: ['early'], timedOut: [] });
+  assert.deepEqual(await b.flush(1000), { ok: true, failed: [], timedOut: [] });
+});
+
+test('8. the timeout covers writes tracked while flush is waiting', async () => {
+  const { ft, b } = make();
+  b.track(new Promise(() => {}), 'c');
+  const p = b.flush(50);
+  await settle();
+  b.track(new Promise(() => {}), 'd');
+  await settle();
+  ft.advance(50);
+  assert.deepEqual(await p, { ok: false, failed: [], timedOut: ['c', 'd'] });
+});
+
+test('9. loads as a classic browser script and still works under require', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const vm = require('node:vm');
+  const file = path.join(__dirname, '..', 'flush-barrier.js');
+  const ctx = {};
+  ctx.window = ctx;
+  vm.createContext(ctx);
+  assert.doesNotThrow(() => new vm.Script(fs.readFileSync(file, 'utf8'), { filename: file }).runInContext(ctx));
+  assert.equal(typeof ctx.window.NeoCraft_FlushBarrier.createFlushBarrier, 'function');
+  assert.equal(typeof require('../flush-barrier').createFlushBarrier, 'function');
+});
