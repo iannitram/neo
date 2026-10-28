@@ -49,7 +49,7 @@
     
     // For other fields, check if they've changed on both sides
     for (const key of Object.keys({ ...base, ...local, ...remote })) {
-      if (key === 'chapterOrder') continue;
+      if (key === 'chapterOrder' || key === 'modified' || key === 'revision') continue;
       
       const baseVal = base[key];
       const localVal = local[key];
