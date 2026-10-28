@@ -69,3 +69,7 @@ test('modified is the later of local and remote', () => {
   const r = mergeBookMeta(deepFreeze({ ...o }), deepFreeze({ ...o, modified: '2026-01-01T00:00:00.000Z' }), deepFreeze({ ...o, modified: '2026-02-01T00:00:00.000Z' }));
   assert.equal(r.meta.modified, '2026-02-01T00:00:00.000Z');
 });
+
+test('9. a local addition goes after its nearest preceding id in local order, even when remote reorders', () => {
+  assert.deepEqual(mergeOrder(deepFreeze(['a', 'b']), deepFreeze(['a', 'b', 'X']), deepFreeze(['b', 'a'])), ['b', 'X', 'a']);
+});
