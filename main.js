@@ -844,20 +844,15 @@ ipcMain.handle('chapter:write', (_e, bookId, chapterId, html, expected) => {
   writeFileDurable(file, html);
   return true;
 });
-// shared with Pocket's bridge (same rule): the disk copy differs from what
-// this device last knew, holds words, and has a word the new text lacks
+// shared with Pocket's bridge (same rule): the disk copy is not exactly what
+// this device last knew (`expected`) and is not already the new text (a
+// retry or an identical write), and it holds words. Any other revision,
+// formatting, order and deletions included, is a conflict: the disk text
+// is handed back to be kept as a twin before anything is replaced.
 function chapterDiverged(cur, expected, html) {
   if (cur === expected || cur === html) return false;
-  const bag = (h) => {
-    const m = new Map();
-    for (const w of String(h || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').split(/\s+/)) if (w) m.set(w, (m.get(w) || 0) + 1);
-    return m;
-  };
-  const there = bag(cur);
-  if (!there.size) return false;
-  const here = bag(html);
-  for (const [w, n] of there) if (n > (here.get(w) || 0)) return true;
-  return false;
+  const words = String(cur || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
+  return words !== '';
 }
 
 ipcMain.handle('chapter:delete', (_e, bookId, chapterId) => {
