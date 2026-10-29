@@ -770,17 +770,36 @@ function listBooks() {
   return out;
 }
 
+// The book.json each recent revision looked like, as this process last handed
+// it to a page or wrote it. A save from a page that loaded revision N merges
+// against the N kept here. Lost on restart, and then the merge has no base.
+const { reviseBookMeta } = require('./meta-merge');
+const metaRevisions = new Map(); // bookId -> Map(revision -> meta)
+function keepRevision(bookId, meta) {
+  if (!meta) return;
+  let kept = metaRevisions.get(bookId);
+  if (!kept) metaRevisions.set(bookId, kept = new Map());
+  kept.set(meta.revision, clone(meta));
+  while (kept.size > 20) kept.delete(kept.keys().next().value);
+}
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
 ipcMain.handle('book:readMeta', (_e, bookId) => {
   const dir = bookDir(bookId);
   // a book.json iCloud never brings down is a book that's there, just not
   // here yet: null, as for the older ".icloud" stand-in below
-  return afterLocal([path.join(dir, 'book.json')], () => readBookMeta(bookId), () => null);
+  return afterLocal([path.join(dir, 'book.json')], () => {
+    const meta = readBookMeta(bookId);
+    keepRevision(bookId, meta);
+    return meta;
+  }, () => null);
 });
 function readBookMeta(bookId) {
   const dir = bookDir(bookId);
   const meta = readJSON(path.join(dir, 'book.json'), null);
   if (meta) {
     if (meta.id !== bookId) meta.id = bookId; // a copied folder answers to its own name
+    if (typeof meta.revision !== 'number') meta.revision = 0; // a book.json from before revisions
     return meta;
   }
   // iCloud (on older macOS) holds a file it hasn't downloaded as
@@ -790,11 +809,18 @@ function readBookMeta(bookId) {
   return rebuildBookMeta(bookId);
 }
 
+// The save returns the book as the disk now holds it (merged, with its new
+// revision): every caller adopts that, so a stale page takes the newer chapters.
 ipcMain.handle('book:writeMeta', (_e, bookId, meta) => {
-  meta.modified = new Date().toISOString();
-  writeJSON(path.join(bookDir(bookId), 'book.json'), meta);
+  const file = path.join(bookDir(bookId), 'book.json');
+  const base = (metaRevisions.get(bookId) || new Map()).get(meta.revision) || null;
+  const disk = isCloudOnly(file) ? null : readJSON(file, null);
+  const saved = reviseBookMeta(base, meta, disk);
+  saved.modified = new Date().toISOString();
+  writeJSON(file, saved);
+  keepRevision(bookId, saved);
   writeCatalog();
-  return meta.modified;
+  return saved;
 });
 
 // {chapterId: mtime and size} for a book's chapter files — how refreshFromDisk

@@ -26,6 +26,7 @@ on:
       - 'styles.css'
       - 'fonts/**'
       - 'i18n.js'
+      - 'meta-merge.js'
       - 'locales/**'
       - 'main.js'
       - 'scripts/pocket-www.js'

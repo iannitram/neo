@@ -171,6 +171,20 @@
     await writeText(path, JSON.stringify(data, null, 2));
   }
 
+  // The book.json each recent revision looked like, as this bridge last read or
+  // wrote it (the desktop keeps the same in main.js). A save merges against the
+  // revision its page loaded, found here.
+  const metaRevisions = new Map(); // bookId -> Map(revision -> meta)
+  function keepMeta(bookId, meta) {
+    if (!meta) return meta;
+    if (typeof meta.revision !== 'number') meta.revision = 0; // a book.json from before revisions
+    let kept = metaRevisions.get(bookId);
+    if (!kept) metaRevisions.set(bookId, kept = new Map());
+    kept.set(meta.revision, JSON.parse(JSON.stringify(meta)));
+    while (kept.size > 20) kept.delete(kept.keys().next().value);
+    return meta;
+  }
+
   // null when the file isn't there; an existing file that can't be read throws
   // (an empty read taken for an empty page would be saved over it)
   async function readAuxText(path) {
@@ -260,7 +274,7 @@
     },
 
     /* ---------- books ---------- */
-    readBookMeta: async (bookId) => { await fetchCloud(bookId); return readJSONFile(p(bookId, 'book.json'), null); },
+    readBookMeta: async (bookId) => { await fetchCloud(bookId); return keepMeta(bookId, await readJSONFile(p(bookId, 'book.json'), null)); },
     listBooks: async () => {
       const out = [];
       try {
@@ -272,10 +286,15 @@
       } catch { /* an empty list is honest enough */ }
       return out;
     },
+    // the same revision rule as main.js (meta-merge.js reviseBookMeta); the
+    // saved book comes back whole, and the page adopts it
     writeBookMeta: async (bookId, meta) => {
-      meta.modified = new Date().toISOString();
-      await writeJSONFile(p(bookId, 'book.json'), meta);
-      return meta.modified;
+      const file = p(bookId, 'book.json');
+      const base = (metaRevisions.get(bookId) || new Map()).get(meta.revision) || null;
+      const saved = window.NeoCraft_MetaMerge.reviseBookMeta(base, meta, await readJSONFile(file, null));
+      saved.modified = new Date().toISOString();
+      await writeJSONFile(file, saved);
+      return keepMeta(bookId, saved);
     },
     // app.js asks before re-reading a book: on iCloud, pull down whatever the
     // Mac wrote since (a short wait; the shelf must never hang on the network)
