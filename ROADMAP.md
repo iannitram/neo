@@ -101,6 +101,26 @@ The browser editor *is* Document mode, so this comes first even though desktop d
 - Then **uninstall `richdocuments` and the Collabora container**. Before that, back up the Collabora config and record the reinstall recipe in the KB. After it, the complex-docx fallback becomes *Launch in WordCraft*.
 - Update the Depot stability fields from the golden task's evidence, not by eye.
 
+### M6 — Modes (1.1, right after 1.0)
+
+*Added 2026-10-28 in the design review (owner: "Yes, update and file (Recommended)"). 1.0 is unchanged and ships first; every issue here has the `after-1.0` label. NeoCraft keeps NEO's look and design.*
+
+A mode switch at the top center (Books, Scripts, Notes), styled like NEO's toolbar, remembering the last mode; Search is a magnifier at the right of the same bar. 1.0's Document mode is built as the Notes editor, so this release adds around it instead of redoing it.
+
+- **Notes:** the home for .md notes (a library with a side list). Any single file opened from Nextcloud (docx, rtf, txt, md) opens in the same editor. A session clock with a key that inserts `[mm:ss]` at the cursor.
+- **Scripts:** stored as Fountain plain text (.fountain). Two-column video-essay script first (narration beside visuals and clips, with timings), then podcast or audio script, then screenplay (standard Fountain). Two-column scripts export to .docx as a two-column table.
+- **Search:** across books, scripts, notes and documents opened from Nextcloud, with filters by mode, in the desktop app and the browser editor. Not all of Nextcloud.
+- **Writing tools:** word count and goals in Notes and Scripts; a Pomodoro timer (25 / 5 / 15 after every 4, adjustable) with session word count, words per Pomodoro and a history view; focus or typewriter mode. On the desktop, typewriter mode covers every other display with a borderless dim grey window (any key or click returns focus); in the browser it covers just its own window.
+
+Build order and issues (details in each issue; SPEC.md "1.1: Modes", N1-N11):
+
+1. Mode switch shell (#140), then Notes library and editor (#141) and Nextcloud files in the Notes editor (#142); these reuse 1.0's Document mode. Session clock and timestamp key (#143).
+2. Fountain model and screenplay type (#144), then the two-column video-essay script (#145).
+3. Search index (#148) and search UI (#149); word count and goals (#150); Pomodoro and session stats (#151); typewriter mode in the window (#152) and across displays on the desktop (#153).
+4. Podcast script type (#146) and .docx export of two-column scripts (#147).
+
+- **Done when:** the owner can switch modes, keep notes and scripts, search them, and write a Pomodoro session with typewriter mode on a two-display desktop, on Windows, macOS and SteamOS, and in the browser editor for what applies there.
+
 ### Ongoing
 
 - Monthly `upstream/main` merges, running Hugh's tests plus ours.

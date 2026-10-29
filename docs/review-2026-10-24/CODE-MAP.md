@@ -191,6 +191,38 @@ flowchart LR
   NCAPP -->|Launch external| MAINH
 ```
 
+## Planned 1.1 modules
+
+Added 2026-10-28 for the 1.1 modes release ([SPEC.md](../../SPEC.md), "1.1: Modes"; [ROADMAP.md](../../ROADMAP.md), M6). All rows are *planned*; none exists on main. Each issue has the `after-1.0` label and waits for the 1.0 list. Document mode (above) is built as the Notes editor, so the Notes rows reuse `document-session.js` and the formats.
+
+| Path | Status | Owns | Hooks in / called by | Issues |
+|---|---|---|---|---|
+| `mode-shell.js` | planned | The Books / Scripts / Notes segmented control at the top center, last-mode memory, the search magnifier slot; mounts each mode's view | small `// NEOCRAFT:` hook in `index.html` / `app.js`; the browser editor page; Books view stays upstream's | #140 |
+| `notes/library.js` | planned | Notes library: list, create, rename, delete .md notes over the storage host; side list | Notes view; calls `document-session.js` and `formats/markdown.js` (Document mode as the Notes editor) | #141, #142 |
+| `notes/session-clock.js` | planned | Session clock and the `[mm:ss]` formatter (injected time source) | Notes view; the insert key | #143 |
+| `scripts/fountain.js` | planned | Fountain parser and byte-faithful serializer, screenplay elements, hook for type extensions; reuses the screenplay and Fountain code now in `app.js` (section at line 5584) | Scripts view; two-column and podcast modules | #144 |
+| `scripts/two-column.js` | planned | The two-column video-essay extension (narration, visuals, timings) on the Fountain model; documented in `docs/scripts-format.md` | Scripts view | #145 |
+| `scripts/podcast.js` | planned | Podcast / audio extension (speakers, lines, music and segment cues) | Scripts view | #146 |
+| `scripts/docx-export.js` | planned | Two-column script to .docx table | builds on the 1.0 docx writer (`formats/docx/write.js`); Scripts view menu | #147 |
+| `search/index.js`, `search/ui.js` | planned | Local index over books, scripts, notes and opened documents; filters by mode; results panel | stores: `main.js` hook (desktop) and the host (browser); magnifier in `mode-shell.js` | #148, #149 |
+| `writing/word-count.js` | planned | Word count and goals for Notes and Scripts (narration only in two-column) | Notes and Scripts status area; books keep `app.js` counters (section at line 12054) | #150 |
+| `writing/pomodoro.js`, `writing/session-stats.js` | planned | Pomodoro state machine (injected clock), words per Pomodoro, history | toolbar control; reads `writing/word-count.js` | #151 |
+| `writing/typewriter.js` | planned | Typewriter and focus mode scroll maths for Notes and Scripts; window-only in the browser | Notes and Scripts views; books keep `app.js` typewriter (line 14325) and focus mode (line 14801) | #152 |
+| `desktop/typewriter-displays.js` | planned | Desktop only: one borderless dim grey cover window per display except the typing one, via Electron's `screen` API; hot-plug handling; any key or click returns focus | `main.js` hook and a `preload.js` IPC channel; called when typewriter mode starts and ends | #153 |
+
+```mermaid
+flowchart LR
+  SHELL["mode-shell.js"] --> BOOKS["Books (upstream)"]
+  SHELL --> NOTES["Notes: notes/ + Document mode editor"]
+  SHELL --> SCR["Scripts: scripts/fountain.js + two-column, podcast"]
+  SHELL --> SRCH["search/"]
+  NOTES --> SES["document-session.js"]
+  SCR --> DOCX["scripts/docx-export.js"]
+  NOTES --> WT["writing/: word count, pomodoro, typewriter"]
+  SCR --> WT
+  WT --> DISP["desktop/typewriter-displays.js (Electron screen API)"]
+```
+
 ### Mac, PC and Linux
 
 - **Formats, session and editor** are plain JS with no OS code; their Node tests (the modules on main already have them) are plain node:test and run on any OS; no CI job runs them on a push or PR yet, that is #16. Tag builds on all three OSes already work (`build.yml`).
