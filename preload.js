@@ -26,7 +26,7 @@ contextBridge.exposeInMainWorld('neo', {
   snapshotRead: (bookId, name, file) => ipcRenderer.invoke('snapshot:read', bookId, name, file),
   snapshotWrite: (bookId, name, file, text) => ipcRenderer.invoke('snapshot:write', bookId, name, file, text),
   snapshotRemoveFile: (bookId, name, file) => ipcRenderer.invoke('snapshot:removeFile', bookId, name, file),
-  snapshotRemove:(bookId, name) => ipcRenderer.invoke('snapshot:remove', bookId, name),
+  snapshotRemove: (bookId, name) => ipcRenderer.invoke('snapshot:remove', bookId, name),
 
   readJSON: (bookId, name, fallback) => ipcRenderer.invoke('json:read', bookId, name, fallback),
   writeJSON: (bookId, name, data) => ipcRenderer.invoke('json:write', bookId, name, data),
@@ -58,6 +58,9 @@ contextBridge.exposeInMainWorld('neo', {
 
   poetryState: (on) => ipcRenderer.send('poetry:state', on),
   flushState: (on) => ipcRenderer.send('flush:state', on),
+  // B08: main asks before a close, quit or update restart; the reply says whether the saves are on disk
+  onFlushRequest: (cb) => ipcRenderer.on('flush:request', (_e, id) => cb(id)),
+  flushReply: (id, result) => ipcRenderer.send('flush:reply', id, result),
   scriptState: (st) => ipcRenderer.send('script:state', st),
   printPaperback: (job) => ipcRenderer.invoke('print:paperback', job),
   printManuscript: (job) => ipcRenderer.invoke('print:manuscript', job), // File → Export → Manuscript Format… as a PDF
