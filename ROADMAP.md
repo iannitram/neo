@@ -121,6 +121,22 @@ Build order and issues (details in each issue; SPEC.md "1.1: Modes", N1-N11):
 
 - **Done when:** the owner can switch modes, keep notes and scripts, search them, and write a Pomodoro session with typewriter mode on a two-display desktop, on Windows, macOS and SteamOS, and in the browser editor for what applies there.
 
+### M7 — Desk, Script to cut, Time River (1.2, after 1.1)
+
+*Added 2026-11-01 (owner: "All three (Recommended)"; Time River "After 1.0 (Recommended)"). Every issue has the `after-1.0` label. SPEC.md "1.2", N12-N17.*
+
+- **The Desk:** NeoCraft gets its own page in Nextcloud's top bar. Folders the owner picks are shelves; documents are covers with NEO's seeded art and a word count. The same Desk shows in the desktop app and NEO Pocket from the synced folder. NeoCraft stops being only a file opener and becomes a place to start writing. The editor itself stays plain (D2 holds inside a document).
+- **Script to cut:** the two-column video-essay script (#145) gets live runtimes from the owner's measured reading speed, a teleprompter on a second display, and *Send to FilmCraft*: a rough-cut plan that FilmCraft opens as a sequence with named markers, labelled empty clip slots and a scratch narration track (FilmCraft's Kokoro text-to-speech). Desktop only.
+- **Time River:** a history slider over every Nextcloud version and local autosave of a document, with removed paragraphs shown as ghosts, added ones highlighted, and single-paragraph restore. A conflict (M8) keeps its copy and then opens the same view side by side to merge per paragraph. Prior art: upstream PR #369 (git history), #466/#467 (conflict twins), the neo-scribe fork's history window (issue #155).
+
+Build order and issues:
+
+1. Desk index (pure, #156) and cover data (#157), then the Desk page (#158), then desktop and Pocket (#159). Tracker #160.
+2. Runtimes (#161), teleprompter (#162); rough-cut plan (#163) and FilmCraft import (iannitram/filmcraft#112, in FilmCraft) before Send to FilmCraft (#164). Tracker #165. Needs #145.
+3. Paragraph diff (#166) and the history source (#167), then the slider (#168), then the conflict merge view (#169). Tracker #170. Needs #57 and #58.
+
+- **Done when:** the owner starts a writing day from the Desk in the browser and on the desktop, records a video essay from the teleprompter and opens its rough cut in FilmCraft, and recovers a deleted paragraph and merges a two-tab conflict from the Time River.
+
 ### Ongoing
 
 - Monthly `upstream/main` merges, running Hugh's tests plus ours.

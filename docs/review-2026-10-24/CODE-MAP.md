@@ -223,6 +223,36 @@ flowchart LR
   WT --> DISP["desktop/typewriter-displays.js (Electron screen API)"]
 ```
 
+## Planned 1.2 modules
+
+Added 2026-11-01 for the 1.2 release ([SPEC.md](../../SPEC.md), "1.2"; [ROADMAP.md](../../ROADMAP.md), M7). All rows are *planned*; each issue has the `after-1.0` label.
+
+| Path | Status | Owns | Hooks in / called by | Issues |
+|---|---|---|---|---|
+| `desk/index.js` | planned | Pure: a file listing (path, size, mtime, etag) plus picked and excluded folders to shelves of cover entries, sorted | Desk views on every host | #156 |
+| `desk/cover-data.js` | planned | Title (frontmatter `title`, first heading, then file name), word count through the `formats/` readers, cover seed from the path; cached by ETag or mtime | `desk/index.js` entries; `covers.js` (upstream) draws them | #157 |
+| `nextcloud/neocraft/` Desk page (`lib/Controller/DeskController.php`, `src/desk.js`) | planned | Top-bar navigation entry, folder picker saved per user, shelf view reusing NEO's shelf markup and `covers.js`; a cover opens the editor route | the `neocraft` app; WebDAV PROPFIND through `hosts/nextcloud.js` | #158 |
+| `desk/local-host.js` | planned | The Desk over a synced local folder for the desktop (`preload.js` bridge) and Pocket (`pocket-bridge.js`) | Desk view on desktop and Pocket | #159 |
+| `scripts/runtime.js` | planned | Pure: words per minute from a timed read; per-block runtime, explicit `mm:ss` overrides, running totals | two-column view (#145); teleprompter | #161 |
+| `scripts/teleprompter.js` | planned | Narration-only scroll paced by runtimes, pause, speed nudge, mirror; second display via Electron `screen` (desktop), own window (browser) | two-column view; `main.js` window hook | #162 |
+| `scripts/rough-cut.js` | planned | Pure: two-column script to the rough-cut plan JSON (markers, clip slots, narration chunks with start and duration); format written in `docs/rough-cut-plan.md` | Send to FilmCraft | #163 |
+| `desktop/send-to-filmcraft.js` | planned | Desktop only: write the plan beside the script and start FilmCraft's CLI import (path from Settings) | menu command; `main.js` IPC | #164 |
+| `history/sources.js` | planned | One ordered timeline of a document's revisions: Nextcloud versions (DAV `versions/`), recovery drafts (#35), desktop autosaves | Time River view | #167 |
+| `history/para-diff.js` | planned | Pure: paragraph-level diff of two revisions (insert, delete, keep, move) | Time River and merge views | #166 |
+| `history/river.js` | planned | The slider, ghost and highlight rendering, single-paragraph restore as one undo step | Document mode / Notes editor | #168 |
+| `history/merge.js` | planned | Side-by-side conflict merge (keep mine, keep theirs, both), saved through the guarded save | `hosts/nextcloud.js` on a 412 after the copy (#57, #58) | #169 |
+
+```mermaid
+flowchart LR
+  DESK["desk/index.js + cover-data.js"] --> NCDESK["neocraft Desk page"]
+  DESK --> LOCAL["desk/local-host.js (desktop, Pocket)"]
+  TWO["scripts/two-column.js (#145)"] --> RT["scripts/runtime.js"] --> TP["scripts/teleprompter.js"]
+  TWO --> RC["scripts/rough-cut.js"] --> SEND["desktop/send-to-filmcraft.js"] --> FC["FilmCraft CLI import"]
+  SRC["history/sources.js"] --> RIV["history/river.js"]
+  DIFF["history/para-diff.js"] --> RIV
+  DIFF --> MRG["history/merge.js"]
+```
+
 ### Mac, PC and Linux
 
 - **Formats, session and editor** are plain JS with no OS code; their Node tests (the modules on main already have them) are plain node:test and run on any OS; no CI job runs them on a push or PR yet, that is #16. Tag builds on all three OSes already work (`build.yml`).
@@ -230,6 +260,7 @@ flowchart LR
 - **macOS:** dmg and zip for arm64 and x64, unsigned (`identity: null`, no notarization) (right-click > Open); `open-file` events; the client uses File Provider placeholders, so open the exact path and never scan the folder; config in `~/Library/Preferences/Nextcloud/nextcloud.cfg`.
 - **Linux / SteamOS:** AppImage, x64 and arm64 in `package.json` (the `.zsync` delta file is #103); the AppImage does not register `neocraft://` by itself, so the launcher installs a `.desktop` entry with `x-scheme-handler/neocraft`; the Flatpak client config is under `~/.var/app/com.nextcloud.desktopclient.nextcloud/config/Nextcloud/`.
 - **Browser:** the `neocraft` app targets Nextcloud 33; tested in a disposable server only.
+- **1.2:** the Desk and Time River are plain JS plus the PHP app, the same on every OS; the teleprompter's second display and Send to FilmCraft are desktop only and need a manual check on Windows, macOS and SteamOS.
 
 ### Open-source pieces
 
