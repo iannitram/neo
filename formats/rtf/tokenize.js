@@ -36,8 +36,22 @@
   function skipFallback(src, i, count) {
     let left = count;
     while (left > 0 && i < src.length) {
-      if (src[i] === '\\' && src[i + 1] === "'") i += 4;
-      else if (src[i] === '\\') i += 2;
+      // A group boundary ends fallback, even when fewer than uc characters
+      // were supplied. Source newlines do not count as fallback characters.
+      if (src[i] === '{' || src[i] === '}') break;
+      if (src[i] === '\r' || src[i] === '\n') { i += 1; continue; }
+      if (src[i] === '\\' && src[i + 1] === "'") {
+        if (!isHex(src[i + 2] || '') || !isHex(src[i + 3] || '')) {
+          throw fail('RtfSyntaxError', "Bad \\' hex fallback at character " + i);
+        }
+        i += 4;
+      } else if (src[i] === '\\' && isLetter(src[i + 1] || '')) {
+        i += 1;
+        while (isLetter(src[i] || '')) i += 1;
+        if (src[i] === '-') i += 1;
+        while (isDigit(src[i] || '')) i += 1;
+        if (src[i] === ' ') i += 1;
+      } else if (src[i] === '\\') i += 2;
       else i += 1;
       left -= 1;
     }
