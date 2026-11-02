@@ -12657,9 +12657,12 @@ function settleSaves() {
       // If we're out of time, fail immediately
       if (Date.now() >= deadline) {
         const left = [...Object.keys(auxPending), ...Object.keys(sidecarPending)];
-        return { ok: false, failed: [...left, ...r.failed] };
+        // a write that stalled past the deadline is in timedOut, not failed: name it too,
+        // and never answer not ok with nothing named
+        const failed = [...left, ...r.failed, ...r.timedOut];
+        return { ok: false, failed: failed.length ? failed : ['save'] };
       }
-      
+
       if (!r.ok) return r;
       // Check if there are still unsaved changes that would trigger new writes
       const stillPending = book && !shelfExport ? flushAllSaves() : runningWrites();
