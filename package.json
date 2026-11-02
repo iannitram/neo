@@ -37,6 +37,26 @@
   "build": {
     "appId": "com.iannitram.neocraft",
     "productName": "NeoCraft",
+    "fileAssociations": [
+      {
+        "ext": "md",
+        "name": "Markdown document",
+        "description": "Markdown document",
+        "role": "Editor"
+      },
+      {
+        "ext": "txt",
+        "name": "Plain text document",
+        "description": "Plain text document",
+        "role": "Editor"
+      },
+      {
+        "ext": "rtf",
+        "name": "Rich Text Format document",
+        "description": "Rich Text Format document",
+        "role": "Editor"
+      }
+    ],
     "publish": {
       "provider": "github",
       "owner": "iannitram",
@@ -97,7 +117,8 @@
       "desktop": {
         "entry": {
           "Comment": "A word processor for authors. Distraction-free by default.",
-          "Keywords": "writing;writer;novel;book;author;manuscript;wordprocessor;"
+          "Keywords": "writing;writer;novel;book;author;manuscript;wordprocessor;",
+          "MimeType": "text/markdown;text/plain;text/rtf;application/rtf;"
         }
       },
       "maintainer": "NeoCraft <4624371+iannitram@users.noreply.github.com>"
