@@ -770,17 +770,36 @@ function listBooks() {
   return out;
 }
 
+// The book.json each recent revision looked like, as this process last handed
+// it to a page or wrote it. A save from a page that loaded revision N merges
+// against the N kept here. Lost on restart, and then the merge has no base.
+const { reviseBookMeta } = require('./meta-merge');
+const metaRevisions = new Map(); // bookId -> Map(revision -> meta)
+function keepRevision(bookId, meta) {
+  if (!meta) return;
+  let kept = metaRevisions.get(bookId);
+  if (!kept) metaRevisions.set(bookId, kept = new Map());
+  kept.set(meta.revision, clone(meta));
+  while (kept.size > 20) kept.delete(kept.keys().next().value);
+}
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
 ipcMain.handle('book:readMeta', (_e, bookId) => {
   const dir = bookDir(bookId);
   // a book.json iCloud never brings down is a book that's there, just not
   // here yet: null, as for the older ".icloud" stand-in below
-  return afterLocal([path.join(dir, 'book.json')], () => readBookMeta(bookId), () => null);
+  return afterLocal([path.join(dir, 'book.json')], () => {
+    const meta = readBookMeta(bookId);
+    keepRevision(bookId, meta);
+    return meta;
+  }, () => null);
 });
 function readBookMeta(bookId) {
   const dir = bookDir(bookId);
   const meta = readJSON(path.join(dir, 'book.json'), null);
   if (meta) {
     if (meta.id !== bookId) meta.id = bookId; // a copied folder answers to its own name
+    if (typeof meta.revision !== 'number') meta.revision = 0; // a book.json from before revisions
     return meta;
   }
   // iCloud (on older macOS) holds a file it hasn't downloaded as
@@ -790,11 +809,18 @@ function readBookMeta(bookId) {
   return rebuildBookMeta(bookId);
 }
 
+// The save returns the book as the disk now holds it (merged, with its new
+// revision): every caller adopts that, so a stale page takes the newer chapters.
 ipcMain.handle('book:writeMeta', (_e, bookId, meta) => {
-  meta.modified = new Date().toISOString();
-  writeJSON(path.join(bookDir(bookId), 'book.json'), meta);
+  const file = path.join(bookDir(bookId), 'book.json');
+  const base = (metaRevisions.get(bookId) || new Map()).get(meta.revision) || null;
+  const disk = isCloudOnly(file) ? null : readJSON(file, null);
+  const saved = reviseBookMeta(base, meta, disk);
+  saved.modified = new Date().toISOString();
+  writeJSON(file, saved);
+  keepRevision(bookId, saved);
   writeCatalog();
-  return meta.modified;
+  return saved;
 });
 
 // {chapterId: mtime and size} for a book's chapter files — how refreshFromDisk
@@ -2279,7 +2305,15 @@ function createWindow() {
   const rememberSoon = () => { clearTimeout(rememberTimer); rememberTimer = setTimeout(remember, 500); };
   win.on('resize', rememberSoon);
   win.on('move', rememberSoon);
-  win.on('close', remember);
+  // B08: the close waits for the renderer to report its saves settled (see
+  // closeWindowWhenSettled); remember() still runs on every try
+  editorWindows.add(win);
+  win.on('close', (e) => {
+    remember();
+    if (settledWindows.has(win)) return;
+    e.preventDefault();
+    closeWindowWhenSettled(win);
+  });
 
   // Right-click on text: Cut, Copy, Paste, Select All — and nothing else.
   // Handing macOS the frame (where the selection sits) is what invites it to
@@ -2488,6 +2522,108 @@ ipcMain.on('poetry:state', (_e, on) => {
   poetryState = on;
   try { buildMenu(); } catch (err) { logError('menu', err); }
 });
+// B08: closing the window, quitting and an update's restart wait until the
+// renderer's flush barrier (flush-barrier.js, wired in app.js settleSaves)
+// has settled. A stalled or failed save keeps the window open and asks what
+// to do: Try Again, Keep Open, or Close Anyway.
+const FLUSH_REPLY_MS = 8000; // the renderer gives up on its own barrier sooner (6 s)
+const flushWaiters = new Map();
+let flushRequestSeq = 0;
+const settledWindows = new WeakSet(); // saves are on disk: the next close goes through
+const settlingWindows = new WeakSet();
+const editorWindows = new WeakSet(); // the windows createWindow made: the ones that can answer a flush
+let quitting = false;
+app.on('before-quit', () => { quitting = true; });
+ipcMain.on('flush:reply', (_e, id, result) => {
+  const done = flushWaiters.get(id);
+  if (!done) return;
+  flushWaiters.delete(id);
+  const failed = result && Array.isArray(result.failed) ? result.failed.map(String) : [];
+  // a write the renderer gave up waiting on is named too, not "unknown"
+  if (result && Array.isArray(result.timedOut)) failed.push(...result.timedOut.map(String));
+  done({ ok: !!result && result.ok === true, failed });
+});
+function askRendererToFlush(win) {
+  return new Promise((resolve) => {
+    const id = ++flushRequestSeq;
+    const timer = setTimeout(() => {
+      flushWaiters.delete(id);
+      resolve({ ok: false, failed: ['no answer'] });
+    }, FLUSH_REPLY_MS);
+    flushWaiters.set(id, (result) => { clearTimeout(timer); resolve(result); });
+    try {
+      win.webContents.send('flush:request', id);
+    } catch (err) {
+      logError('close', err);
+      clearTimeout(timer);
+      flushWaiters.delete(id);
+      resolve({ ok: false, failed: ['no window'] });
+    }
+  });
+}
+// true when the window may close: its saves are on disk, or the writer chose
+// Close Anyway. Try Again asks the renderer again; Keep Open leaves it open.
+async function settleWindowBeforeClose(win) {
+  for (;;) {
+    const r = await askRendererToFlush(win);
+    if (r.ok) return true;
+    let response = 1;
+    try {
+      ({ response } = await dialog.showMessageBox(win, {
+        type: 'warning',
+        message: t('NEO has not saved your last changes yet'),
+        detail: t('The library has not confirmed the latest writing ({failed}). Try Again saves once more. Keep Open leaves NEO as it is, so the words can be copied out. Close Anyway closes NEO now, and anything still unsaved is lost.', { failed: r.failed.join(', ') || t('unknown') }),
+        buttons: [t('Try Again'), t('Keep Open'), t('Close Anyway')],
+        defaultId: 0,
+        cancelId: 1
+      }));
+    } catch (err) {
+      logError('close', err);
+    }
+    if (response === 0) continue;
+    return response === 2;
+  }
+}
+async function closeWindowWhenSettled(win) {
+  if (settlingWindows.has(win)) return;
+  settlingWindows.add(win);
+  try {
+    if (await settleWindowBeforeClose(win) && !win.isDestroyed()) {
+      settledWindows.add(win);
+      win.close();
+      // a Quit (Cmd-Q on a Mac) was waiting on this window: it goes on now
+      if (quitting) app.quit();
+    } else {
+      // Keep Open: the Quit was abandoned, so a later ordinary close must not quit the app
+      quitting = false;
+    }
+  } catch (err) {
+    logError('close', err);
+  } finally {
+    settlingWindows.delete(win);
+  }
+}
+// an update's restart: every window settles first; false keeps NEO open
+// Only editor windows are asked (a hidden print window never answers), and
+// each goes through the same guard as the close path, so a close already
+// waiting on a window is not asked a second time (false: keep NEO open).
+async function settleWindowsBeforeRestart() {
+  const wins = BrowserWindow.getAllWindows().filter((w) => editorWindows.has(w) && !w.isDestroyed());
+  const mine = [];
+  try {
+    for (const win of wins) {
+      if (settlingWindows.has(win)) return false;
+      settlingWindows.add(win);
+      mine.push(win);
+      if (!(await settleWindowBeforeClose(win))) return false;
+    }
+    for (const win of wins) settledWindows.add(win);
+    return true;
+  } finally {
+    for (const win of mine) settlingWindows.delete(win);
+  }
+}
+
 ipcMain.on('flush:state', (_e, on) => {
   on = !!on;
   if (on === flushState) return;
@@ -3307,9 +3443,10 @@ ipcMain.handle('update:check', async () => {
   }
 });
 
-ipcMain.handle('update:install', () => {
+ipcMain.handle('update:install', async () => {
   const u = getUpdater();
   if (!u || !updaterReady) return false;
+  if (!(await settleWindowsBeforeRestart())) return false;
   setImmediate(() => u.quitAndInstall(false, true));
   return true;
 });

@@ -15,6 +15,8 @@ const SLICES = [
   ['const diskKnown = {};', '// Another device\'s version of a chapter'],
   ['function scheduleChapterSave(', '// book.json minus the parts'],
   ['function metaSig(', 'function scheduleMetaSave('],
+  ['function writeSidecar(', 'function renderDarlings('],
+  ['function flushStickiesSave(', '// Pair every mark'],
   ['function flushAllSaves(', '/*  SNAPSHOTS']
 ];
 function bookInMemory(chapters) {
@@ -22,25 +24,30 @@ function bookInMemory(chapters) {
   const none = () => {};
   const page = vm.createContext({
     window: { neo: {
-      writeChapter: async (bookId, chId, html) => { writes.push({ chId, html }); return true; }
+      writeChapter: async (bookId, chId, html) => { writes.push({ chId, html }); return true; },
+      writeJSON: async (bookId, name, data) => { writes.push({ json: name, data }); return true; },
+      logError() {}
     } },
     book: { id: 'b', chapterOrder: Object.keys(chapters) },
     chapterHTML: { ...chapters },
     savedHTML: { ...chapters },
     savedMetaSig: '',
     writing: {},
-    saveTimers: {},
+    saveTimers: {}, stickies: [],
     tabPlaces: {},
     currentTab: 'manuscript',
     currentChapterId: null,
     shelfExport: false,
     console,
-    setTimeout,
+    setTimeout, clearTimeout,
     $: () => ({ scrollTop: 0 }),
     captureCaret: () => null,
     saveMeta: async () => {},
     maybeDailySnapshot: none,
-    flushAux: none, flushStickiesSave: none, flushSidecars: none
+    flushAux: none, sidecarBase: {},
+    // B08: settleSaves (the close's wait) uses the barrier and the notes and Darlings queues
+    auxQueue: {}, auxPending: {}, sidecarPending: {},
+    NeoCraft_FlushBarrier: require('../flush-barrier.js')
   });
   for (const [from, to] of SLICES) {
     const at = app.indexOf(from);
@@ -115,4 +122,133 @@ test('a save that comes due while a write is on its way writes when that write f
   assert.equal(await flushed, 'failed');
   await settled(page);
   assert.deepEqual(writes, [{ chId: 'x', html: F + '<p>Typed.</p>' }]);
+});
+
+// B08: the window's close, quit and update restart ask settleSaves first. It
+// resolves ok only when every save it started (or that was already running)
+// is on the disk; a failed write is reported, never called saved.
+test('settleSaves waits for a save still queued and reports ok once it is on disk', async () => {
+  const { page, writes } = bookInMemory({ x: F });
+  heldTimers(page);
+  page.chapterHTML.x = F + '<p>Typed.</p>';
+  page.scheduleChapterSave('x');
+  const r = await page.settleSaves();
+  assert.equal(r.ok, true, 'the close may go on');
+  assert.deepEqual(writes, [{ chId: 'x', html: F + '<p>Typed.</p>' }], 'the words were written before the answer');
+});
+
+test('settleSaves reports a chapter write that fails as not saved', async () => {
+  const { page } = bookInMemory({ x: F });
+  heldTimers(page);
+  page.window.neo.writeChapter = async () => { throw new Error('disk full'); };
+  page.chapterHTML.x = F + '<p>Typed.</p>';
+  page.scheduleChapterSave('x');
+  const r = await page.settleSaves();
+  assert.equal(r.ok, false);
+  assert.deepEqual([...new Set(r.failed)], ['save']);
+});
+
+test('settleSaves keeps a notes write that is still queued after a failure as not saved', async () => {
+  const { page } = bookInMemory({ x: F });
+  page.auxPending['b/notes'] = { bookId: 'b', kind: 'notes', html: '<p>n</p>', inFlight: false };
+  const r = await page.settleSaves();
+  assert.equal(r.ok, false);
+  assert.deepEqual([...r.failed], ['b/notes']);
+});
+
+// gap 1: notes on a sticky and the sidecars are writes the barrier waits for
+test('settleSaves waits for a sticky write the flush starts', async () => {
+  const { page, writes } = bookInMemory({ x: F });
+  let release;
+  page.window.neo.writeJSON = (b, name) => new Promise((resolve) => { release = () => { writes.push({ json: name }); resolve(true); }; });
+  page.saveTimers.stickies = 1;
+  let done = false;
+  const p = page.settleSaves().then((r) => { done = true; return r; });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(done, false, 'the answer waits for the sticky write');
+  release();
+  assert.equal((await p).ok, true);
+  assert.deepEqual(writes, [{ json: 'stickies' }]);
+});
+
+test('settleSaves reports a failed sticky write and leaves no unhandled rejection', async () => {
+  const { page } = bookInMemory({ x: F });
+  const loose = [];
+  const onLoose = (e) => loose.push(e);
+  process.on('unhandledRejection', onLoose);
+  page.window.neo.writeJSON = async () => { throw new Error('disk full'); };
+  page.saveTimers.stickies = 1;
+  const r = await page.settleSaves();
+  await new Promise((resolve) => setImmediate(resolve));
+  process.off('unhandledRejection', onLoose);
+  assert.equal(r.ok, false);
+  assert.deepEqual(loose, []);
+});
+
+// a plain flush (blur, the 20 s tick) ignores what it returns, so a failing
+// write must not surface as an unhandled rejection (the "hiccup" toast)
+async function looseAfter(page, start) {
+  const loose = [];
+  const onLoose = (e) => loose.push(e);
+  process.on('unhandledRejection', onLoose);
+  try {
+    page.window.neo.writeJSON = async () => { throw new Error('disk full'); };
+    start();
+    // let the write's microtasks run, then one event-loop turn for Node to report
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
+  } finally {
+    process.off('unhandledRejection', onLoose);
+  }
+  return loose;
+}
+
+test('a tick flush with a failing sidecar write leaves no unhandled rejection', async () => {
+  const { page } = bookInMemory({ x: F });
+  heldTimers(page);
+  const loose = await looseAfter(page, () => {
+    page.sidecarPending['b/darlings'] = { bookId: 'b', name: 'darlings', data: [], inFlight: false, promise: null };
+    page.flushAllSaves('tick');
+  });
+  assert.deepEqual(loose.map(String), []);
+  assert.ok(page.sidecarPending['b/darlings'], 'the failed write stays queued for the next flush');
+});
+
+test('a tick flush with a failing sticky write leaves no unhandled rejection', async () => {
+  const { page } = bookInMemory({ x: F });
+  heldTimers(page);
+  const loose = await looseAfter(page, () => {
+    page.saveTimers.stickies = 1;
+    page.flushAllSaves('tick');
+  });
+  assert.deepEqual(loose.map(String), []);
+});
+
+test('settleSaves waits for a Darlings write that is already running', async () => {
+  const { page } = bookInMemory({ x: F });
+  let release;
+  page.window.neo.writeJSON = () => new Promise((resolve) => { release = () => resolve(true); });
+  page.writeSidecar('b', 'darlings', []);
+  let done = false;
+  const p = page.settleSaves().then((r) => { done = true; return r; });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(done, false);
+  release();
+  assert.equal((await p).ok, true);
+});
+
+// gap 2: back on the shelf (no book open), a chapter write still running is waited for
+test('settleSaves with no book open still waits for a chapter write in flight', async () => {
+  const { page } = bookInMemory({ x: F });
+  let release;
+  page.window.neo.writeChapter = () => new Promise((resolve) => { release = () => resolve(true); });
+  page.chapterHTML.x = F + '<p>Typed.</p>';
+  page.persistChapter('x');
+  vm.runInContext('book = null', page);
+  let done = false;
+  const p = page.settleSaves().then((r) => { done = true; return r; });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(done, false, 'the write started before back-to-shelf is waited for');
+  release();
+  assert.equal((await p).ok, true);
 });
