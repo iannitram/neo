@@ -72,7 +72,8 @@
           default:
             break;
         }
-      } else if (token.type === 'symbol' && token.char === '*') {
+      } else if (token.type === 'symbol' && token.char === '*' && i > 0 && tokens[i - 1].type === 'open') {
+        // Only a '*' that opens a group (its first token) starts a destination
         // Look ahead to see what comes after the '*' symbol
         const nextToken = tokens[i + 1];
         if (nextToken && nextToken.type === 'control') {
