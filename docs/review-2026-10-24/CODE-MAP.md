@@ -142,6 +142,7 @@ Snapshots hold chapter history and chapter shape, not a complete backup of every
 - Book formatting: app typing/captureBody + CSS + export serializers; verify that transient UI marks never enter chapter HTML.
 - New host capability: explicit API and capability contract, adapter, call site and parity test. Document mode should use a smaller dedicated interface.
 - Nextcloud conversion: new document core/formats/host/app modules; keep books on their existing API while fixing reviewed defects. Do not expose the Electron bridge directly to a web page.
+- Visible text: a string passed to `t('...')` (also `tk(`, `NeoI18n.t(` and the `data-i18n*` attributes in `index.html`) is the lookup key into every `locales/*.json` file, so editing it in code without changing the key and each translated value there silently drops every language back to English. Change the key and every locale's value together, then run `node scripts/i18n.js check <code>` for each language.
 
 ## NeoCraft modules on main
 
