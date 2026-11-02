@@ -185,6 +185,15 @@
     return meta;
   }
 
+  // NEOCRAFT: the same bounded base cache as desktop library:read/write.
+  const libraryRevisions = new Map();
+  function keepLibrary(data) {
+    if (typeof data.revision !== 'number') data.revision = 0;
+    libraryRevisions.set(data.revision, JSON.parse(JSON.stringify(data)));
+    while (libraryRevisions.size > 20) libraryRevisions.delete(libraryRevisions.keys().next().value);
+    return data;
+  }
+
   // null when the file isn't there; an existing file that can't be read throws
   // (an empty read taken for an empty page would be saved over it)
   async function readAuxText(path) {
@@ -255,14 +264,21 @@
     paper: LETTER.includes(region) ? 'Letter' : 'A4',
     /* ---------- library ---------- */
     readLibrary: async () => {
-      if (!(await checkAccess())) return { authorName: '', penNames: [], firstRunDone: false, shelves: [{ id: 'shelf-1', name: 'Works in Progress', bookIds: [] }] };
+      if (!(await checkAccess())) return keepLibrary({ authorName: '', penNames: [], firstRunDone: false, shelves: [{ id: 'shelf-1', name: 'Works in Progress', bookIds: [] }] });
       await fetchCloud('library.json', 15000);
-      return readJSONFile(p('library.json'), {
+      return keepLibrary(await readJSONFile(p('library.json'), {
         authorName: '', penNames: [], firstRunDone: false, pageTheme: 'night',
         shelves: [{ id: 'shelf-1', name: 'Works in Progress', bookIds: [] }]
-      });
+      }));
     },
-    writeLibrary: async (data) => { await writeJSONFile(p('library.json'), data); return true; },
+    writeLibrary: async (data) => {
+      const file = p('library.json');
+      await fetchCloud(file);
+      const base = libraryRevisions.get(data.revision) || null;
+      const saved = window.NeoCraft_MetaMerge.reviseLibrary(base, data, await readJSONFile(file, null));
+      await writeJSONFile(file, saved);
+      return keepLibrary(saved);
+    },
     libraryPath: async () => {
       // a served URL lets cover art render in the webview
       try {

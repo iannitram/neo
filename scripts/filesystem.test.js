@@ -204,7 +204,7 @@ describe('filesystem', { concurrency: 1 }, () => {
       const library = {
         shelves: [{ id: 'shelf-1', name: 'Works in Progress', bookIds: [book.id] }]
       };
-      assert.equal(main.call('library:write', library), true);
+      assert.equal(main.call('library:write', library).revision, 1);
       const catalog = path.join(dir, '_catalog.txt');
       const text = fs.readFileSync(catalog, 'utf8');
       assert.match(text, /NEO LIBRARY CATALOG — which folder is which book/);
