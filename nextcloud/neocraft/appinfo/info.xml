@@ -9,6 +9,7 @@
     <version>0.0.1</version>
     <description></description>
     <dependencies>
+        <php min-version="8.2"/>
         <nextcloud min-version="33" max-version="33"/>
     </dependencies>
 </info>
