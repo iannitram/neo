@@ -13,11 +13,38 @@ const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
 const { createRequire } = require('node:module');
-const { describe, test } = require('node:test');
+const { describe, test, afterEach, after } = require('node:test');
 
 const root = path.join(__dirname, '..');
 const localRequire = createRequire(path.join(root, 'main.js'));
 const source = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
+
+const activeChildren = new Set();
+const activeTimers = new Set();
+const activeIntervals = new Set();
+const tempDirs = new Set();
+
+const trackedSetTimeout = (fn, ms, ...args) => {
+  const t = setTimeout(() => {
+    activeTimers.delete(t);
+    fn(...args);
+  }, ms);
+  activeTimers.add(t);
+  return t;
+};
+const trackedClearTimeout = (t) => {
+  activeTimers.delete(t);
+  clearTimeout(t);
+};
+const trackedSetInterval = (fn, ms, ...args) => {
+  const t = setInterval(fn, ms, ...args);
+  activeIntervals.add(t);
+  return t;
+};
+const trackedClearInterval = (t) => {
+  activeIntervals.delete(t);
+  clearInterval(t);
+};
 
 function loadMain() {
   const handlers = new Map();
@@ -38,10 +65,15 @@ function loadMain() {
     utilityProcess: {
       fork: (file) => {
         const child = require('node:child_process').fork(file, [], { env: { ...process.env, NEO_TEST_SPARSE_IS_CLOUD: '1' } });
+        activeChildren.add(child);
+        child.on('exit', () => activeChildren.delete(child));
         return {
           on: (ev, fn) => child.on(ev, ev === 'exit' ? (code) => fn(code || 0) : fn),
           postMessage: (m) => child.send(m),
-          kill: () => child.kill()
+          kill: () => {
+            activeChildren.delete(child);
+            try { child.kill('SIGTERM'); } catch { /* ignore */ }
+          }
         };
       }
     },
@@ -53,8 +85,10 @@ function loadMain() {
     __dirname: root,
     process: { platform: 'darwin', on() {} },
     console,
-    setTimeout,
-    clearTimeout,
+    setTimeout: trackedSetTimeout,
+    clearTimeout: trackedClearTimeout,
+    setInterval: trackedSetInterval,
+    clearInterval: trackedClearInterval,
     libraryRoot: os.tmpdir(),
     asked,
     arrivals: new Map() // file → words iCloud brings down when asked
@@ -73,6 +107,7 @@ function loadMain() {
       }
     };
     CLOUD_WAIT = 600;
+    BACKUP_LIMIT_MS = 3000;
   `, context);
   return {
     context,
@@ -99,6 +134,7 @@ function sendToICloud(file) {
 
 function libraryWithBook() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'neo-icloud-'));
+  tempDirs.add(dir);
   main.pointAt(dir);
   const lib = main.call('library:read');
   const book = main.call('book:create', { title: 'Salt Roads' });
@@ -114,25 +150,52 @@ function libraryWithBook() {
   return { dir, book, bookDir: path.join(dir, book.id) };
 }
 
-// These tests play iCloud with sparse files (a size, no blocks) and a named
-// pipe. Windows has neither (#136), so there they fail; on macOS the suite
-// hangs (#118). Both need a follow-up: emulate the placeholders on Windows,
-// and find what never returns on macOS. Until then the tests stay, and run on
-// Linux, where the same Darwin code path is under test.
+// These tests simulate macOS iCloud placeholders using APFS sparse files (a size,
+// no blocks on disk) and a named pipe (mkfifo). Windows lacks APFS dataless flags,
+// stat.blocks sparse detection, and mkfifo (#136), so the suite is gated on win32.
 const skipHere = process.platform === 'win32'
   ? 'needs sparse files and mkfifo, which Windows lacks (#136)'
-  : process.platform === 'darwin'
-    ? 'hangs on macOS (#118); skipped until that is fixed'
-    : false;
+  : false;
 
 describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
-  test('everything on this Mac: reads answer at once, as before', () => {
+  afterEach(() => {
+    for (const t of activeTimers) clearTimeout(t);
+    activeTimers.clear();
+    for (const t of activeIntervals) clearInterval(t);
+    activeIntervals.clear();
+    for (const child of activeChildren) {
+      try { child.kill('SIGKILL'); } catch { /* ignore */ }
+    }
+    activeChildren.clear();
+    for (const dir of tempDirs) {
+      try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* ignore */ }
+    }
+    tempDirs.clear();
+    try {
+      main.run('backupRunning = false; BACKUP_FILE_LIMIT_MS = 20000; BACKUP_LIMIT_MS = 3000;');
+      main.asked.length = 0;
+      main.context.arrivals.clear();
+    } catch { /* ignore */ }
+  });
+
+  after(() => {
+    for (const child of activeChildren) {
+      try { child.kill('SIGKILL'); } catch { /* ignore */ }
+    }
+    activeChildren.clear();
+    for (const dir of tempDirs) {
+      try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* ignore */ }
+    }
+    tempDirs.clear();
+  });
+
+  test('everything on this Mac: reads answer at once, as before', { timeout: 5000 }, () => {
     const { book } = libraryWithBook();
     assert.equal(main.call('chapter:read', book.id, 'ch-aaa'), '<p>The harbor was empty.</p>');
     assert.equal(main.call('book:readMeta', book.id).title, 'Salt Roads');
   });
 
-  test('a chapter in iCloud is waited for without holding NEO up, then read', async () => {
+  test('a chapter in iCloud is waited for without holding NEO up, then read', { timeout: 5000 }, async () => {
     const { book, bookDir } = libraryWithBook();
     const file = path.join(bookDir, 'chapters', 'ch-aaa.html');
     const words = fs.readFileSync(file, 'utf8');
@@ -144,7 +207,7 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     assert.ok(main.asked.includes(file), 'iCloud was asked for it');
   });
 
-  test('library.json in iCloud arrives and the shelf is read', async () => {
+  test('library.json in iCloud arrives and the shelf is read', { timeout: 5000 }, async () => {
     const { dir, book } = libraryWithBook();
     const file = path.join(dir, 'library.json');
     const words = fs.readFileSync(file, 'utf8');
@@ -154,7 +217,7 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     assert.ok(lib.shelves[0].bookIds.includes(book.id));
   });
 
-  test('library.json iCloud never sends: an error, and no new shelf written over it', async () => {
+  test('library.json iCloud never sends: an error, and no new shelf written over it', { timeout: 5000 }, async () => {
     const { dir } = libraryWithBook();
     const file = path.join(dir, 'library.json');
     sendToICloud(file);
@@ -162,7 +225,7 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     assert.equal(fs.statSync(file).blocks, 0, 'left as it was');
   });
 
-  test('book.json iCloud never sends: the book waits, never rebuilt or rolled back to .bak', async () => {
+  test('book.json iCloud never sends: the book waits, never rebuilt or rolled back to .bak', { timeout: 5000 }, async () => {
     const { book, bookDir } = libraryWithBook();
     const file = path.join(bookDir, 'book.json');
     sendToICloud(file);
@@ -170,7 +233,7 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     assert.equal(fs.statSync(file).blocks, 0, 'not written over');
   });
 
-  test('a save never goes over a chapter or notes still in iCloud', () => {
+  test('a save never goes over a chapter or notes still in iCloud', { timeout: 5000 }, () => {
     const { book, bookDir } = libraryWithBook();
     const ch = path.join(bookDir, 'chapters', 'ch-aaa.html');
     const notes = path.join(bookDir, 'notes.html');
@@ -182,7 +245,7 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     assert.equal(fs.statSync(notes).blocks, 0);
   });
 
-  test("the daily backup leaves out what's in iCloud and says so, instead of waiting on it", async () => {
+  test("the daily backup leaves out what's in iCloud and says so, instead of waiting on it", { timeout: 5000 }, async () => {
     const { dir, bookDir } = libraryWithBook();
     sendToICloud(path.join(bookDir, 'chapters', 'ch-aaa.html'));
     await main.run('backupRunning = false; dailyBackup()');
@@ -197,25 +260,30 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
 
   // a file that never answers (a named pipe: a read of one waits for ever, as
   // a stuck iCloud file does) once held NEO's whole main process, at launch
-  test('a file that never answers is left out of the backup, and NEO goes on meanwhile', async () => {
+  test('a file that never answers is left out of the backup, and NEO goes on meanwhile', { timeout: 10000 }, async () => {
     const { dir, bookDir } = libraryWithBook();
     const stuck = path.join(bookDir, 'stickies.json');
     fs.rmSync(stuck, { force: true });
     require('node:child_process').execFileSync('mkfifo', [stuck]);
     main.run('BACKUP_FILE_LIMIT_MS = 300');
     let ticks = 0;
-    const beat = setInterval(() => { ticks++; }, 20);
-    const t0 = Date.now();
-    await main.run('backupRunning = false; dailyBackup()');
-    clearInterval(beat);
-    assert.ok(Date.now() - t0 < 10000, 'the backup finished');
-    assert.ok(ticks > 5, 'this process kept running while the backup waited');
-    const zips = fs.readdirSync(path.join(dir, 'Backups')).filter((f) => f.endsWith('.zip'));
-    assert.equal(zips.length, 1);
-    const JSZip = localRequire('jszip');
-    const zip = await JSZip.loadAsync(fs.readFileSync(path.join(dir, 'Backups', zips[0])));
-    assert.match(await zip.file('_left-out-of-this-backup.txt').async('string'), /stickies\.json \(not handed over in time\)/);
-    assert.ok(zip.file(path.basename(bookDir) + '/book.json'), 'the rest is backed up');
-    main.run('BACKUP_FILE_LIMIT_MS = 20000');
+    let beat = null;
+    try {
+      beat = trackedSetInterval(() => { ticks++; }, 20);
+      const t0 = Date.now();
+      await main.run('backupRunning = false; dailyBackup()');
+      if (beat) { trackedClearInterval(beat); beat = null; }
+      assert.ok(Date.now() - t0 < 10000, 'the backup finished');
+      assert.ok(ticks > 5, 'this process kept running while the backup waited');
+      const zips = fs.readdirSync(path.join(dir, 'Backups')).filter((f) => f.endsWith('.zip'));
+      assert.equal(zips.length, 1);
+      const JSZip = localRequire('jszip');
+      const zip = await JSZip.loadAsync(fs.readFileSync(path.join(dir, 'Backups', zips[0])));
+      assert.match(await zip.file('_left-out-of-this-backup.txt').async('string'), /stickies\.json \(not handed over in time\)/);
+      assert.ok(zip.file(path.basename(bookDir) + '/book.json'), 'the rest is backed up');
+    } finally {
+      if (beat) trackedClearInterval(beat);
+      main.run('BACKUP_FILE_LIMIT_MS = 20000');
+    }
   });
 });
