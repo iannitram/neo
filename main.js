@@ -642,9 +642,20 @@ function rebuildBookMeta(bookId) {
 // IPC — the renderer's whole view of the disk
 // ---------------------------------------------------------------------------
 
+// NEOCRAFT: retain the library at the revision each page loaded, just as for
+// book.json below. Keep copies before the renderer applies its device look.
+const { reviseBookMeta, reviseLibrary } = require('./meta-merge');
+const libraryRevisions = new Map();
+function keepLibraryRevision(lib) {
+  if (typeof lib.revision !== 'number') lib.revision = 0;
+  libraryRevisions.set(lib.revision, clone(lib));
+  while (libraryRevisions.size > 20) libraryRevisions.delete(libraryRevisions.keys().next().value);
+  return lib;
+}
+
 ipcMain.handle('library:read', () => {
   ensureLibrary();
-  return afterLocal([LIBRARY_FILE], readLibraryFile, () => { throw cloudError(LIBRARY_FILE); });
+  return afterLocal([LIBRARY_FILE], () => keepLibraryRevision(readLibraryFile()), () => { throw cloudError(LIBRARY_FILE); });
 });
 function readLibraryFile() {
   const lib = readJSON(LIBRARY_FILE, null);
@@ -666,9 +677,14 @@ function readLibraryFile() {
 
 ipcMain.handle('library:write', (_e, data) => {
   ensureLibrary();
-  writeJSON(LIBRARY_FILE, data);
+  // NEOCRAFT: merge a stale save with the library now on disk. readJSON
+  // refuses an iCloud placeholder, rather than merging against an empty file.
+  const base = libraryRevisions.get(data.revision) || null;
+  const saved = reviseLibrary(base, data, readJSON(LIBRARY_FILE, null));
+  writeJSON(LIBRARY_FILE, saved);
+  keepLibraryRevision(saved);
   writeCatalog();
-  return true;
+  return saved;
 });
 
 // A book is a folder: book.json + chapters/*.html + notes.html + outline.html + darlings.json
@@ -773,7 +789,6 @@ function listBooks() {
 // The book.json each recent revision looked like, as this process last handed
 // it to a page or wrote it. A save from a page that loaded revision N merges
 // against the N kept here. Lost on restart, and then the merge has no base.
-const { reviseBookMeta } = require('./meta-merge');
 const metaRevisions = new Map(); // bookId -> Map(revision -> meta)
 function keepRevision(bookId, meta) {
   if (!meta) return;

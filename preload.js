@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('neo', {
   lookUpText: () => ipcRenderer.invoke('app:lookUp'),
 
   readLibrary: () => ipcRenderer.invoke('library:read'),
+  // NEOCRAFT: data carries its loaded revision; returns the merged library.
   writeLibrary: (data) => ipcRenderer.invoke('library:write', data),
 
   createBook: (meta) => ipcRenderer.invoke('book:create', meta),

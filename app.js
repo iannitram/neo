@@ -213,12 +213,39 @@ let saveTimers = {};
 // its way, is older than the library in memory and must not replace it.
 let libraryGeneration = 0;
 let libraryWritesPending = 0;
+// NEOCRAFT: serialize library saves so each uses the last acknowledged base.
+let libraryWriteQueue = Promise.resolve();
 function writeLibrary(lib = library) {
   rememberDeviceLook(lib);
   libraryGeneration++;
   libraryWritesPending++;
-  return new Promise((resolve) => resolve(window.neo.writeLibrary(lib)))
-    .finally(() => { libraryWritesPending--; });
+  const job = libraryWriteQueue.catch(() => {}).then(async () => {
+    const sent = JSON.parse(JSON.stringify(lib));
+    const saved = await window.neo.writeLibrary(sent);
+    // Keep edits made while the save was out, and adopt everything else from
+    // the disk's answer. In particular a later save must know remote shelves.
+    const content = (value) => JSON.stringify({ ...value, revision: undefined });
+    const merged = content(saved) === content(sent) ? { ...lib }
+      : window.NeoCraft_MetaMerge.mergeLibrary(sent, lib, saved).library;
+    merged.revision = saved.revision;
+    // Shelf controls hold their shelf object until the next redraw. Keep
+    // those objects live when adopting the disk's shelves and author names.
+    for (const field of ['shelves', 'authors']) {
+      if (!Array.isArray(merged[field])) continue;
+      merged[field] = merged[field].map((next) => {
+        const kept = (lib[field] || []).find((old) => old.id === next.id);
+        if (!kept) return next;
+        for (const key of Object.keys(kept)) if (!(key in next)) delete kept[key];
+        return Object.assign(kept, next);
+      });
+    }
+    for (const key of Object.keys(lib)) delete lib[key];
+    Object.assign(lib, applyDeviceLook(merged));
+    libraryGeneration++; // also reject a refresh read that crossed this reply
+    return saved;
+  }).finally(() => { libraryWritesPending--; });
+  libraryWriteQueue = job;
+  return job;
 }
 
 // How NEO looks is each device's own: dark on the iPad, light on the PC.

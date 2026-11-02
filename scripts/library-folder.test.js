@@ -87,7 +87,7 @@ describe('a library folder that can\'t be written', { concurrency: 1 }, () => {
       assert.equal(pc.shown.async.length, 1);       // said once
 
       // and the first-run screen's save now works
-      assert.equal(pc.call('library:write', { firstRunDone: true, shelves: [] }), true);
+      assert.equal(pc.call('library:write', { firstRunDone: true, shelves: [] }).firstRunDone, true);
       assert.equal(JSON.parse(fs.readFileSync(path.join(want, 'library.json'), 'utf8')).firstRunDone, true);
     } finally {
       pc.done();

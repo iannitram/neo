@@ -320,7 +320,17 @@
     return { library, conflicts };
   }
 
-  const api = { mergeOrder, mergeBookMeta, mergeLibrary, reviseBookMeta };
+  // NEOCRAFT: library.json follows the same revision rule as book.json.
+  function reviseLibrary(base, local, disk) {
+    const revOf = (m) => (m && typeof m.revision === 'number' ? m.revision : 0);
+    const localRev = revOf(local);
+    const diskRev = revOf(disk);
+    if (!disk || diskRev <= localRev) return { ...local, revision: Math.max(localRev, diskRev) + 1 };
+    const { library } = mergeLibrary(base, local, disk);
+    return { ...library, revision: diskRev + 1 };
+  }
+
+  const api = { mergeOrder, mergeBookMeta, mergeLibrary, reviseBookMeta, reviseLibrary };
 
   if (typeof module === 'object' && module.exports) 
     {module.exports = api;}
