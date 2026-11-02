@@ -47,6 +47,7 @@ function bookInMemory(chapters) {
     flushAux: none, sidecarBase: {},
     // B08: settleSaves (the close's wait) uses the barrier and the notes and Darlings queues
     auxQueue: {}, auxPending: {}, sidecarPending: {},
+    runningMetaWrites: new Set(),
     NeoCraft_FlushBarrier: require('../flush-barrier.js')
   });
   for (const [from, to] of SLICES) {

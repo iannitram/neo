@@ -896,6 +896,8 @@ function displayAuthor() {
 // what they last read; any write to a book, and every look at the disk
 // (refreshFromDisk), forgets it.
 const bookMetaCache = new Map();
+// metadata saves still running: settleSaves waits on them and sees a failure
+const runningMetaWrites = new Set();
 async function shelfMeta(bookId) {
   if (bookMetaCache.has(bookId)) return bookMetaCache.get(bookId);
   const meta = await window.neo.readBookMeta(bookId);
@@ -908,7 +910,14 @@ async function shelfMeta(bookId) {
 // The disk's answer is the book as it now stands (a stale save merged with a
 // newer one, at its new revision): it is copied into the caller's object, so
 // the live book takes the merged chapters and the revision. Returns the stamp.
-async function writeBookMeta(bookId, meta) {
+function writeBookMeta(bookId, meta) {
+  const job = writeBookMetaNow(bookId, meta);
+  runningMetaWrites.add(job);
+  const done = () => runningMetaWrites.delete(job);
+  job.then(done, done);
+  return job;
+}
+async function writeBookMetaNow(bookId, meta) {
   bookMetaCache.delete(bookId);
   const saved = await window.neo.writeBookMeta(bookId, meta);
   Object.assign(meta, saved);
@@ -12571,7 +12580,16 @@ function scheduleMetaSave() {
   clearTimeout(saveTimers.meta);
   saveTimers.meta = setTimeout(saveMeta, 800);
 }
-async function saveMeta() {
+function saveMeta() {
+  const job = saveMetaNow();
+  runningMetaWrites.add(job);
+  const done = () => runningMetaWrites.delete(job);
+  // the caught copy logs for callers that drop the promise; job itself
+  // stays un-caught, which is what settleSaves tracks
+  job.then(done, (err) => { done(); window.neo.logError('meta save: ' + ((err && err.message) || err)); });
+  return job;
+}
+async function saveMetaNow() {
   if (!book || shelfExport) return;
   const bookId = book.id;
   const sig = metaSig(book);
@@ -12636,7 +12654,7 @@ function flushAllSaves(e) {
 // reported as one, never as saved; a notes or Darlings write still queued
 // after a failure is reported too.
 function runningWrites() {
-  const out = [...Object.values(chapterChain), ...Object.values(auxQueue)];
+  const out = [...Object.values(chapterChain), ...Object.values(auxQueue), ...runningMetaWrites];
   for (const job of Object.values(sidecarPending)) if (job.promise) out.push(job.promise);
   return out;
 }
@@ -12646,7 +12664,9 @@ function settleSaves() {
   const barrier = NeoCraft_FlushBarrier.createFlushBarrier();
   // with no book open (back to shelf) the flush has nothing to start, but
   // writes already running still count
-  const pending = book && !shelfExport ? flushAllSaves() : runningWrites();
+  let pending = book && !shelfExport ? flushAllSaves() : runningWrites();
+  // a metadata save a timer started is still running with the book open
+  if (book && !shelfExport) pending = [...pending, ...runningMetaWrites];
   for (const p of pending) barrier.track(p, 'save');
   return barrier.flush(FLUSH_SETTLE_MS).then((r) => {
     const left = [...Object.keys(auxPending), ...Object.keys(sidecarPending)];
