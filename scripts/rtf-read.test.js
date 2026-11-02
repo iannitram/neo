@@ -112,7 +112,9 @@ test('NUL, DOS end-of-file and whitespace padding after the last group is ignore
   for (const pad of ['\u0000', '\u0000\u0000', '\u001a', '\r\n \u0000\u001a']) {
     assert.deepEqual(read('{\\rtf1 hi}' + pad).model.blocks[0].runs, [{ text: 'hi' }]);
   }
-  assert.throws(() => read('{\\rtf1 hi}\u0000x'), named('RtfSyntaxError'));
+  for (const tail of ['\u0000x', ' x', ' ', '\u0000\\par']) {
+    assert.throws(() => read('{\\rtf1 hi}' + tail), named('RtfSyntaxError'));
+  }
 });
 
 test('reader runs as classic browser scripts without Node or Buffer', () => {
