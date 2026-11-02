@@ -108,6 +108,13 @@ test('malformed documents and unsupported or invalid encodings fail explicitly',
   }
 });
 
+test('NUL, DOS end-of-file and whitespace padding after the last group is ignored', () => {
+  for (const pad of ['\u0000', '\u0000\u0000', '\u001a', '\r\n \u0000\u001a']) {
+    assert.deepEqual(read('{\\rtf1 hi}' + pad).model.blocks[0].runs, [{ text: 'hi' }]);
+  }
+  assert.throws(() => read('{\\rtf1 hi}\u0000x'), named('RtfSyntaxError'));
+});
+
 test('reader runs as classic browser scripts without Node or Buffer', () => {
   const fs = require('node:fs');
   const path = require('node:path');

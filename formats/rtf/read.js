@@ -110,6 +110,8 @@
         continue;
       }
       if (token.type === 'close') { state = stack.pop(); ended = !stack.length; continue; }
+      // Writers pad a finished file with NUL or a DOS end-of-file byte (0x1A).
+      if (!stack.length && ended && token.type === 'text' && /^[\u0000\u001a\s]*$/.test(token.value)) continue;
       if (!stack.length) fail('RtfSyntaxError', 'Text outside the RTF document');
       if (state.skip) continue;
       if (state.start && token.type === 'symbol' && token.char === '*') { state.skip = true; continue; }
