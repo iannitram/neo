@@ -26,6 +26,8 @@
     '\u02dc\u2122\u0161\u203a\u0153\u009d\u017e\u0178';
   const characters = { tab: '\t', line: '\n', emdash: '\u2014', endash: '\u2013',
     bullet: '\u2022', lquote: '\u2018', rquote: '\u2019', ldblquote: '\u201c', rdblquote: '\u201d' };
+  // NUL, DOS end-of-file (0x1A) and ASCII whitespace allowed after the last group.
+  const padding = '\u0000\u001a \t\r\n\f\v';
   function fail(name, message) { const error = new Error(message); error.name = name; throw error; }
 
   function readRtf(bytes, name = '', options = {}) {
@@ -110,6 +112,9 @@
         continue;
       }
       if (token.type === 'close') { state = stack.pop(); ended = !stack.length; continue; }
+      // Writers pad a finished file with NUL or a DOS end-of-file byte (0x1A).
+      // A string, not a regex: oxlint's no-control-regex rejects \u0000 in a pattern.
+      if (!stack.length && ended && token.type === 'text' && [...token.value].every((char) => padding.includes(char))) continue;
       if (!stack.length) fail('RtfSyntaxError', 'Text outside the RTF document');
       if (state.skip) continue;
       if (state.start && token.type === 'symbol' && token.char === '*') { state.skip = true; continue; }
