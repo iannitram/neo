@@ -12659,19 +12659,49 @@ function runningWrites() {
   return out;
 }
 const FLUSH_SETTLE_MS = 6000; // main gives up after 8 s
+// what a close still has to wait for: the saves a flush starts (book open) or,
+// with no book open, the writes already running. With the book open, a
+// metadata save a timer started is still running too.
+function settlePending() {
+  if (!book || shelfExport) return runningWrites();
+  return [...flushAllSaves(), ...runningMetaWrites];
+}
 function settleSaves() {
   if (typeof NeoCraft_FlushBarrier === 'undefined') return Promise.resolve({ ok: true, failed: [] });
-  const barrier = NeoCraft_FlushBarrier.createFlushBarrier();
-  // with no book open (back to shelf) the flush has nothing to start, but
-  // writes already running still count
-  let pending = book && !shelfExport ? flushAllSaves() : runningWrites();
-  // a metadata save a timer started is still running with the book open
-  if (book && !shelfExport) pending = [...pending, ...runningMetaWrites];
-  for (const p of pending) barrier.track(p, 'save');
-  return barrier.flush(FLUSH_SETTLE_MS).then((r) => {
-    const left = [...Object.keys(auxPending), ...Object.keys(sidecarPending)];
-    return r.ok && left.length ? { ok: false, failed: left } : r;
-  });
+  const deadline = Date.now() + FLUSH_SETTLE_MS;
+  // each pass flushes what changed since the last one (words typed, a sticky
+  // note or a title changed during the wait), until a pass starts no write
+  // or the deadline runs out
+  function loop() {
+    const barrier = NeoCraft_FlushBarrier.createFlushBarrier();
+    // with no book open (back to shelf) the flush has nothing to start, but
+    // writes already running still count
+    const pending = settlePending();
+    for (const p of pending) barrier.track(p, 'save');
+    return barrier.flush(Math.max(0, deadline - Date.now())).then((r) => {
+      // If we're out of time, fail immediately
+      if (Date.now() >= deadline) {
+        const left = [...Object.keys(auxPending), ...Object.keys(sidecarPending)];
+        // a write that stalled past the deadline is in timedOut, not failed: name it too,
+        // and never answer not ok with nothing named
+        const failed = [...left, ...r.failed, ...r.timedOut];
+        return { ok: false, failed: failed.length ? failed : ['save'] };
+      }
+
+      // a write the barrier gave up on (timedOut) is named too, as a failed one
+      if (!r.ok) return { ok: false, failed: [...r.failed, ...r.timedOut] };
+      // Check if there are still unsaved changes that would trigger new writes
+      const stillPending = settlePending();
+      if (stillPending.length > 0) {
+        // If there are pending writes from this pass, loop again
+        return loop();
+      }
+      // No new writes started - check for any remaining aux or sidecar writes
+      const left = [...Object.keys(auxPending), ...Object.keys(sidecarPending)];
+      return r.ok && left.length ? { ok: false, failed: left } : r;
+    });
+  }
+  return loop();
 }
 if (window.neo.onFlushRequest) {
   window.neo.onFlushRequest((id) => {
