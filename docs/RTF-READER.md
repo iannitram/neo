@@ -29,6 +29,8 @@ are present. Adjacent equally formatted text is coalesced.
   default fonts (`f`, `deff`) use `cpg`, then `fcharset`, then document encoding.
   Supported labels include Windows-1250–1258, Windows-874, Shift-JIS, GBK,
   EUC-KR, Big5, Macintosh and UTF-8, subject to runtime TextDecoder support.
+  Windows-1252's C1 range is normalized to the WHATWG mapping on runtimes
+  that decode it as Latin-1 (including some Node 20 builds).
   Unavailable encodings (including Symbol fonts and unsupported OEM pages)
   throw `RtfEncodingError`; no guessed replacement text is returned.
 - Grouped or flat `fonttbl` entries retain `{ id, name, charset?, codepage? }`

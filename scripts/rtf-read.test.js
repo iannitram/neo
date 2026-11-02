@@ -56,6 +56,18 @@ test('ansicpg decodes raw bytes and hex bytes together, including multibyte code
   assert.equal(text(read(String.raw`{\rtf1\ansicpg1252{\ansicpg1251\'cf}\'e9}`)), 'Пé');
 });
 
+test('Windows-1252 punctuation is identical for raw and hex bytes, default and explicit encodings', () => {
+  const raw = String.fromCharCode(...Array.from({ length: 32 }, (_, i) => 0x80 + i));
+  const hex = Array.from({ length: 32 }, (_, i) => "\\'" + (0x80 + i).toString(16)).join('');
+  const expected = '€\u0081‚ƒ„…†‡ˆ‰Š‹Œ\u008dŽ\u008f\u0090‘’“”•–—˜™š›œ\u009džŸ';
+  for (const header of ['\\rtf1 ', '\\rtf1\\ansicpg1252 ',
+    '\\rtf1\\ansicpg1251\\deff0{\\fonttbl{\\f0\\cpg1252 Font;}}']) {
+    for (const input of [raw, hex]) assert.equal(text(read('{' + header + input + '}')), expected);
+  }
+  // C1 Unicode characters in another encoding must not become punctuation.
+  assert.equal(text(read(String.raw`{\rtf1\ansicpg65001\'c2\'80}`)), '\u0080');
+});
+
 test('font table names stay out of text; default, selected and scoped font encodings apply', () => {
   const opened = read(String.raw`{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0\fnil\fcharset204 Cyrillic;}{\f1\froman\fcharset0 Caf\'e9;}{\f2\cpg932 Japanese;}}\'cf{\f1\'e9}\'f0\f2\'82\'a0\plain\'e8}`);
   assert.equal(text(opened), 'Пéрあи');
@@ -105,4 +117,5 @@ test('reader runs as classic browser scripts without Node or Buffer', () => {
     vm.runInContext(fs.readFileSync(path.join(__dirname, '../formats/rtf', file + '.js'), 'utf8'), sandbox);
   }
   assert.equal(text(sandbox.NeoCraft_RtfRead.readRtf(bytes(String.raw`{\rtf1\ansicpg1251\'cf}`))), 'П');
+  assert.equal(text(sandbox.NeoCraft_RtfRead.readRtf(bytes(String.raw`{\rtf1\'80\'93Hi\'94}`))), '€“Hi”');
 });

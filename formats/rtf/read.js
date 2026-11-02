@@ -18,6 +18,12 @@
     186: 1257, 204: 1251, 222: 874, 238: 1250, 254: 437, 255: 850 };
   const labels = { 874: 'windows-874', 932: 'shift_jis', 936: 'gbk',
     949: 'euc-kr', 950: 'big5', 10000: 'macintosh', 65001: 'utf-8' };
+  // WHATWG Windows-1252 index, bytes 0x80–0x9f:
+  // https://encoding.spec.whatwg.org/index-windows-1252.txt
+  const windows1252 = '\u20ac\u0081\u201a\u0192\u201e\u2026\u2020\u2021' +
+    '\u02c6\u2030\u0160\u2039\u0152\u008d\u017d\u008f' +
+    '\u0090\u2018\u2019\u201c\u201d\u2022\u2013\u2014' +
+    '\u02dc\u2122\u0161\u203a\u0153\u009d\u017e\u0178';
   const characters = { tab: '\t', line: '\n', emdash: '\u2014', endash: '\u2013',
     bullet: '\u2022', lquote: '\u2018', rquote: '\u2019', ldblquote: '\u201c', rdblquote: '\u201d' };
   function fail(name, message) { const error = new Error(message); error.name = name; throw error; }
@@ -61,7 +67,13 @@
       const cp = font?.codepage ?? charsets[charset] ?? state.codepage;
       if (!decoders.has(cp)) {
         try {
-          decoders.set(cp, new TextDecoder(labels[cp] || (cp >= 1250 && cp <= 1258 ? 'windows-' + cp : 'cp' + cp), { fatal: true }));
+          const native = new TextDecoder(labels[cp] || (cp >= 1250 && cp <= 1258 ? 'windows-' + cp : 'cp' + cp), { fatal: true });
+          // Some Node 20 builds decode Windows-1252 as Latin-1. Normalize
+          // only this codepage's C1 range; correct native output is unchanged.
+          decoders.set(cp, cp === 1252 ? {
+            decode: (bytes) => native.decode(bytes).replace(/[\u0080-\u009f]/g,
+              (char) => windows1252[char.charCodeAt(0) - 0x80]),
+          } : native);
         } catch { fail('RtfEncodingError', 'Unsupported RTF codepage: ' + cp); }
       }
       return decoders.get(cp);
