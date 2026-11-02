@@ -62,7 +62,7 @@ function pageOver(storage, { chapters, failWrites = false, failJSON = false }) {
     book: { id: 'b', chapterOrder: Object.keys(chapters) },
     chapterHTML: { ...chapters },
     savedHTML: { ...chapters },
-    savedMetaSig: '', writing: {}, saveTimers: {}, tabPlaces: {},
+    savedMetaSig: '', writing: {}, saveTimers: {}, tabPlaces: {}, auxQueue: {},
     currentTab: 'manuscript', currentChapterId: null, shelfExport: false,
     console,
     setTimeout: (f, ms) => { timers.push({ f, ms }); return timers.length; },
@@ -70,7 +70,7 @@ function pageOver(storage, { chapters, failWrites = false, failJSON = false }) {
     $: () => ({ scrollTop: 0 }),
     t: (s) => s,
     captureCaret: () => null, saveMeta: async () => {},
-    maybeDailySnapshot() {}, flushAux() {}, flushStickiesSave() {}, flushSidecars() {}
+    maybeDailySnapshot() {}, flushAux() {}, flushStickiesSave() {}, flushSidecars: () => []
   });
   for (const [from, to] of SLICES) {
     const at = app.indexOf(from);
