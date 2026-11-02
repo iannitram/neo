@@ -98,12 +98,6 @@ function settle(page, disk) {
 
 const F = '<p>First line.</p>';
 
-// gives the held disk writes as settleSaves goes on asking for more, until it answers
-async function untilAnswered(t, s) {
-  for (let i = 0; i < 20 && !s.done; i++) await t.releaseAll();
-  return s.promise;
-}
-
 test('settleSaves answers within FLUSH_SETTLE_MS while typing goes on, and names what is unsaved', async () => {
   const t = bookOnHeldDisk({ x: F });
   t.page.chapterHTML.x = F + '<p>Typed.</p>';

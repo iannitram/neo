@@ -12663,7 +12663,8 @@ function settleSaves() {
         return { ok: false, failed: failed.length ? failed : ['save'] };
       }
 
-      if (!r.ok) return r;
+      // a write the barrier gave up on (timedOut) is named too, as a failed one
+      if (!r.ok) return { ok: false, failed: [...r.failed, ...r.timedOut] };
       // Check if there are still unsaved changes that would trigger new writes
       const stillPending = book && !shelfExport ? flushAllSaves() : runningWrites();
       if (stillPending.length > 0) {
