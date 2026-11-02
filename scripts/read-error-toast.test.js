@@ -109,6 +109,7 @@ test('openBook returns true when the book opened, false when a chapter would not
     forgetSnapshots() {}, showWindowTitle() {}, applyBright() {}, renderChapters() {}, wordsFromDisk() {},
     renderStickies() {}, migrateDarlingAnchors() {}, reconcileMarks() {}, updateCounters() {},
     switchTab() {}, spEditorMode() {}, spReportState() {}, showTitleStyle() {}, knowDisk() {},
+    recoverDrafts: async () => ({ restored: 0, darlings: 0 }),
     isUntitled: () => true, isScript: () => false, bookWordCount: () => 0, tabName: () => 'x',
     $$: () => [{}], tabPlaces: {}, sideCardsKey: '', currentChapterId: null, undoStack: [], redoStack: [],
     stickies: [], darlings: [], sidecarBase: {}, library: { hintShown: true }, document: { execCommand() {} },
