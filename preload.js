@@ -82,5 +82,16 @@ contextBridge.exposeInMainWorld('neo', {
   writingStyleState: (st) => ipcRenderer.send('style:state', st),
   moreState: (on) => ipcRenderer.send('more:state', on),
   viewState: (st) => ipcRenderer.send('view:state', st),
-  onMenu: (cb) => ipcRenderer.on('menu', (_e, msg) => cb(msg))
+  onMenu: (cb) => ipcRenderer.on('menu', (_e, msg) => cb(msg)),
+
+  // NEOCRAFT: the desktop document bridge (#72). A file main opened for the
+  // window arrives as 'open-document' ({ ref, path, name, revision }) once
+  // the window calls ready(). The page reads and saves it by ref only: it
+  // never gets a path to choose or direct file access.
+  document: {
+    ready: () => ipcRenderer.invoke('document:ready'),
+    onOpen: (cb) => ipcRenderer.on('open-document', (_e, msg) => cb(msg)),
+    read: (ref) => ipcRenderer.invoke('document:read', ref),
+    save: (ref, bytes, baseRevision) => ipcRenderer.invoke('document:save', ref, bytes, baseRevision)
+  }
 });
