@@ -56,5 +56,28 @@ are `RtfLimitError`, malformed input is `RtfSyntaxError`.
 
 Fixtures are handwritten strings in `scripts/rtf-read.test.js`, with no real
 documents. Tests check the open envelope, model, encodings, limits and browser
-loading. The full contract kit's serialize/no-edit checks belong to the later
-writer/adapter (#63); this issue does not add a pretend serializer.
+loading.
+
+## Writer (#63)
+
+`formats/rtf/write.js` serialises the same model. Its output is ASCII RTF 1:
+non-ASCII characters are signed `\uN?` escapes, and the header declares
+`ansicpg1252`, the reader's default. It never emits raw or `\'hh` bytes, so
+legacy-codepage text comes back as the same characters. It writes paragraphs,
+runs with `b`, `i` and `u`, `\tab`, `\line`, escaped `\{ \} \\`, and a minimal
+font table.
+
+Anything the writer cannot represent is refused with `RtfWriteRefusedError`:
+unknown keys on the document, paragraphs or runs, other block types, non-boolean
+marks, non-string text and lone surrogates. Nothing is dropped silently. The
+adapter's `serialize` also refuses an edited model from a source whose scan
+reports unsupported features, because writing it would lose them. The caller
+then uses the fallback or save-as-copy and leaves the original file alone.
+
+The contract's no-edit check holds because the adapter returns the original
+bytes when the model is unchanged. Nothing is re-encoded in that case. The
+writer's own output is checked by semantic round trip, not byte identity.
+`scripts/rtf-write.test.js` covers the contract kit on the supported fixtures,
+the round trips, the refusals and an atomic save from a temporary file. The
+LibreOffice reopen check and owner-approved samples need the owner's device and
+are not part of the tests.
