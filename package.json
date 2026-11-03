@@ -20,6 +20,7 @@
     "test:pages": "electron scripts/pages.e2e.js",
     "test:simple": "electron scripts/simple.e2e.js",
     "test:find": "electron scripts/find.e2e.js",
+    "test:document-host": "electron scripts/document-host.e2e.js",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage",
     "lint": "oxlint",

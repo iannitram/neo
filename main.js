@@ -7,6 +7,8 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const { Buffer } = require('buffer');
+// NEOCRAFT: Document mode's desktop host and argv routing (#72)
+const { isDocumentFile, documentPathsFromArgv, createElectronDocumentHost } = require('./hosts/electron-document');
 
 // Every disk request from the page passes through here: a write the system
 // refuses (see reportBlockedWrite) is explained to the writer, then the error
@@ -3481,14 +3483,53 @@ if (TRY_DIR) app.setPath('userData', path.join(TRY_DIR, 'settings'));
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
+  app.on('second-instance', (_e, argv, cwd) => {
     const win = BrowserWindow.getAllWindows()[0];
     if (win) {
       if (win.isMinimized()) win.restore();
       win.focus();
     }
+    // NEOCRAFT: a file named by the second launch opens in Document mode here (#72)
+    for (const filePath of documentPathsFromArgv(argv, { isPackaged: app.isPackaged, cwd })) requestDocument(filePath);
   });
 }
+
+// NEOCRAFT: Document mode's desktop host (#72). A file named on the command line,
+// passed to a second instance, or double-clicked (macOS open-file) opens in
+// Document mode. It never makes a book.
+const documentHost = createElectronDocumentHost();
+const startupDocuments = []; // macOS open-file before launch finishes; argv is read in whenReady
+let documentSender = null; // the webContents that called document:ready
+const documentOutbox = []; // opened files waiting for that window
+async function requestDocument(filePath) {
+  let opened;
+  try {
+    opened = await documentHost.open(filePath);
+  } catch (err) {
+    logError('document open', err);
+    return;
+  }
+  if (app.isReady() && BrowserWindow.getAllWindows().length === 0) createWindow();
+  documentOutbox.push(opened);
+  flushDocuments();
+}
+function flushDocuments() {
+  if (!documentSender || documentSender.isDestroyed()) return;
+  while (documentOutbox.length) documentSender.send('open-document', documentOutbox.shift());
+}
+ipcMain.handle('document:ready', (e) => {
+  documentSender = e.sender;
+  flushDocuments();
+});
+ipcMain.handle('document:read', (_e, ref) => documentHost.read(ref));
+ipcMain.handle('document:save', (_e, ref, bytes, baseRevision) => documentHost.save(ref, bytes, baseRevision));
+// NEOCRAFT: macOS sends open-file before launch finishes; hold those until the window exists
+app.on('open-file', (event, filePath) => {
+  event.preventDefault();
+  if (!isDocumentFile(filePath)) return;
+  if (app.isReady()) requestDocument(filePath);
+  else startupDocuments.push(filePath);
+});
 
 // The background look: a few seconds after launch, every hour after that
 // for a writer who leaves NEO open for days, and whenever the computer
@@ -3561,6 +3602,9 @@ app.whenReady().then(() => {
     try { checkLibraryWritable(); } catch (err) { logError('library check', err); }
     try { ensureLibrary(); } catch (err) { logError('library', err); }
     createWindow();
+    // NEOCRAFT: files named at launch (or double-clicked before launch) open in Document mode (#72)
+    const named = documentPathsFromArgv(process.argv, { isPackaged: app.isPackaged, cwd: process.cwd() });
+    for (const filePath of [...named, ...startupDocuments.splice(0)]) requestDocument(filePath);
     try { announceLibraryFallback(); } catch (err) { logError('library notice', err); }
     try { initSpell(); } catch (err) { logError('spell', err); }
     try { buildMenu(); } catch (err) { logError('menu', err); }

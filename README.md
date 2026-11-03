@@ -87,6 +87,8 @@ Continuous autosave, daily zip backups kept for two weeks, everything stored as 
 
 Everything lives in `~/Documents/NEO Library` — one folder per book, chapters as readable HTML, metadata as JSON. Open them in your favorite text editor.
 
+Markdown, text and RTF files opened on the desktop (named on the command line, or double-clicked) are edited as single documents, not books. Saving checks the file's content revision: if the file changed on disk since it was opened, the save is refused and nothing is overwritten. That check sees only what is on this computer. A local revision cannot see remote changes the sync client has not delivered yet.
+
 ## Languages
 
 NEO speaks English, French, Spanish, Portuguese, German, Italian, Dutch, Polish, Romanian and Russian. Pick one under **View → Language**; on first launch NEO follows your system language when it has it. Adding a language is a single file, no programming needed: see [TRANSLATING.md](TRANSLATING.md).
