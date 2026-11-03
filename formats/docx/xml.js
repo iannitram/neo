@@ -34,7 +34,23 @@
 
   function parseXml(input) {
     if (!xmlIsSafe(input)) throw new Error('Unsafe DOCX XML: DTD or entity declaration');
-    const xml = input.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    const bom = /^\uFEFF/.test(input) ? 1 : 0;
+    const dropped = []; // normalized offsets of each LF that replaced a CRLF
+    let removed = 0;
+    const xml = input.replace(/^\uFEFF/, '').replace(/\r\n?/g, (match, at) => {
+      if (match.length === 2) { dropped.push(at - removed); removed++; }
+      return '\n';
+    });
+    // Element offsets (start, openEnd, end) are reported in the caller's string.
+    const raw = (k) => {
+      let lo = 0;
+      let hi = dropped.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (dropped[mid] < k) lo = mid + 1; else hi = mid;
+      }
+      return k + bom + lo;
+    };
     for (const char of xml) if (!validChar(char.codePointAt(0))) fail();
     const holder = { children: [], ns: { xml: XML, '': '' } };
     const stack = [holder];
@@ -56,7 +72,7 @@
       } else if (s.startsWith('</')) {
         const match = new RegExp('^</(' + name + ')' + space + '*>$').exec(s);
         if (!match || stack.length === 1 || parent.qname !== match[1]) fail();
-        stack.pop();
+        stack.pop().end = raw(tokens.lastIndex);
       } else if (s.startsWith('<![CDATA[') || !s.startsWith('<')) {
         const cdata = s.startsWith('<![CDATA[');
         if (!cdata && s.includes(']]>')) fail();
@@ -104,6 +120,10 @@
         }
         parent.children.push(node);
         if (stack.length === 1 && holder.children.length > 1) fail();
+        node.start = raw(token.index);
+        node.openEnd = raw(tokens.lastIndex);
+        node.selfClosing = match[3] === '/';
+        node.end = node.selfClosing ? node.openEnd : -1;
         if (!match[3]) stack.push(node);
       }
     }

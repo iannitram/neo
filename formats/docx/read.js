@@ -161,7 +161,7 @@
     } };
   }
 
-  const api = { readDocx };
+  const api = { readDocx, safeLink };
   if (node) module.exports = api;
   else root.NeoCraft_DocxRead = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
