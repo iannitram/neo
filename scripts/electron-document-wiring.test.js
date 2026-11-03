@@ -23,7 +23,7 @@ function loadMain(argvTail) {
   const appEvents = new Map();
   const sent = [];
   let ready = false;
-  let readyCbs = [];
+  const readyCbs = [];
   let windows = 0;
   const sender = { isDestroyed: () => false, send: (ch, msg) => sent.push([ch, msg]) };
   const quiet = new Proxy(function () {}, {
