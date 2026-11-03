@@ -29,6 +29,11 @@
 // saving/error states never imply that the working model has been acknowledged.
 // Failed queued saves are not retried automatically. Conflict requires reopening
 // a reconciled file; offline/permission failures permit an explicit save retry.
+//
+// RECOVERY (optional): recovery: { account, drafts, onError } where drafts is
+// document-session/drafts.js's createDrafts(). edit() writes a recovery draft
+// and a confirmed save clears it (guarded by generation). A failed draft write
+// or clear goes to onError(error) and never changes the session's state.
 
 (function (root) {
   'use strict';
@@ -36,12 +41,20 @@
   const { createSaveSerializer, createRequestGuard } = typeof module === 'object' && module.exports
     ? require('./document-session/serial') : root.NeoCraft_Serial;
 
-  function createDocumentSession({ adapter, host }) {
+  function createDocumentSession({ adapter, host, recovery = null }) {
+    if (recovery && (typeof recovery.drafts?.write !== 'function' || typeof recovery.drafts?.clear !== 'function'
+      || typeof recovery.onError !== 'function')) {
+      throw new TypeError('recovery needs drafts (with write and clear) and onError');
+    }
     const guard = createRequestGuard();
     let token;
     let doc = { state: 'loading', ref: null, name: '', model: null, meta: null,
       originalBytes: null, baseRevision: null, editGeneration: 0, savedGeneration: 0,
       fidelity: null, error: null };
+
+    function reportDraft(pending) {
+      pending.catch((error) => recovery.onError(error));
+    }
 
     function getState() {
       const { error, ...data } = doc;
@@ -89,6 +102,10 @@
       doc.model = structuredClone(model);
       doc.editGeneration++;
       if (doc.state === 'clean') doc.state = 'dirty';
+      if (recovery) {
+        reportDraft(recovery.drafts.write(recovery.account, doc.ref,
+          { name: doc.name, model: doc.model, meta: doc.meta, generation: doc.editGeneration }));
+      }
     }
 
     const serializer = createSaveSerializer(async (job) => {
@@ -110,6 +127,7 @@
         doc.savedGeneration = job.generation;
         doc.error = null;
         doc.state = doc.editGeneration === doc.savedGeneration ? 'clean' : 'dirty';
+        if (recovery) reportDraft(recovery.drafts.clear(recovery.account, doc.ref, job.generation));
         return { revision: structuredClone(doc.baseRevision) };
       } catch (error) {
         if (!guard.isCurrent(job.token)) return null;
