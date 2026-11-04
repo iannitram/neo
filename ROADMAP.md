@@ -101,6 +101,32 @@ The browser editor *is* Document mode, so this comes first even though desktop d
 - Then **uninstall `richdocuments` and the Collabora container**. Before that, back up the Collabora config and record the reinstall recipe in the KB. After it, the complex-docx fallback becomes *Launch in WordCraft*.
 - Update the Depot stability fields from the golden task's evidence, not by eye.
 
+### M8 — Automation: command line, MCP server, scripts (after 1.0, built before 1.1)
+
+*Added 2026-11-03, my decision. Not part of 1.0: SPEC.md's 1.0 definition is unchanged, and every issue here has the `after-1.0` label. Numbered M8 because M6 and M7 were already taken; it is built before them. SPEC.md "Automation", N18-N21.*
+
+The point: an AI agent, or I, can drive NeoCraft with no window. Testing and iteration get much faster (a script or an agent checks a change instead of me clicking through it), and an AI can use NeoCraft as a tool on my books.
+
+**Why here, between 1.0 and 1.1.** 1.0 must not grow. Everything Automation drives exists once 1.0 is done: upstream's library and exports, and 1.0's document session and formats (#18, #72). 1.1 and 1.2 are mostly new views (modes, Notes, Scripts, search, the Desk, Time River), and they are the work that gains most from being checked by script, so Automation comes first. After 1.2 would waste that gain; inside 1.1 would blur that release's "modes" definition. As 1.1 and 1.2 features land, each one adds its own method (for example, search moves onto 1.1's index, #148).
+
+**How it fits NEO.** WavCraft's split (a core, a command line, an MCP server, script files) carries over. The design follows WordCraft's command line and MCP server (a `Backend` with a headless and a connected implementation, one tool per method, read and write folder limits). Only the ideas carry over: WordCraft is Rust and this is plain JS, so no code is copied. What is different in NEO:
+
+- **Headless is NeoCraft's own Electron main process with no visible window,** the way the `scripts/*.e2e.js` tests already run it. Upstream's library code is inside `main.js` (the IPC handlers) and its exports are built by `app.js` in the page, so the core calls those same handlers and, for exports and screenshots only, a hidden page. It does not grow a second copy of the library or export code, and our hooks into `main.js` stay small and marked (D5).
+- **Attach drives the running app** through a local socket guarded by a key file. It is off until I turn on *Allow Automation* (a menu checkbox) or start the app with `--automation`.
+- **One writer per library.** Headless on my real library refuses while the app is open and says to use `--attach`. With `--library <folder>` it runs on its own copy beside the open app (what tests and agents use).
+- **Scripts are undone with a snapshot,** not a long undo chain: NEO saves every edit straight to disk, so a script run (headless or in the window) first takes a NEO snapshot, named for the script, of each book it names, and restoring that snapshot undoes the whole run. Every line is checked before the first one runs.
+- **Dropped: automation for the Nextcloud browser editor and for NEO Pocket.** The browser editor's files are already reachable over WebDAV, and Pocket is a phone app with no command line. Automation is desktop only, on Windows, macOS and SteamOS.
+
+The methods, the same words in the command line, the MCP tools and script files: list books, list chapters, read a chapter, append to a chapter, replace a chapter (guarded by its revision), add a chapter, word counts and goals, search across manuscripts, export (txt, md, html, pdf, docx, epub; fountain and fdx for screenplays), take a snapshot, read and edit one document (.md, .txt, .rtf, .docx) through 1.0's document session, and, attached, what is open plus a screenshot of the window. Paperback for KDP and Manuscript Format stay in the window, because they open a settings dialog.
+
+Build order and issues:
+
+1. Core, headless (N18a, #196), then attach (N18b, #197).
+2. Command line (N19, #198).
+3. MCP server (N20, #199) and script files (N21, #200) side by side.
+
+- **Done when:** an AI agent completes 10 real writing tasks on a test library through the MCP server with no window (N20's test), the same tasks pass attached to a running app, and the command line works on Windows, macOS and SteamOS.
+
 ### M6 — Modes (1.1, right after 1.0)
 
 *Added 2026-10-28 in the design review (owner: "Yes, update and file (Recommended)"). 1.0 is unchanged and ships first; every issue here has the `after-1.0` label. NeoCraft keeps NEO's look and design.*
@@ -127,7 +153,7 @@ Build order and issues (details in each issue; SPEC.md "1.1: Modes", N1-N11):
 
 - **The Desk:** NeoCraft gets its own page in Nextcloud's top bar. Folders the owner picks are shelves; documents are covers with NEO's seeded art and a word count. The same Desk shows in the desktop app and NEO Pocket from the synced folder. NeoCraft stops being only a file opener and becomes a place to start writing. The editor itself stays plain (D2 holds inside a document).
 - **Script to cut:** the two-column video-essay script (#145) gets live runtimes from the owner's measured reading speed, a teleprompter on a second display, and *Send to FilmCraft*: a rough-cut plan that FilmCraft opens as a sequence with named markers, labelled empty clip slots and a scratch narration track (FilmCraft's Kokoro text-to-speech). Desktop only.
-- **Time River:** a history slider over every Nextcloud version and local autosave of a document, with removed paragraphs shown as ghosts, added ones highlighted, and single-paragraph restore. A conflict (M8) keeps its copy and then opens the same view side by side to merge per paragraph. Prior art: upstream PR #369 (git history), #466/#467 (conflict twins), the neo-scribe fork's history window (issue #155).
+- **Time River:** a history slider over every Nextcloud version and local autosave of a document, with removed paragraphs shown as ghosts, added ones highlighted, and single-paragraph restore. A conflict (spec Must M8) keeps its copy and then opens the same view side by side to merge per paragraph. Prior art: upstream PR #369 (git history), #466/#467 (conflict twins), the neo-scribe fork's history window (issue #155).
 
 Build order and issues:
 

@@ -207,6 +207,41 @@ flowchart LR
   NCAPP -->|Launch external| MAINH
 ```
 
+## Planned automation modules (M8)
+
+Added 2026-11-03 for Automation ([SPEC.md](../../SPEC.md), "Automation", N18-N21; [ROADMAP.md](../../ROADMAP.md), M8). All rows are *planned*; none exists on main, and each turns to present when its issue merges. Each issue has the `after-1.0` label. Desktop only: the browser editor and Pocket get no automation. Every file is new, under a new `automation/` folder, with its test in `scripts/` (`automation-*.test.js` for node:test, `automation.e2e.js` for the Electron runs, like the other `*.e2e.js`). Upstream files get only small `// NEOCRAFT:` hooks (D5). The design follows WordCraft's command line and MCP server (a backend with a headless and a connected implementation, one tool per method, read and write folder limits); only the ideas carry over, no code (it is Rust).
+
+| Path | Status | Owns | Hooks in / called by | Issues |
+|---|---|---|---|---|
+| `automation/registry.js` | planned | Keeps every `ipcMain.handle` handler by channel so automation can call `library:read`, `library:listBooks`, `book:readMeta`, `book:writeMeta`, `book:create`, `chapter:read`, `chapter:write` (with its `expected` guard), `snapshot:*` and `export:save` in-process, the same code the page calls | a `// NEOCRAFT:` line in the IPC wrapper at `main.js:15` records each handler as it is registered | #196 |
+| `automation/methods.js` | planned | The method table, the one list of words shared by the command line, MCP and scripts: `library.books`, `book.chapters`, `chapter.read`, `chapter.append`, `chapter.replace`, `chapter.add`, `book.counts` (words per chapter, total, `wordGoal`, the library's `dailyGoal`), `book.setGoal`, `search`, `book.export`, `book.snapshot`, `document.read`, `document.edit`, `app.state`, `app.screenshot`. Each entry: parameters, read-only or not, needs-page or not. Books and chapters are named by id or by exact title (an ambiguous title is an error that lists the ids) | calls `automation/registry.js`; `manuscript.js` (word counts); `document-session.js` + `formats/` + `hosts/electron-document.js` for `document.*` (#18, #72); the page responder for export and screenshot | #196 |
+| `automation/chapter-text.js` | planned | Pure: chapter HTML to plain text (paragraphs, footnotes kept as text) and plain text to NEO chapter paragraphs, so append and replace write the HTML the editor writes | `automation/methods.js` | #196 |
+| `automation/headless.js` | planned | The headless backend: NeoCraft's own Electron main process with no visible window, like `scripts/words.e2e.js` (it sets the paths, then `require('../main.js')`). `--library <folder>` runs on that folder with its own temporary settings folder, beside an open app; on my real library it holds the single-instance lock and refuses when the app is open. A hidden page (`show: false`) is loaded only for export and screenshot | started by `automation/cli.js`; window creation skipped by a hook in `createWindow` (`main.js:2255`) | #196 |
+| `automation/page.js` | planned | Runs in the page (`index.html` loads it, one `// NEOCRAFT:` line): answers the requests that need upstream's page code, export (`exportFromShelf(bookId, format)` at `app.js:17971`, which runs `doExport` at :17998 on a book that is not open; formats txt, md, html, pdf, docx, epub; fountain and fdx for screenplays; the save dialog `export:save` shows is answered with the requested path for that one request), `app.state` (open book, chapter, mode) and edits to the book open in an attached window, which go through the editor's own save path so the open chapter is never overwritten underneath it | called by `automation/headless.js` (hidden page) and `automation/control.js` (attached) over IPC through `preload.js` | #196 |
+| `automation/control.js` | planned | Attach, app side: a local socket (a named pipe on Windows, a socket file in the settings folder on macOS and Linux), newline-delimited JSON requests, each checked against a key file written at start (owner-only permissions on macOS and Linux). Off until *Allow Automation* (a checkbox in the app menu, saved in settings) is on, or the app is started with `--automation` | started by a hook in `main.js` after the window is ready; menu entry in the menu template (`main.js` near :2805) | #197 |
+| `automation/remote.js` | planned | Attach, client side: the same method calls as headless, sent over the socket with the key; a clear message when the app is closed or automation is off | used by `automation/cli.js` (`--attach`), `automation/mcp.js`, `automation/script.js` | #197 |
+| `automation/cli.js` | planned | Subcommands: `books`, `chapters <book>`, `read <book> <chapter>`, `append`, `replace`, `counts <book>`, `search <words>`, `export <book> <out> [--format]`, `text <file>` and `inspect <file>` (one document through `formats/` and the fidelity scanner), `run <script>`, `mcp`; flags `--library`, `--attach`, `--json`, `--help`. Unknown flags are errors | a `// NEOCRAFT:` hook in `main.js` before `requestSingleInstanceLock` (:3483): only a known subcommand as the first argument goes to the CLI; anything else (files, `neocraft://` links) goes on to `documentPathsFromArgv` (:3606) unchanged | #198 |
+| `automation/mcp.js` | planned | MCP server: newline-delimited JSON-RPC 2.0 over stdio (`initialize`, `tools/list`, `tools/call`), one tool per method (`library.books` is `list_books`, and so on) with a JSON schema and a read-only hint; headless by default, `--attach` for the running app; `--read-root` / `--write-root` limit the files `export` and `document.*` may touch (the library itself is always reachable) | started by `neocraft mcp` (`automation/cli.js`) | #199 |
+| `automation/script.js` | planned | Script files: one method per line in the same words (`chapter.append book="Draft" chapter="3" text=@notes.txt`; `@file` reads a value from a file beside the script), `#` comments, blank lines ignored. Parses and resolves every line before any runs, snapshots each book it names first (`snapshot:write`), stops at the first failing line and names it | `neocraft run` (`automation/cli.js`); File > Run Script... in the menu template (`main.js` near :2805), run through `automation/page.js` | #200 |
+
+```mermaid
+flowchart LR
+  CLI["automation/cli.js (main.js hook before the single-instance lock)"] --> MCP["automation/mcp.js"]
+  CLI --> SCRIPT["automation/script.js"]
+  CLI --> METHODS["automation/methods.js"]
+  MCP --> METHODS
+  SCRIPT --> METHODS
+  METHODS --> HEAD["headless: automation/headless.js (no visible window)"]
+  METHODS --> REM["attached: automation/remote.js"] --> CTRL["automation/control.js in the running app"]
+  HEAD --> REG["automation/registry.js: main.js IPC handlers"]
+  CTRL --> REG
+  HEAD --> PAGE["automation/page.js: app.js exports, state"]
+  CTRL --> PAGE
+  METHODS --> DOC["document-session.js + formats/ (1.0)"]
+```
+
+Mac, PC and Linux: the methods, scripts and MCP are plain JS and the same on every OS. Platform work: the attach socket is a named pipe on Windows and a socket file on macOS and Linux; headless on Linux with no display needs Chromium's headless mode (`--ozone-platform=headless`) or a virtual display for the hidden page (export to pdf, screenshot), checked on SteamOS; the packaged Windows app is a GUI program, so the CLI issue checks that its output reaches a terminal (and adds a small console launcher if it does not).
+
 ## Planned 1.1 modules
 
 Added 2026-10-28 for the 1.1 modes release ([SPEC.md](../../SPEC.md), "1.1: Modes"; [ROADMAP.md](../../ROADMAP.md), M6). All rows are *planned*; none exists on main. Each issue has the `after-1.0` label and waits for the 1.0 list. Document mode (above) is built as the Notes editor, so the Notes rows reuse `document-session.js` and the formats.
