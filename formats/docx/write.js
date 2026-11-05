@@ -18,8 +18,9 @@
 // original character at the same place. Bold, italic and underline are written
 // explicitly, so they do not depend on styles. Dropped on regeneration: w:rsid*
 // attributes, w:lastRenderedPageBreak and w:proofErr (Word's revision, layout
-// and spelling caches; Word recomputes them).
-// Refused: anything else the paragraph holds (fields, bookmarks, drawings,
+// and spelling caches; Word recomputes them), and Word's hidden _GoBack
+// bookmark (an empty start/end pair marking the last edit; Word recreates it).
+// Refused: anything else the paragraph holds (fields, other bookmarks, drawings,
 // page or column breaks, tracked changes, comments), unsafe hyperlinks, and
 // text that XML cannot store.
 //
@@ -81,6 +82,15 @@
     for (const a of attrList(n)) {
       if (!isRsid(a) && !allowed.some((ok) => ok(a))) refuse('unrepresentable', `<${n.qname}> has attribute ${a.local}`);
     }
+  }
+
+  // A w: attribute's value, or undefined.
+  function wValue(n, local) {
+    for (const uri of W_URIS) {
+      const value = n.attrs.get(`${uri}|${local}`);
+      if (value !== undefined) return value;
+    }
+    return undefined;
   }
 
   function linkOk(href) {
@@ -184,6 +194,7 @@
     let pPr = null;
     const runs = [];
     let seenContent = false;
+    const goBack = []; // ids of _GoBack starts still waiting for their end
     for (const c of p.children) {
       if (typeof c === 'string') {
         if (!isBlank(c)) refuse('unrepresentable', 'text outside a run');
@@ -197,6 +208,13 @@
       seenContent = true;
       if (isW(c, 'proofErr') && c.children.length === 0) {
         allowAttrs(c, [wAttr('type')]); // a spelling mark, dropped with the regenerated paragraph
+      } else if (isW(c, 'bookmarkStart') && c.children.length === 0 && wValue(c, 'name') === '_GoBack') {
+        // Word's hidden "last edit" bookmark: dropped with the regenerated paragraph; Word recreates it.
+        allowAttrs(c, [wAttr('id'), wAttr('name')]);
+        goBack.push(wValue(c, 'id'));
+      } else if (isW(c, 'bookmarkEnd') && c.children.length === 0 && goBack.includes(wValue(c, 'id'))) {
+        allowAttrs(c, [wAttr('id')]);
+        goBack.splice(goBack.indexOf(wValue(c, 'id')), 1);
       } else if (isW(c, 'r')) {
         runs.push(readRun(c, raw));
       } else if (isW(c, 'hyperlink')) {
@@ -213,6 +231,7 @@
         refuse('unrepresentable', `<${c.qname}> in a paragraph`);
       }
     }
+    if (goBack.length) refuse('unrepresentable', 'a _GoBack bookmark without its end in the paragraph');
     return { pPr, runs };
   }
 
