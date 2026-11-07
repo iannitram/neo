@@ -635,6 +635,9 @@ body.light .print-modal select, body.light .print-modal textarea { background: #
 .fr-font:hover { border-color: #666; }
 .fr-font.sel { border-color: var(--accent); color: var(--accent); }
 .fr-font .fr-cap { font-size: 20px; margin-right: 7px; }
+/* a Mac that already has NEO Pocket's books in iCloud Drive */
+#fr-pocket { margin: 20px 0 0; font-size: 13px; color: var(--muted); }
+#fr-pocket .btn-quiet { display: block; color: var(--accent); font-size: 13px; padding: 4px 0; }
 .font-list {
   display: flex; flex-direction: column; gap: 6px;
   max-height: 50vh; overflow-y: auto; margin-top: 12px; padding-right: 10px;
@@ -936,6 +939,9 @@ body.bright .spell-menu button { color: #eee; }
   background: #f6e3b8; border-bottom: 2px solid var(--red);
   padding: 0 3px; border-radius: 2px; cursor: pointer;
 }
+/* the night page's ink is light, and the flag took it: white on the yellow.
+   It keeps the dark ink the gold buttons use instead (#454) */
+body.night .ph-mark { color: #191919; }
 
 /* --- The pages a book carries, in the manuscript, set as they'll print --- */
 .chapter.bookpage { display: flex; flex-direction: column; }
@@ -2033,20 +2039,29 @@ body.night #paper.script #chapters { box-shadow: 0 4px 30px rgba(0,0,0,0.7); }
 .sp-geom > p.sp-transition { text-align: right; }
 
 /* a new page: the rest of the last page, its foot, the gap, the next page's
-   head with its number (page one has none) */
-.sp-geom > p[data-pg] { margin-top: calc((var(--fill, 0) + 12) * 1em + var(--sp-gap)) !important; }
+   head with its number. Page one has its number in the head it already has
+   (no gap above the first line). data-fill is the blank foot of the page
+   before, so only a page that follows another gets the gap. */
+.sp-geom > p[data-pg][data-fill] { margin-top: calc((var(--fill, 0) + 12) * 1em + var(--sp-gap)) !important; }
 .sp-geom > p[data-pg]::before {
   content: attr(data-pg) '.';
   position: absolute; z-index: 1; pointer-events: none;
   left: calc(-9em - var(--ind) - 40px); width: calc(51em + 80px);
-  top: calc(-6em - var(--sp-gap)); height: calc(6em + var(--sp-gap));
-  box-sizing: border-box; padding: calc(var(--sp-gap) + 2.5em) calc(5.7em + 40px) 0 0;
+  box-sizing: border-box;
   text-align: right; text-transform: none; font-weight: 400; font-style: normal; text-decoration: none;
   color: var(--ink);
+}
+.sp-geom > p[data-pg][data-fill]::before {
+  top: calc(-6em - var(--sp-gap)); height: calc(6em + var(--sp-gap));
+  padding: calc(var(--sp-gap) + 2.5em) calc(5.7em + 40px) 0 0;
   /* the room's color across the gap; the pages' edges shaded on the paper's width only */
   background:
     linear-gradient(to bottom, rgba(0,0,0,0.22), transparent 10px, transparent calc(var(--sp-gap) - 10px), rgba(0,0,0,0.22) var(--sp-gap), transparent var(--sp-gap)) 40px 0 / calc(100% - 80px) 100% no-repeat,
     linear-gradient(to bottom, var(--bg) var(--sp-gap), transparent var(--sp-gap)) 0 0 / 100% 100% no-repeat;
+}
+.sp-geom > p[data-pg]:not([data-fill])::before {
+  top: -6em; height: 6em;
+  padding: 2.5em calc(5.7em + 40px) 0 0;
 }
 /* (CONT'D) when a voice comes back after action, and the gray suggestion
    at the caret. Neither is typed or saved: the exports write CONT'D out. */
@@ -2097,15 +2112,19 @@ body.night #paper.script #chapters { box-shadow: 0 4px 30px rgba(0,0,0,0.7); }
 .sp-narrow > p.sp-paren { margin-left: 4.5em; margin-right: 3em; --ind: 4.5em; }
 .sp-narrow > p.sp-dialogue { margin-left: 2.5em; margin-right: 2em; --ind: 2.5em; }
 .sp-narrow > p.sp-transition { text-align: right; }
-.sp-narrow > p[data-pg] { margin-top: 2.6em !important; }
+.sp-narrow > p[data-pg][data-fill] { margin-top: 2.6em !important; }
 .sp-narrow > p[data-pg]::before {
   content: attr(data-pg) '.';
   position: absolute; pointer-events: none;
-  left: calc(-18px - var(--ind)); width: var(--sp-fullw, 100vw); top: -1.9em;
-  box-sizing: border-box; padding: 2px 18px 0 0; border-top: 1px dashed color-mix(in srgb, var(--ink) 25%, var(--paper));
+  left: calc(-18px - var(--ind)); width: var(--sp-fullw, 100vw);
+  box-sizing: border-box; padding: 2px 18px 0 0;
   text-align: right; line-height: 1.2; text-transform: none; font-weight: 400; font-style: normal;
   color: color-mix(in srgb, var(--ink) 50%, var(--paper));
 }
+.sp-narrow > p[data-pg][data-fill]::before {
+  top: -1.9em; border-top: 1px dashed color-mix(in srgb, var(--ink) 25%, var(--paper));
+}
+.sp-narrow > p[data-pg]:not([data-fill])::before { top: -1.4em; }
 #paper.script.narrow #title-page {
   width: auto; height: auto; min-height: 60vh; padding: 48px 18px; display: flex; flex-direction: column;
   justify-content: center; gap: 1.3em; line-height: 1.3;
@@ -2229,9 +2248,10 @@ body.light .snap-ch:hover { color: #1c1a17; }
 .snap-chapter.same .snap-tag { color: color-mix(in srgb, var(--ink) 45%, var(--paper)); }
 .snap-chapter.same .snap-body { opacity: 0.55; }
 .snap-body { user-select: text; cursor: text; }
-.snap-body p.snap-gone { background: rgba(192, 57, 43, 0.14); box-shadow: -6px 0 0 rgba(192, 57, 43, 0.14), 6px 0 0 rgba(192, 57, 43, 0.14); }
-::highlight(neo-snap-gone) { background-color: rgba(192, 57, 43, 0.24); }
-
+.snap-body p.snap-gone { background: rgba(192, 57, 43, 0.14); box-shadow: -6px 0 0 rgba(192, 57, 43, 0.14), 6px 0 0 rgba(192, 57, 43, 0.14); text-decoration: underline 2px #c0392b; text-decoration-skip-ink: none; }
+::highlight(neo-snap-gone) { background-color: rgba(192, 57, 43, 0.24); text-decoration: underline 2px #c0392b; text-decoration-skip-ink: none; }
+body.night .snap-body p.snap-gone { background: rgba(224, 112, 95, 0.3); box-shadow: -6px 0 0 rgba(224, 112, 95, 0.3), 6px 0 0 rgba(224, 112, 95, 0.3); text-decoration-color: #e0705f; }
+body.night ::highlight(neo-snap-gone) { background-color: rgba(224, 112, 95, 0.4); text-decoration-color: #e0705f; }
 /* the Outline's cards for where the caret is, atop the right-hand pane (#340) */
 #side-cards { display: flex; flex-direction: column; gap: 10px; padding: 0 12px; }
 #side-cards:not(:empty) { margin-bottom: 22px; }
@@ -2297,7 +2317,9 @@ body.light .side-card textarea::placeholder { color: #a39d90; }
 }
 #notes-up:hover, #notes-up:focus-visible { color: var(--accent); }
 #editor-view:not(.notes-tab) #notes-up, #editor-view:not(.notes-tab) #notes-outline { display: none; }
-#aux-paper.notes-chapter #aux-title { margin-bottom: 18px; }
+/* only on the Notes tab: the class stays on the page after it, and the
+   Outline's List/Cards switch is set 30px up into the heading's 40px (#455) */
+#editor-view.notes-tab #aux-paper.notes-chapter #aux-title { margin-bottom: 18px; }
 #notes-outline {
   max-width: 34em; margin: 0 auto 40px; text-align: center; color: #8a8a8a;
   font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
