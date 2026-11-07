@@ -32,6 +32,8 @@ main.js: eslint(no-unused-vars): Variable 'MenuItem' is declared but never used.
 main.js: eslint(prefer-const): `BACKUP_FILE_LIMIT_MS` is never reassigned.
 main.js: eslint(prefer-const): `BACKUP_LIMIT_MS` is never reassigned.
 main.js: eslint(prefer-const): `CLOUD_WAIT` is never reassigned.
+main.js: promise(param-names): Promise constructor parameters must be named to match `^_?resolve$`
+main.js: promise(param-names): Promise constructor parameters must be named to match `^_?resolve$`
 nextcloud/neocraft/src/excluded.js: eslint(prefer-const): `normalized` is never reassigned.
 scripts/caret.e2e.js: eslint(curly): Expected { after 'for-of'.
 scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'caretIn' is declared but never used.
