@@ -811,6 +811,15 @@ async function loadLibrary() {
 function showFirstRun() {
   const fr = $('#firstrun');
   fr.hidden = false;
+  // a Mac where NEO Pocket already keeps books in iCloud Drive: open those
+  // instead of starting a new library (NEO restarts in that folder)
+  if (window.neo.pocketLibrary) {
+    window.neo.pocketLibrary().then((p) => {
+      if (!p || !p.offer) return;
+      $('#fr-pocket').hidden = false;
+      $('#fr-pocket-btn').onclick = () => { window.neo.usePocketLibrary(); };
+    }).catch(() => {});
+  }
   let picked = { body: Object.keys(BODY_FONTS)[0] || 'Georgia', dropcap: 'literary' };
 
   // Step 1: who are you, and how do you write?
@@ -1195,11 +1204,12 @@ async function renderShelves() {
     blank.title = t('Start a new book');
     blank.onclick = () => createBookOnShelf(shelf);
     pressable(blank, t('Start a new book'));
-    // right-click (a long press on a phone): a book or a script
+    // right-click (a long press on a phone): a book or a script — in simple
+    // NEO and on Pocket too, so a writer who looks for scripts finds them
+    // where they'd look (#494, #504)
     if (!isBound(shelf)) {
       blank.addEventListener('contextmenu', async (e) => {
         e.preventDefault();
-        if (!moreOn()) return; // scripts are behind Show More Features
         const pick = await popMenu(e.clientX, e.clientY, [
           { label: t('New Book'), value: 'book' },
           { label: t('New Script'), value: 'script' }
@@ -2790,6 +2800,18 @@ function renderChapters() {
     // a script's lines are set as they print (styles.css, SCREENPLAYS)
     if (isScript()) body.classList.add('script-body', $('#paper').classList.contains('narrow') ? 'sp-narrow' : 'sp-geom', 'no-cap');
     body.innerHTML = chapterHTML[chId] || '<p><br></p>';
+    // a script saved with its last line element deleted comes back from disk
+    // as bare text with no lines at all — Return and Tab do nothing on it and
+    // every restart keeps it that way. Wrap the stray text into one line
+    // again, as a heading when it reads like one (INT./EXT.), else as action,
+    // the way the same typing is set in a script that works
+    if (isScript() && !body.querySelector('p') && body.textContent.trim()) {
+      const line = document.createElement('p');
+      line.innerHTML = body.innerHTML;
+      body.innerHTML = '';
+      body.appendChild(line);
+      if (SP_HEAD_RE.test(line.textContent)) line.classList.add('sp-heading');
+    }
     markDialogueOpening(body);
     if (PAGE_PROMPTS[kind]) {
       body.dataset.ph = PAGE_PROMPTS[kind]();
@@ -3832,6 +3854,7 @@ function splitChapterAt(body, chId, block, sel, was) {
     block = next;
   }
   while (blank(block.previousElementSibling) && block.previousElementSibling.previousElementSibling) block.previousElementSibling.remove();
+  const settle = holdDay();
   const parts = [];
   let n = block;
   while (n) {
@@ -3847,6 +3870,7 @@ function splitChapterAt(body, chId, block, sel, was) {
   chapterHTML[newId] = parts.join('') || '<p><br></p>';
   persistChapter(newId);
   renderChapters();
+  settle();
   focusChapterStart(newId);
   resetNativeUndo();
   // the writer's line stays where it was in the window, the new chapter's
@@ -4668,6 +4692,7 @@ document.addEventListener('keydown', (e) => {
 let dashJustSet = null; // the dash just set, for ⌘Z
 function dialogueDashKey(e, body) {
   if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.isComposing || e.keyCode === 229) return;
+  if (body.classList.contains('script-body')) return; // a script keeps the hyphens it is typed with (#460)
   const key = e.key === 'Enter' ? '' : e.key;
   if (key.length > 1) return;
   const sel = window.getSelection();
@@ -4799,19 +4824,22 @@ function smartKeys(e, body) {
 
   if (markdownEmphasis(e, body, range)) return;
   // German sets its dash as an en dash – like this –, so there -- makes
-  // one, and a third hyphen the em dash (#286)
+  // one, and a third hyphen the em dash (#286). A script keeps -- and ...
+  // as typed: that is how a screenplay writes a dash and a trailing off
+  // (and how Final Draft and Fountain read them, #460)
   const german = writingLanguage().toLowerCase().startsWith('de');
-  if (e.key === '-' && prevChars(1) === '-') {
+  const script = body.classList.contains('script-body');
+  if (!script && e.key === '-' && prevChars(1) === '-') {
     e.preventDefault();
     replaceBefore(1, german ? '–' : '—');
     return;
   }
-  if (german && e.key === '-' && prevChars(1) === '–') {
+  if (!script && german && e.key === '-' && prevChars(1) === '–') {
     e.preventDefault();
     replaceBefore(1, '—');
     return;
   }
-  if (e.key === '.' && prevChars(2) === '..') {
+  if (!script && e.key === '.' && prevChars(2) === '..') {
     e.preventDefault();
     replaceBefore(2, '…'); // …
     return;
@@ -4955,7 +4983,10 @@ function bookQuotes(el) {
     return { '»': own === '»' ? 0 : n(/»(?=[\p{L}\p{N}])/gu), '«': own === '«' ? 0 : n(/«(?=[\p{L}\p{N}])/gu), '„': own === '„' ? 0 : n(/„(?=[\p{L}\p{N}])/gu), own: n(new RegExp(own + '\\s?(?=[\\p{L}\\p{N}])', 'gu')) };
   };
   const body = el && el.closest ? el.closest('.chapter-body') : null;
-  let c = opens(body ? body.textContent : '');
+  // paragraph by paragraph: one ending in » and the next starting with a
+  // letter don't make an opening »
+  const text = !body ? '' : body.children ? [...body.children].map((p) => p.textContent).join('\n') : body.textContent;
+  let c = opens(text);
   if (!c['»'] && !c['«'] && !c['„'] && !c.own && book) c = opens(book.chapterOrder.map((id) => chapterHTML[id] || '').join(' '));
   // a German book already written in „…“ keeps its marks
   if (c['„'] > c.own && c['„'] >= c['»'] && c['„'] >= c['«'] && writingLanguage().toLowerCase().startsWith('de')) return { open: '„', close: '“' };
@@ -6140,6 +6171,16 @@ function spToFdx(lines, title = {}) {
   if (tp.length) out += '  <TitlePage>\n    <Content>\n' + tp.join('').replace(/^ {4}/gm, '      ') + '    </Content>\n  </TitlePage>\n';
   return out + '</FinalDraft>\n';
 }
+// The corner number of a script page, the first page included. The title
+// page is a sheet of its own and is not numbered here.
+function spPageLabel(page) {
+  return page + '.';
+}
+// A line carries that number when a page starts on it. The first line
+// starts page 1, which is numbered like every page after it.
+function spPageMark(index, brk) {
+  return !!(brk || index === 0);
+}
 // ---- end of screenplay rules ----
 
 const isScript = (meta = book) => !!meta && meta.format === 'screenplay';
@@ -6440,7 +6481,29 @@ function spTab(p, back, ghost) {
 // As the writer types: INT. or EXT. makes a heading, an opening "(" in a
 // speech makes a parenthetical
 function scriptInput(body) {
-  const p = caretBlock(body);
+  let p = caretBlock(body);
+  // the browser can leave the page with no lines at all (⌘A then Delete or
+  // ⌘X, or one more Backspace on the one empty line left deletes that element
+  // itself): anything typed after lands on the page as bare text, which no
+  // line key can act on, and Return does nothing. Re-cover the page — wrap
+  // what is there into one fresh line, the way a new script starts, and put
+  // the caret back at its end
+  // (bare text can come with a stray <br> or a bold run beside it: those
+  // move into the line too)
+  if (!p && !body.querySelector('p')) {
+    const fresh = document.createElement('p');
+    if (body.textContent) { while (body.firstChild) fresh.appendChild(body.firstChild); } else { body.innerHTML = ''; fresh.innerHTML = '<br>'; }
+    body.appendChild(fresh);
+    const sel = window.getSelection();
+    if (document.activeElement === body) {
+      const r = document.createRange();
+      r.selectNodeContents(fresh);
+      r.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(r);
+    }
+    p = fresh;
+  }
   // the whole script cleared (⌘A, then Delete or ⌘X): the one line left
   // starts over as action, the way a new script does, not as whatever the
   // last line deleted was. Left as dialogue, "int." stayed dialogue and
@@ -6569,7 +6632,7 @@ function spRepaginate() {
   const pg = spPaginate(ps.map((p, i) => ({ type: lines[i].type, lines: counts[i], newPage: p.hasAttribute('data-newpage') })));
   ps.forEach((p, i) => {
     const a = pg.at[i];
-    const page = a.brk ? String(a.page) : null;
+    const page = spPageMark(i, a.brk) ? String(a.page) : null;
     if (p.getAttribute('data-pg') !== page) { if (page) p.setAttribute('data-pg', page); else p.removeAttribute('data-pg'); }
     const fill = a.brk ? String(Math.min(SP_LINES_PER_PAGE, a.fill)) : null;
     if (p.getAttribute('data-fill') !== fill) { if (fill) p.setAttribute('data-fill', fill); else p.removeAttribute('data-fill'); }
@@ -7158,7 +7221,7 @@ async function spPdfHtml() {
     <div class="tp-contact">${lines2(library.scriptContact || '')}</div>
     <div class="tp-draft">${lines2(book.draft || '')}</div>
   </div>`;
-  const body = pages.map((rows, k) => `<div class="page">${k ? `<div class="num">${k + 1}.</div>` : ''}<div class="room">${(rows || []).join('')}</div></div>`).join('');
+  const body = pages.map((rows, k) => `<div class="page"><div class="num">${spPageLabel(k + 1)}</div><div class="room">${(rows || []).join('')}</div></div>`).join('');
   return `<!DOCTYPE html><html lang="${escHtml(writingLanguage())}"><head><meta charset="utf-8"><title>${esc(title)}</title><style>
 ${fonts}
 @page { size: 8.5in 11in; margin: 0; }
@@ -7967,7 +8030,12 @@ function renderContentsLists() {
       const li = document.createElement('li');
       li.className = `t-${e.type} lv${e.level}`;
       li.textContent = e.label;
-      li.onclick = () => focusChapterStart(e.chId);
+      // a line takes you to its page: the caret at its start, and the page in view
+      li.onclick = () => {
+        focusChapterStart(e.chId);
+        const sec = document.querySelector(`.chapter[data-id="${e.chId}"]`);
+        if (sec) sec.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+      };
       list.appendChild(li);
     }
   }
@@ -10534,6 +10602,7 @@ function moveSection(fromCh, segIdx, to) {
   if (target === seg) return;
   if (fromCh === to.ch && (to.before === segIdx + 1 || (to.before == null && segIdx === fromSegs.length - 1))) return;
   snapshotStructure('card moved');
+  const settle = holdDay();
   liftSegment(fromBody, seg);
   setSegmentDown(toBody, seg.ps, seg.brk, target);
   if (seg.id && fromCh !== to.ch) {
@@ -10557,6 +10626,7 @@ function moveSection(fromCh, segIdx, to) {
   repointStickies(seg.ps, to.ch);
   scheduleMetaSave();
   updateCounters();
+  settle();
 }
 
 function moveChapterCard(chId, index) {
@@ -10577,6 +10647,7 @@ function sectionToChapter(chId, segIdx) {
   const seg = chapterSegments(chId)[segIdx];
   if (!body || !seg) return;
   snapshotStructure('card to chapter');
+  const settle = holdDay();
   liftSegment(body, seg);
   syncChapter(body, chId);
   const note = seg.id ? sectionNote(chId, seg.id) : null;
@@ -10599,6 +10670,7 @@ function sectionToChapter(chId, segIdx) {
   renderChapters();
   renderStickies();
   updateCounters();
+  settle();
   if (currentTab === 'outline') renderOutline();
 }
 
@@ -12296,6 +12368,26 @@ function wordsFromDisk() {
   const total = bookWordCount();
   if (daySeen && daySeen.bookId === book.id && sprint && sprint.bookId === book.id) sprint.startCount += total - daySeen.total;
   daySeen = { bookId: book.id, total };
+}
+// Words moved from one chapter to another (a chapter split in two, a card
+// dropped on another chapter) are neither written nor cut. They leave one
+// chapter a moment before they reach the other, and today never goes below
+// zero, so counted as they happen they would come back as new writing (#471).
+// Call this before the move; the function it returns, once the words have
+// settled, puts the day back as it was.
+function holdDay() {
+  const today = todayStr();
+  const day = book.dailyCounts && book.dailyCounts[today] ? { ...book.dailyCounts[today] } : null;
+  const total = bookWordCount();
+  const run = sprint && sprint.bookId === book.id ? { sprint, start: sprint.startCount } : null; // a sprint's count dips the same way
+  return () => {
+    if (!book || bookWordCount() !== total) return; // words really were written or cut
+    book.dailyCounts = book.dailyCounts || {};
+    book.dailyCounts[today] = day || { start: total, end: total };
+    daySeen = { bookId: book.id, total };
+    if (run && sprint === run.sprint) sprint.startCount = run.start;
+    updateCounters();
+  };
 }
 function trackDailyWords(total) {
   book.dailyCounts = book.dailyCounts || {};
@@ -15114,6 +15206,38 @@ document.addEventListener('keydown', (e) => {
 }, true);
 document.addEventListener('mousedown', () => { typewriterByKeyboard = false; }, true);
 
+// ---- typewriter rules: where the page goes as the writer types ----
+// The writing height is 45% of the window, with a band of about three lines
+// around it. The page's new scrollTop for a caret at caretTop, or null while
+// the caret is inside the band.
+function typewriterScrollTarget(scrollTop, caretTop, windowHeight, lineHeight) {
+  const diff = caretTop - windowHeight * 0.45;
+  return Math.abs(diff) <= lineHeight * 1.5 ? null : scrollTop + diff;
+}
+// A letter typed, Chromium scrolls its caret into view on its own. In the
+// Pages view it measures a line that a page break carried to the next page
+// at the top of its paragraph, back on the page before, and scrolls up to
+// that while the caret sits in plain view; the typewriter then glided the
+// page back, and every letter at the top of a page bobbed it (#453). NEO
+// keeps the caret in sight itself, so a scroll like that goes back. Given
+// the scrollTop when the letter went in (was) and now, where the typewriter
+// is gliding (glide, or null), the caret's top and bottom in the window as
+// they were at `was`, and the scroller's top and bottom: the scrollTop to
+// put back, or null to leave it.
+function strayCaretScroll({ was, now, glide, caretTop, caretBottom, viewTop, viewBottom }) {
+  if (now === was) return null;
+  // the typewriter's own glide, on its way
+  if (glide !== null && Math.sign(now - was) === Math.sign(glide - was) && Math.abs(now - was) <= Math.abs(glide - was) + 1) return null;
+  // a caret that was out of sight, even in part, is Chromium's to bring in
+  if (caretTop < viewTop || caretBottom > viewBottom) return null;
+  return was;
+}
+// ---- end of typewriter rules ----
+
+// where the typewriter is gliding the page, until it gets there
+let typewriterGlide = null;
+$('#paper-scroll').addEventListener('scrollend', () => { typewriterGlide = null; });
+
 document.addEventListener('selectionchange', () => {
   if (!typewriterEnabled || !book || currentTab !== 'manuscript' || !typewriterByKeyboard) return;
   const sel = window.getSelection();
@@ -15126,12 +15250,35 @@ document.addEventListener('selectionchange', () => {
       let rect = sel.getRangeAt(0).getBoundingClientRect();
       if (!rect || (rect.top === 0 && rect.height === 0)) rect = el.getBoundingClientRect();
       const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 30;
-      const diff = rect.top - window.innerHeight * 0.45;
-      // a band of about three lines around the writing height
-      if (Math.abs(diff) <= lineHeight * 1.5) return;
       const scroller = $('#paper-scroll');
-      scroller.scrollTo({ top: scroller.scrollTop + diff, behavior: scrollBehavior() });
+      const top = typewriterScrollTarget(scroller.scrollTop, rect.top, window.innerHeight, lineHeight);
+      if (top === null) return;
+      typewriterGlide = top;
+      scroller.scrollTo({ top, behavior: scrollBehavior() });
     } catch { /* selection mid-mutation; skip this frame */ }
+  });
+});
+
+// Chromium's scroll comes after the input event, inside the same keystroke,
+// so the page is checked in the next frame, before it is painted. (On the
+// window, so NEO's own input handlers, revealCaret among them, have run.)
+window.addEventListener('input', (e) => {
+  if (!pagesOn() || currentTab !== 'manuscript') return;
+  if (!e.target.closest || !e.target.closest('.chapter-body')) return;
+  const sc = $('#paper-scroll');
+  const was = sc.scrollTop;
+  requestAnimationFrame(() => {
+    const now = sc.scrollTop;
+    if (now === was) return;
+    const rect = caretRect();
+    if (!rect) return;
+    const box = sc.getBoundingClientRect();
+    const back = strayCaretScroll({
+      was, now, glide: typewriterGlide,
+      caretTop: rect.top + now - was, caretBottom: rect.bottom + now - was,
+      viewTop: box.top, viewBottom: box.bottom
+    });
+    if (back !== null) sc.scrollTop = back;
   });
 });
 
@@ -15171,7 +15318,6 @@ let viewStateSent = '';
 // the writer turns it down). The shelf goes with writing.
 const brightAside = () => !!book && !$('#editor-view').hidden && currentTab !== 'manuscript';
 function brightNow() {
-  if (!moreOn()) return brightAside() || SYSTEM_CONTRAST.matches; // the defaults
   if (brightAside()) return library.uiBrightAside === undefined ? true : !!library.uiBrightAside;
   return library.uiBright === undefined ? SYSTEM_CONTRAST.matches : !!library.uiBright;
 }
@@ -17663,14 +17809,14 @@ p.attr { font-style: normal; font-size: 0.85em; letter-spacing: 0.05em; margin-t
 .part .pl { display: block; }
 .part .pt { display: block; margin-top: 0.8em; font-size: 1.6em; letter-spacing: 0; text-transform: none; }
 .opener h1 { margin: 0; font-size: 1.8em; letter-spacing: 0.02em; text-transform: none; }
-.opener .sub { text-indent: 0; margin-top: 0.6em; font-style: italic; }
+.opener .sub { text-align: center; text-indent: 0; margin-top: 0.6em; font-style: italic; }
 .opener .byline { margin: 3em 0 0; }
 nav#toc ol { list-style: none; padding-left: 0; }
 nav#toc ol ol { padding-left: 1.5em; }
 .titlepage { text-align: center; margin-top: 30%; }
 .titlepage h2 { font-size: 2em; margin: 0; }
-.titlepage .sub { font-style: italic; }
-.titlepage .auth { margin-top: 4em; letter-spacing: 0.3em; text-transform: uppercase; }
+.titlepage .sub { text-align: center; text-indent: 0; font-style: italic; }
+.titlepage .auth { text-align: center; text-indent: 0; margin-top: 4em; letter-spacing: 0.3em; text-transform: uppercase; }
 .coverimg { text-align: center; margin: 0; padding: 0; }
 .coverimg img { max-width: 100%; max-height: 100%; }` },
     { path: 'OEBPS/cover.xhtml', content: `<?xml version="1.0" encoding="utf-8"?>
@@ -18640,7 +18786,6 @@ function usesMoreFeatures(lib) {
     (!!lib.pageWidth && lib.pageWidth !== 'regular') ||
     (lib.uiZoom !== undefined && snapZoom(lib.uiZoom) !== 1) ||
     (!!lib.focus && lib.focus !== 'off') ||
-    lib.uiBright !== undefined || lib.uiBrightAside === false ||
     !!lib.markdownOff || !!lib.exportCustomChapterTitles ||
     (!!lib.spellLanguage && lang(lib.spellLanguage) !== lang(NeoI18n.getLocale()));
 }
