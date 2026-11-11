@@ -2,6 +2,30 @@
 
 *A fork of [hughhowey/neo](https://github.com/hughhowey/neo) (MIT) by iannitram. Drafted 2026-10-23 from a design Q&A session.*
 
+Updated: 2026-11-11
+
+features:
+- fork: Fork identity, builds, checks, monthly upstream merges and project rules (M0, Ongoing)
+- books: Books and Pocket keep working: review fixes to saves, conflicts and exit, plus book and Pocket requests
+- document-mode: Document mode: the one-file session, the editor host and typing (M1)
+- md-txt: Byte-faithful Markdown and source-preserving .txt (M1)
+- docx: Simple .docx round trip, fidelity scanner and warning (M1)
+- rtf: .rtf reader, writer and unsupported-feature scanner (M3)
+- nextcloud-saves: Nextcloud reads, ETag-guarded saves, conflict copies and autosave (M2)
+- nextcloud-app: The neocraft Nextcloud app: Files handler, fallbacks, "+ New", packaging and admin-panel updates (M2, M3)
+- bug-report: Report a bug in the browser editor and the desktop app
+- desktop-docs: Desktop Document mode, open-file handling and file associations (M4)
+- launch-external: Launch external: the neocraft:// handoff, Tailscale-only addresses and the guarded DAV cache (M4)
+- cutover: Cutover: a real week of use, then Collabora removed (M5)
+- automation: After 1.0: command line, MCP server and script files (M8)
+- modes: After 1.0: the mode switch and Notes (M6, 1.1)
+- scripts: After 1.0: Fountain scripts: screenplay, two-column video essay, podcast (M6, 1.1)
+- search: After 1.0: search across books, scripts, notes and opened documents (M6, 1.1)
+- writing-tools: After 1.0: word count and goals, Pomodoro, typewriter mode (M6, 1.1)
+- desk: After 1.0: the Desk (M7, 1.2)
+- script-to-cut: After 1.0: Script to cut: runtimes, teleprompter, Send to FilmCraft (M7, 1.2)
+- time-river: After 1.0: Time River: version slider and conflict merge (M7, 1.2)
+
 ## What NeoCraft is
 
 NeoCraft is NEO plus a **Document mode** and a **Nextcloud web editor**. It replaces the Collabora office plugin in Nextcloud Files and adds installable desktop apps for Windows, macOS and Linux (SteamOS) that edit the same files.
