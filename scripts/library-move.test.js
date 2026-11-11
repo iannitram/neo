@@ -98,6 +98,13 @@ function mac({ pocket = true, ipad = false, answers = [0], firstRun = false } = 
   };
 }
 
+// The sandbox plays a Mac, and main.js takes any file with a size and no blocks
+// for one still in iCloud; Windows reports no blocks for every file, so the
+// moves that wait on iCloud sit out the full 30 s wait and fail there (#136).
+const skipHere = process.platform === 'win32'
+  ? 'needs stat.blocks to tell a real file from a placeholder, which Windows lacks (#136)'
+  : false;
+
 describe('moving the library', { concurrency: 1 }, () => {
   test('two libraries become one: shared shelves keep every book, the rest join', () => {
     const m = mac({ pocket: false });
@@ -120,7 +127,7 @@ describe('moving the library', { concurrency: 1 }, () => {
     }
   });
 
-  test('Use iCloud Drive moves every book into NEO Pocket\'s folder, beside the iPad\'s, and restarts there', async () => {
+  test('Use iCloud Drive moves every book into NEO Pocket\'s folder, beside the iPad\'s, and restarts there', { skip: skipHere }, async () => {
     const m = mac({ ipad: true });
     try {
       await m.run('chooseLibraryFolder()');
@@ -150,7 +157,7 @@ describe('moving the library', { concurrency: 1 }, () => {
     }
   });
 
-  test('a folder the writer picks asks first, and Move Books brings them along', async () => {
+  test('a folder the writer picks asks first, and Move Books brings them along', { skip: skipHere }, async () => {
     const m = mac({ pocket: false, answers: [0, 0] }); // Choose Folder…, then Move Books
     try {
       await m.run('chooseLibraryFolder()');
@@ -209,7 +216,7 @@ describe('moving the library', { concurrency: 1 }, () => {
     }
   });
 
-  test('Use iCloud Drive in that question moves the books and restarts there', async () => {
+  test('Use iCloud Drive in that question moves the books and restarts there', { skip: skipHere }, async () => {
     const m = mac({ ipad: true, answers: [0] });
     try {
       await m.run('askAboutPocket()');
