@@ -66,7 +66,7 @@ function mock(overrides = {}) {
   });
 }
 
-function loadMain({ home, userData }) {
+function loadMain({ home, userData, platform = 'darwin' }) {
   const ipcHandlers = new Map();
   const ipcOn = new Map();
   const appHandlers = new Map();
@@ -124,7 +124,10 @@ function loadMain({ home, userData }) {
     },
     Menu: mock({ buildFromTemplate: (items) => items, setApplicationMenu() {} }),
     dialog: mock({
-      showMessageBox: async (_win, opts) => {
+      showMessageBox: async (winOrOpts, opts) => {
+        if (opts === undefined && winOrOpts && (Object.hasOwn(winOrOpts, 'buttons') || Object.hasOwn(winOrOpts, 'message'))) {
+          opts = winOrOpts;
+        }
         state.dialogs.push(opts);
         return { response: state.responses.length ? state.responses.shift() : 1 };
       },
@@ -142,7 +145,7 @@ function loadMain({ home, userData }) {
   const context = vm.createContext({
     require: (name) => (name === 'electron' ? electron : localRequire(name)),
     __dirname: root,
-    process: { platform: 'darwin', env: process.env, on() {} },
+    process: { platform, env: process.env, on() {} },
     console,
     libraryRoot: os.tmpdir(),
     setImmediate,
@@ -311,4 +314,16 @@ describe('changing the library folder waits for the saves', () => {
       r.cleanup();
     }
   });
+});
+
+test('dialog fake records options passed through Electron’s one-argument overload on Windows', async () => {
+  const m = mac();
+  const main = loadMain({ home: m.home, userData: m.userData, platform: 'win32' });
+  try {
+    await main.run('require("electron").dialog.showMessageBox({ message: "one argument", buttons: ["OK"] })');
+    assert.equal(main.state.dialogs[0].message, 'one argument');
+    assert.deepEqual([...main.state.dialogs[0].buttons], ['OK']);
+  } finally {
+    fs.rmSync(m.base, { recursive: true, force: true });
+  }
 });
