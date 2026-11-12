@@ -2,29 +2,48 @@
 
 *A fork of [hughhowey/neo](https://github.com/hughhowey/neo) (MIT) by iannitram. Drafted 2026-10-23 from a design Q&A session.*
 
-Updated: 2026-11-11
+Updated: 2026-11-12
 
 features:
-- fork: Fork identity, builds, checks, monthly upstream merges and project rules (M0, Ongoing)
-- books: Books and Pocket keep working: review fixes to saves, conflicts and exit, plus book and Pocket requests
-- document-mode: Document mode: the one-file session, the editor host and typing (M1)
-- md-txt: Byte-faithful Markdown and source-preserving .txt (M1)
-- docx: Simple .docx round trip, fidelity scanner and warning (M1)
-- rtf: .rtf reader, writer and unsupported-feature scanner (M3)
-- nextcloud-saves: Nextcloud reads, ETag-guarded saves, conflict copies and autosave (M2)
-- nextcloud-app: The neocraft Nextcloud app: Files handler, fallbacks, "+ New", packaging and admin-panel updates (M2, M3)
-- bug-report: Report a bug in the browser editor and the desktop app
-- desktop-docs: Desktop Document mode, open-file handling and file associations (M4)
-- launch-external: Launch external: the neocraft:// handoff, Tailscale-only addresses and the guarded DAV cache (M4)
-- cutover: Cutover: a real week of use, then Collabora removed (M5)
-- automation: After 1.0: command line, MCP server and script files (M8)
-- modes: After 1.0: the mode switch and Notes (M6, 1.1)
-- scripts: After 1.0: Fountain scripts: screenplay, two-column video essay, podcast (M6, 1.1)
-- search: After 1.0: search across books, scripts, notes and opened documents (M6, 1.1)
-- writing-tools: After 1.0: word count and goals, Pomodoro, typewriter mode (M6, 1.1)
-- desk: After 1.0: the Desk (M7, 1.2)
-- script-to-cut: After 1.0: Script to cut: runtimes, teleprompter, Send to FilmCraft (M7, 1.2)
-- time-river: After 1.0: Time River: version slider and conflict merge (M7, 1.2)
+- fork: Fork identity, builds, checks, monthly upstream merges and project rules (M0, Ongoing) [mostly done]
+- books: Books and Pocket keep working: review fixes to saves, conflicts and exit, plus book and Pocket requests [mostly done]
+- document-mode: Document mode: the one-file session, the editor host and typing (M1) [partial]
+- md-txt: Byte-faithful Markdown and source-preserving .txt (M1) [helpers only]
+- docx: Simple .docx round trip, fidelity scanner and warning (M1) [partial]
+- rtf: .rtf reader, writer and unsupported-feature scanner (M3) [partial]
+- nextcloud-saves: Nextcloud reads, ETag-guarded saves, conflict copies and autosave (M2) [helpers only]
+- nextcloud-app: The neocraft Nextcloud app: Files handler, fallbacks, "+ New", packaging and admin-panel updates (M2, M3) [scaffold only]
+- bug-report: Report a bug in the browser editor and the desktop app [not started]
+- desktop-docs: Desktop Document mode, open-file handling and file associations (M4) [partial]
+- launch-external: Launch external: the neocraft:// handoff, Tailscale-only addresses and the guarded DAV cache (M4) [helpers only]
+- cutover: Cutover: a real week of use, then Collabora removed (M5) [not started]
+- automation: After 1.0: command line, MCP server and script files (M8) [not started]
+- modes: After 1.0: the mode switch and Notes (M6, 1.1) [not started]
+- scripts: After 1.0: Fountain scripts: screenplay, two-column video essay, podcast (M6, 1.1) [not started]
+- search: After 1.0: search across books, scripts, notes and opened documents (M6, 1.1) [not started]
+- writing-tools: After 1.0: word count and goals, Pomodoro, typewriter mode (M6, 1.1) [not started]
+- desk: After 1.0: the Desk (M7, 1.2) [not started]
+- script-to-cut: After 1.0: Script to cut: runtimes, teleprompter, Send to FilmCraft (M7, 1.2) [not started]
+- time-river: After 1.0: Time River: version slider and conflict merge (M7, 1.2) [not started]
+
+A bracketed marker ends each feature line: what is built, checked against main on 2026-11-12. *Mostly done*, *partial*, *helpers only* (tested modules that nothing calls yet), *scaffold only*, *not started*. The 1.0 features in detail:
+
+| Feature | Marker | What main has, and what is open |
+|---|---|---|
+| fork | mostly done | identity, three-OS builds and PR tests and lint are on main; #16 (smoke tests), #103, #105 (in flight) and #137 are open |
+| books | mostly done | the save fixes are in, including every exit path (#15 closed 2026-11-12); #14 (Pocket atomic replace) is open |
+| document-mode | partial | the session core is on main; the Document-mode view (#36) and the typing switches (#79, #101) are not started |
+| md-txt | helpers only | frontmatter, wikilinks and span patching are on main; the .txt and .md adapters (#19, #49) and the corpus gate (#50) are not started |
+| docx | partial | limits, scanner, reader and patcher are on main; the fidelity warning (#55) and the reopen check in WordCraft and LibreOffice (#54) are open |
+| rtf | partial | tokenizer, scanner, reader and writer are on main; the reopen and sample-file checks (#63) are open and no session calls them yet |
+| nextcloud-saves | helpers only | guarded PUT and conflict copies are on main; the Nextcloud host (#58), autosave (#30), the PHP compare-and-write (#59) and #109 are not started |
+| nextcloud-app | scaffold only | an empty page and the release fields; the spike (#17) and every feature after it are not started |
+| bug-report | not started | #83-#85 |
+| desktop-docs | partial | the document host, its preload bridge, open-file handling and file associations are on main; the on-screen half waits on Document mode (#36) |
+| launch-external | helpers only | handoff intents, the Nextcloud client config reader and the Tailscale origin rules are on main; #77 and #78 are not started |
+| cutover | not started | #31 needs a real week of use first |
+
+The After 1.0 features have no code yet.
 
 ## What NeoCraft is
 
