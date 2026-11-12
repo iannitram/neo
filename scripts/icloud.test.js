@@ -123,6 +123,16 @@ function loadMain() {
 
 const main = loadMain();
 
+// If this file is still running well after its tests should have ended, say
+// what is holding it open and stop (#175): a hang then fails in seconds, with
+// the culprit named, not at `npm test`'s outer limit. unref'd, so a run that
+// ends on its own never sees it.
+setTimeout(() => {
+  console.error('icloud.test.js still running after 60 s; open: ' + JSON.stringify(process.getActiveResourcesInfo()) +
+    '; backup children: ' + activeChildren.size);
+  process.exit(1);
+}, 60000).unref();
+
 // a placeholder for `file`: the same size, no words on this Mac
 function sendToICloud(file) {
   const size = fs.statSync(file).size;
