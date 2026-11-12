@@ -392,6 +392,13 @@
     return open + props + runsXml(ps, linkFor) + `</${p.qname}>`;
   }
 
+  // Byte equality with plain typed-array reads: no Node globals, so it runs in the browser.
+  function bytesEqual(a, b) {
+    if (a.length !== b.length) return false;
+    for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) return false;
+    return true;
+  }
+
   const canonModel = (blocks) => blocks.map((b) => {
     const n = normalizeBlock(b);
     return { shape: n.shape, runs: canonical(n.runs) };
@@ -482,7 +489,7 @@
         if (entry.dir || replaced.some(([p]) => p === part)) continue;
         const a = await source.file(part).async('uint8array');
         const b = await reread.file(part).async('uint8array');
-        if (Buffer.compare(Buffer.from(a), Buffer.from(b)) !== 0) refuse('output-invalid', `part ${part} changed`);
+        if (!bytesEqual(a, b)) refuse('output-invalid', `part ${part} changed`);
       }
     } catch (error) {
       if (error instanceof DocxWriteError) throw error;
