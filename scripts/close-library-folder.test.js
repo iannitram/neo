@@ -51,7 +51,7 @@ function mac({ pocket = false } = {}) {
   }));
   const cloudDocs = path.join(home, 'Library', 'Mobile Documents', 'iCloud~com~hughhowey~neo~pocket', 'Documents');
   if (pocket) fs.mkdirSync(cloudDocs, { recursive: true });
-  return { base, home, userData, docs, lib, cloud: path.join(cloudDocs, 'NEO Library'), dropbox: path.join(home, 'Dropbox', 'NEO') };
+  return { base, home, userData, docs, lib, cloud: path.join(cloudDocs, 'NEO' + ' Library'), dropbox: path.join(home, 'Dropbox', 'NEO') };
 }
 
 // Any property the test does not name answers with another stub.
