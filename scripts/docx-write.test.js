@@ -37,7 +37,8 @@ const document = (body, lineEnd = '') => `${DECL}${lineEnd}<w:document xmlns:w="
 
 async function packageBytes(parts) {
   const zip = new JSZip();
-  for (const [name, data] of Object.entries(parts)) zip.file(name, data, { createFolders: false });
+  // A fixed date: JSZip otherwise stamps each entry with the clock (2 s resolution), so two builds could differ.
+  for (const [name, data] of Object.entries(parts)) zip.file(name, data, { createFolders: false, date: new Date(0) });
   return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
 }
 function parts(body, { lineEnd = '', rels = RELS, extra = {} } = {}) {
