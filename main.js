@@ -262,6 +262,28 @@ function moveLibrary(from, to) {
   }
 }
 
+// NEOCRAFT: the restart after a library move. A document still waiting for a
+// window (the outbox, or one named during the move) goes on the command line,
+// so the new NEO opens it; a window is never made for it while the books move.
+function restartNeo() {
+  const documents = [...documentOutbox.splice(0).map((d) => d.path), ...documentsForRestart.splice(0)];
+  if (!documents.length) { app.relaunch(); app.exit(0); return; }
+  const argv = process.argv || [];
+  const args = argv.slice(1);
+  const alreadyNamed = new Set(documentPathsFromArgv(argv, {
+    isPackaged: app.isPackaged,
+    cwd: typeof process.cwd === 'function' ? process.cwd() : undefined
+  }).map((filePath) => path.resolve(filePath)));
+  for (const filePath of documents) {
+    const absolute = path.resolve(filePath);
+    if (alreadyNamed.has(absolute)) continue;
+    alreadyNamed.add(absolute);
+    args.push(filePath);
+  }
+  app.relaunch({ args });
+  app.exit(0);
+}
+
 // Move the books, with the window closed so nothing writes behind the move:
 // everything typed is saved first. Returns true when the books moved, false
 // (and says why) when they stayed where they were, and 'kept' when a save did
@@ -312,8 +334,7 @@ async function useCloudLibrary(win) {
     const moved = await moveLibraryAndClose(win, LIBRARY_DIR, cloud);
     if (moved === 'kept') return false; // NEOCRAFT: B08 — NEO stays open
     if (!moved) {
-      app.relaunch(); // the window closed for the move: open again where the books still are
-      app.exit(0);
+      restartNeo(); // the window closed for the move: open again where the books still are
       return false;
     }
   } else if (!(await settleWindowsBeforeRestart())) {
@@ -322,8 +343,7 @@ async function useCloudLibrary(win) {
   const settings = readSettings();
   settings.libraryDir = cloud;
   writeSettings(settings);
-  app.relaunch();
-  app.exit(0);
+  restartNeo();
   return true;
 }
 
@@ -463,8 +483,7 @@ async function chooseLibraryFolder() {
     const moved = await moveLibraryAndClose(win, LIBRARY_DIR, next);
     if (moved === 'kept') return; // NEOCRAFT: B08 — NEO stays open, nothing moved
     if (!moved) {
-      app.relaunch(); // the window closed for the move: open again where the books still are
-      app.exit(0);
+      restartNeo(); // the window closed for the move: open again where the books still are
       return;
     }
   } else if (!(await settleWindowsBeforeRestart())) {
@@ -473,8 +492,7 @@ async function chooseLibraryFolder() {
   const settings = readSettings();
   if (path.resolve(next) !== path.resolve(defaultDir)) settings.libraryDir = next; else delete settings.libraryDir;
   writeSettings(settings);
-  app.relaunch();
-  app.exit(0);
+  restartNeo();
 }
 
 // Can NEO write in this folder? Windows' Controlled folder access (Defender's
@@ -3805,7 +3823,9 @@ const documentHost = createElectronDocumentHost();
 const startupDocuments = []; // macOS open-file before launch finishes; argv is read in whenReady
 let documentSender = null; // the webContents that called document:ready
 const documentOutbox = []; // opened files waiting for that window
+const documentsForRestart = []; // files named while the library moves: no window, the restart opens them
 async function requestDocument(filePath) {
+  if (movingLibrary) { documentsForRestart.push(filePath); return; }
   let opened;
   try {
     opened = await documentHost.open(filePath);
@@ -3813,6 +3833,8 @@ async function requestDocument(filePath) {
     logError('document open', err);
     return;
   }
+  // the library may have started to move while the file was read
+  if (movingLibrary) { documentsForRestart.push(opened.path); return; }
   if (app.isReady() && BrowserWindow.getAllWindows().length === 0) createWindow();
   documentOutbox.push(opened);
   flushDocuments();

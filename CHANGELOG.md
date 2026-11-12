@@ -3,6 +3,7 @@
 Newest first. One line per change of stage, release or decision that the next session needs. Upstream's history is upstream's.
 
 - 2026-11-12 #105 (M0): the desktop app's own strings say NeoCraft Library, as its folder does (#8). Neo Pocket keeps NEO Library (owner's ruling 2026-10-27), and so does the Pocket-only Deleted Books line in app.js.
+- 2026-11-12 #214 (M4a, split from #72): `npm run test:document-host` runs on a real Electron and has a library-move case; a document named while the library moves no longer opens a window mid-move, and it rides the restart's command line (`restartNeo` in `main.js`).
 - 2026-11-12 Docs only: code map re-stamped to c1c2d9f (line anchors, file counts, `desktop/origins.js`, the document-session core and the exclusive temp file of #174 recorded), PIPELINE.md Notes now say where the build stands, and the ROADMAP features block gains a status marker per feature. No scope change.
 - 2026-11-11 Roadmap map (owner: "Yes, board order"): the roadmap gains an Updated date and a features block of 20 features drawn from M0-M8 and the review fixes; each open issue gets one feature label and the 1.0 or After 1.0 milestone. No scope change.
 - 2026-11-11 Docs only: added CLAUDE.md pointing at AGENTS.fork.md, and replaced the Flatpak Nextcloud config path in the roadmap, code map and previous roadmap with a placeholder (repo-lint, R01).

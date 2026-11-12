@@ -86,6 +86,54 @@ test('no book was made: the library holds no book folder', async () => {
   assert.deepEqual(books, []);
 });
 
+// The writer moves the library to NEO Pocket's folder (a throwaway home here)
+// and a .md is double-clicked while the windows close for the move. The
+// document must not open a window in the middle of the move, and it must go on
+// with the restart: NEO relaunches with it on the command line.
+test('a document opened during a library move rides the restart, and no window opens mid-move', async () => {
+  const book = path.join(lib, 'book-move');
+  fs.mkdirSync(path.join(book, 'chapters'), { recursive: true });
+  fs.writeFileSync(path.join(book, 'book.json'), JSON.stringify({ title: 'Move' }));
+  const home = path.join(tmp, 'home');
+  const cloud = path.join(home, 'Library', 'Mobile Documents', 'iCloud~com~hughhowey~neo~pocket', 'Documents');
+  fs.mkdirSync(cloud, { recursive: true });
+  const later = path.join(tmp, 'later.md');
+  fs.writeFileSync(later, '# Later\n');
+  const realGetPath = app.getPath;
+  const realRelaunch = app.relaunch;
+  const realExit = app.exit;
+  const realDestroy = BrowserWindow.prototype.destroy;
+  const relaunches = [];
+  let exited = false;
+  let windowsAtRelaunch = null;
+  let opened = false;
+  app.getPath = function (name) { return name === 'home' ? home : realGetPath.call(this, name); };
+  const liveWindows = () => BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed()).length;
+  app.relaunch = (opts) => { relaunches.push(opts); windowsAtRelaunch = liveWindows(); };
+  app.exit = () => { exited = true; };
+  BrowserWindow.prototype.destroy = function () {
+    // the double-click lands as the first window closes for the move
+    if (!opened) { opened = true; app.emit('open-file', { preventDefault() {} }, later); }
+    return realDestroy.call(this);
+  };
+  try {
+    await js(`window.neo.usePocketLibrary().catch(() => {}), 'started'`);
+    for (let i = 0; i < 200 && !relaunches.length; i++) await tick(50);
+    await tick(400); // a window for the document would be made after its read: give that time
+    assert.equal(relaunches.length, 1, 'the move restarts NEO once');
+    assert.equal(windowsAtRelaunch, 0, 'no window was open at the restart');
+    assert.ok((relaunches[0]?.args || []).includes(later), 'the document is on the restart command line');
+    assert.equal(exited, true, 'the old process exits');
+    assert.equal(liveWindows(), 0, 'no window opened for the document during the move');
+    assert.ok(fs.existsSync(path.join(cloud, 'NEO Library', 'book-move', 'book.json')), 'the book moved');
+  } finally {
+    app.getPath = realGetPath;
+    app.relaunch = realRelaunch;
+    app.exit = realExit;
+    BrowserWindow.prototype.destroy = realDestroy;
+  }
+});
+
 async function main() {
   await app.whenReady();
   let failed = 0;
