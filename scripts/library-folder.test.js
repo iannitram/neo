@@ -27,7 +27,7 @@ function computer({ documents = true, chosen = false } = {}) {
   if (documents) fs.mkdirSync(path.join(home, 'Documents'));
   const gone = path.join(base, 'OneDrive');
   fs.writeFileSync(gone, 'not a folder');
-  const broken = path.join(gone, 'Documents', 'NEO Library');
+  const broken = path.join(gone, 'Documents', 'NeoCraft Library');
   if (chosen) fs.writeFileSync(path.join(userData, 'settings.json'), JSON.stringify({ libraryDir: broken }));
 
   const shown = { sync: [], async: [] };
