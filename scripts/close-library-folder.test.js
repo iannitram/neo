@@ -142,8 +142,19 @@ function loadMain({ home, userData, platform = 'darwin' }) {
     nativeTheme: mock({ on() {} })
   };
 
+  // main.js is told it runs on a Mac, but the host may not be one: a Windows
+  // stat reports 0 blocks for every file and there is no /usr/bin/stat, so the
+  // iCloud check would call every file cloud-only. Answer as a Mac with every
+  // file on disk (flags 0, no dataless bit); anything else runs for real.
+  const childProcess = {
+    ...localRequire('child_process'),
+    spawnSync: (cmd, args, ...rest) => (cmd === '/usr/bin/stat'
+      ? { status: 0, stdout: args.slice(2).map(() => '0').join(String.fromCharCode(10)) }
+      : localRequire('child_process').spawnSync(cmd, args, ...rest))
+  };
+
   const context = vm.createContext({
-    require: (name) => (name === 'electron' ? electron : localRequire(name)),
+    require: (name) => (name === 'electron' ? electron : name === 'child_process' ? childProcess : localRequire(name)),
     __dirname: root,
     process: { platform, env: process.env, on() {} },
     console,
