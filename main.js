@@ -263,17 +263,14 @@ function moveLibrary(from, to) {
 }
 
 // Move the books, with the window closed so nothing writes behind the move:
-// everything typed is saved first. Returns false (and says why) when the
-// books stayed where they were.
+// everything typed is saved first. Returns true when the books moved, false
+// (and says why) when they stayed where they were, and 'kept' when a save did
+// not settle and NEO stays open: nothing moved and nothing restarts.
 let movingLibrary = false;
 async function moveLibraryAndClose(win, from, to) {
+  // NEOCRAFT: B08 — the windows settle first (Try Again / Keep Open / Close Anyway)
+  if (!(await settleWindowsBeforeRestart())) return 'kept';
   movingLibrary = true;
-  try {
-    if (win && !win.isDestroyed()) {
-      await Promise.race([win.webContents.executeJavaScript('typeof flushAllSaves === "function" && flushAllSaves(), true'), new Promise((r) => setTimeout(r, 3000))]);
-      await new Promise((r) => setTimeout(r, 800)); // the saves it started land
-    }
-  } catch { /* a window that's already gone has nothing left to save */ }
   for (const w of BrowserWindow.getAllWindows()) { try { w.destroy(); } catch { /* gone */ } }
   try {
     const theirs = path.join(to, 'library.json');
@@ -311,10 +308,16 @@ const POCKET_STORE_URL = 'https://apps.apple.com/app/id6816721843';
 async function useCloudLibrary(win) {
   const cloud = pocketCloudLibrary();
   if (!cloud || path.resolve(cloud) === path.resolve(LIBRARY_DIR)) return false;
-  if (hasBooks(LIBRARY_DIR) && !(await moveLibraryAndClose(win, LIBRARY_DIR, cloud))) {
-    app.relaunch(); // the window closed for the move: open again where the books still are
-    app.exit(0);
-    return false;
+  if (hasBooks(LIBRARY_DIR)) {
+    const moved = await moveLibraryAndClose(win, LIBRARY_DIR, cloud);
+    if (moved === 'kept') return false; // NEOCRAFT: B08 — NEO stays open
+    if (!moved) {
+      app.relaunch(); // the window closed for the move: open again where the books still are
+      app.exit(0);
+      return false;
+    }
+  } else if (!(await settleWindowsBeforeRestart())) {
+    return false; // NEOCRAFT: B08 — the restart waits for every window's saves
   }
   const settings = readSettings();
   settings.libraryDir = cloud;
@@ -456,10 +459,16 @@ async function chooseLibraryFolder() {
     if (r.response === 2) return;
     move = r.response === 0;
   }
-  if (move && !(await moveLibraryAndClose(win, LIBRARY_DIR, next))) {
-    app.relaunch(); // the window closed for the move: open again where the books still are
-    app.exit(0);
-    return;
+  if (move) {
+    const moved = await moveLibraryAndClose(win, LIBRARY_DIR, next);
+    if (moved === 'kept') return; // NEOCRAFT: B08 — NEO stays open, nothing moved
+    if (!moved) {
+      app.relaunch(); // the window closed for the move: open again where the books still are
+      app.exit(0);
+      return;
+    }
+  } else if (!(await settleWindowsBeforeRestart())) {
+    return; // NEOCRAFT: B08 — the restart waits for every window's saves
   }
   const settings = readSettings();
   if (path.resolve(next) !== path.resolve(defaultDir)) settings.libraryDir = next; else delete settings.libraryDir;
