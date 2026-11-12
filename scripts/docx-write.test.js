@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('node:fs');
+const path = require('node:path');
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const JSZip = require('jszip');
@@ -331,4 +333,53 @@ test('a reader-compatible model that rewrites every paragraph reads back equal',
   const expected = edited.blocks.map((b) => b.runs.map((r) => ({ text: r.text, ...(r.b ? { b: true } : {}) })));
   assert.deepEqual(out.model.blocks.map((b) => b.runs), expected);
   assert.deepEqual(out.model.blocks.map((b) => [b.type, b.level, b.list]), edited.blocks.map((b) => [b.type, b.level, b.list]));
+});
+
+// The patcher and JSZip read whether Buffer exists when they load (JSZip's support.nodebuffer),
+// so the Buffer-free run loads fresh copies with the global removed, as the browser would have it.
+function loadWithoutBuffer() {
+  const dir = path.join(__dirname, '..', 'formats', 'docx');
+  const fresh = (id) => id.startsWith(dir) || id.includes(`${path.sep}node_modules${path.sep}jszip${path.sep}`);
+  const saved = new Map(Object.entries(require.cache).filter(([id]) => fresh(id)));
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'Buffer');
+  for (const id of saved.keys()) delete require.cache[id];
+  delete globalThis.Buffer;
+  try {
+    return require(path.join(dir, 'write.js'));
+  } finally {
+    Object.defineProperty(globalThis, 'Buffer', descriptor);
+    for (const id of Object.keys(require.cache)) if (fresh(id)) delete require.cache[id];
+    Object.assign(require.cache, Object.fromEntries(saved));
+  }
+}
+
+test('the patcher saves without Node\'s Buffer (the browser has none)', async () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'formats', 'docx', 'write.js'), 'utf8');
+  assert.doesNotMatch(source, /\bBuffer\b/);
+  const bare = loadWithoutBuffer();
+  const { model, meta } = await open(await packageBytes(parts(BODY)));
+  const edited = clone(model);
+  edited.blocks[1].runs = [{ text: 'Edited ', b: true }, { text: 'text' }];
+  const out = await bare.writeDocx(edited, meta);
+  assert.deepEqual((await readDocx(out)).model.blocks[1].runs, [{ text: 'Edited ', b: true }, { text: 'text' }]);
+  assert.equal(typeof globalThis.Buffer, 'function');
+});
+
+test('a changed untouched part is still refused as output-invalid', async () => {
+  const { model, meta } = await open(await packageBytes(parts(BODY)));
+  const edited = clone(model);
+  edited.blocks[1].runs = [{ text: 'Edited ', b: true }, { text: 'text' }];
+  // Tamper with an untouched part in the output, after the writer has assembled it.
+  const proto = JSZip.prototype;
+  const generate = proto.generateAsync;
+  proto.generateAsync = function tampered(...args) {
+    this.file('docProps/core.xml', 'changed behind the writer');
+    return generate.apply(this, args);
+  };
+  try {
+    await refusal(writeDocx(edited, meta), 'output-invalid');
+  } finally {
+    proto.generateAsync = generate;
+  }
+  assert.deepEqual((await open(meta.originalBytes)).model, model);
 });
