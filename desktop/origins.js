@@ -17,9 +17,11 @@
 
   // new URL() resolves '..' before we can see it, so check the raw path string.
   function hasDotDotSegment(raw) {
-    const m = /^[a-z][a-z0-9+.-]*:\/\/[^/?#]*([^?#]*)/i.exec(raw);
+    // Match URL's preprocessing and HTTP(S) backslash handling before checking.
+    const normalized = raw.trim().replace(/[\t\r\n]/g, '').replace(/\\/g, '/');
+    const m = /^[a-z][a-z0-9+.-]*:\/*[^/?#]*([^?#]*)/i.exec(normalized);
     const path = m ? m[1] : '';
-    return path.split('/').some((seg) => seg === '..' || seg.toLowerCase() === '%2e%2e');
+    return path.split('/').some((seg) => seg.replace(/%2e/gi, '.') === '..');
   }
 
   function basePathMatches(pathname, basePath) {
@@ -66,7 +68,12 @@
       const entry = api.matchEnrolled(url, enrolled);
       if (!entry) throw unknownServerError();
       const u = new URL(url);
-      return new URL(u.pathname + u.search + u.hash, entry.origin).href;
+      // Assign components so a path beginning with // cannot become an authority.
+      const result = new URL(entry.origin);
+      result.pathname = u.pathname;
+      result.search = u.search;
+      result.hash = u.hash;
+      return result.href;
     },
   };
 
