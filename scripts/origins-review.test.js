@@ -33,3 +33,29 @@ test('review: origin-only paths and normalized default ports', () => {
   assert.equal(matchEnrolled('http://cloud/ncx', entries), null);
   assert.equal(canonicalize('http://cloud/nc/x', entries), 'https://cloud.example-tailnet.ts.net/nc/x');
 });
+
+test('review: leading C0 controls cannot hide parent segments', () => {
+  for (let code = 0; code <= 32; code++) {
+    for (const path of ['/a/../x', '/a/%2e%2e/x']) {
+      const input = String.fromCharCode(code) + 'http://cloud:8080' + path;
+      assert.equal(matchEnrolled(input, enrolled), null, JSON.stringify(input));
+      assert.throws(() => canonicalize(input, enrolled), { name: 'UnknownServerError' });
+    }
+  }
+});
+
+test('review: canonical origins require nonempty labels and no query or fragment', () => {
+  for (const input of ['https://..ts.net', 'https://a..ts.net', CANON + '/?a=1', CANON + '/#h', CANON + '/?', CANON + '/#']) {
+    assert.equal(isCanonicalOrigin(input), false, input);
+  }
+  assert.equal(isCanonicalOrigin('https://cloud.ts.net'), true);
+});
+
+test('review: reject empty userinfo as well as credentials', () => {
+  for (const credentials of ['@', ':@', 'u@', ':p@', 'u:p@']) {
+    const input = 'http://' + credentials + 'cloud:8080/x';
+    assert.equal(matchEnrolled(input, enrolled), null, input);
+    assert.throws(() => canonicalize(input, enrolled), { name: 'UnknownServerError' });
+    assert.equal(isCanonicalOrigin('https://' + credentials + 'cloud.ts.net'), false);
+  }
+});

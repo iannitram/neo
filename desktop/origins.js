@@ -15,10 +15,22 @@
     }
   }
 
+  function normalizeRawUrl(raw) {
+    // WHATWG URL parsing strips leading/trailing C0 controls and spaces,
+    // then removes tabs and line breaks throughout the input.
+    // eslint-disable-next-line no-control-regex -- URL preprocessing explicitly includes C0 controls.
+    return raw.replace(/^[\x00-\x20]+|[\x00-\x20]+$/g, '').replace(/[\t\r\n]/g, '').replace(/\\/g, '/');
+  }
+
+  function hasUserinfo(raw) {
+    const authority = /^[a-z][a-z0-9+.-]*:\/*([^/?#]*)/i.exec(normalizeRawUrl(raw));
+    return !!authority && authority[1].includes('@');
+  }
+
   // new URL() resolves '..' before we can see it, so check the raw path string.
   function hasDotDotSegment(raw) {
     // Match URL's preprocessing and HTTP(S) backslash handling before checking.
-    const normalized = raw.trim().replace(/[\t\r\n]/g, '').replace(/\\/g, '/');
+    const normalized = normalizeRawUrl(raw);
     const m = /^[a-z][a-z0-9+.-]*:\/*[^/?#]*([^?#]*)/i.exec(normalized);
     const path = m ? m[1] : '';
     return path.split('/').some((seg) => seg.replace(/%2e/gi, '.') === '..');
@@ -42,16 +54,17 @@
       const u = parseUrl(url);
       if (!u) return false;
       if (u.protocol !== 'https:') return false;
-      if (u.username || u.password) return false;
+      if (u.username || u.password || hasUserinfo(url)) return false;
+      if (/[?#]/.test(url)) return false;
       if (u.pathname !== '/') return false;
       const labels = u.hostname.split('.');
-      return u.hostname.endsWith('.ts.net') && labels.length >= 3;
+      return u.hostname.endsWith('.ts.net') && labels.length >= 3 && labels.every(Boolean);
     },
 
     matchEnrolled(url, enrolled) {
       const u = parseUrl(url);
       if (!u) return null;
-      if (u.username || u.password) return null;
+      if (u.username || u.password || hasUserinfo(url)) return null;
       if (hasDotDotSegment(url)) return null;
       for (const entry of enrolled || []) {
         const origins = [entry.origin, ...(entry.aliases || [])]
