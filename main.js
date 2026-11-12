@@ -267,10 +267,12 @@ function moveLibrary(from, to) {
 // so the new NEO opens it; a window is never made for it while the books move.
 function restartNeo() {
   const documents = [...documentOutbox.splice(0).map((d) => d.path), ...documentsForRestart.splice(0)];
-  const args = process.argv.slice(1);
-  const alreadyNamed = new Set(documentPathsFromArgv(process.argv, {
+  if (!documents.length) { app.relaunch(); app.exit(0); return; }
+  const argv = process.argv || [];
+  const args = argv.slice(1);
+  const alreadyNamed = new Set(documentPathsFromArgv(argv, {
     isPackaged: app.isPackaged,
-    cwd: process.cwd()
+    cwd: typeof process.cwd === 'function' ? process.cwd() : undefined
   }).map((filePath) => path.resolve(filePath)));
   for (const filePath of documents) {
     const absolute = path.resolve(filePath);
