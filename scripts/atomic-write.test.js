@@ -19,8 +19,10 @@ const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
 const norm = (p) => String(p).replace(/\\/g, '/');
 const FILE = '/docs/a.md';
 const NOW = 1700000000000;
-const TMP = '/docs/.a.md.neocraft-' + NOW + '.tmp';
+const SUFFIX = 'abcd';
+const TMP = '/docs/.a.md.neocraft-' + NOW + '-' + SUFFIX + '.tmp';
 const now = () => NOW;
+const random = () => SUFFIX;
 
 // an in-memory stand-in for node:fs/promises
 function fakeFs(initial, { failRename = null } = {}) {
@@ -34,7 +36,10 @@ function fakeFs(initial, { failRename = null } = {}) {
   return {
     files,
     readFile: async (p) => { const b = files.get(norm(p)); if (!b) throw enoent(p); return Buffer.from(b); },
-    writeFile: async (p, b) => { files.set(norm(p), Buffer.from(b)); },
+    writeFile: async (p, b, { flag = 'w' } = {}) => {
+      if (flag.includes('x') && files.has(norm(p))) throw Object.assign(new Error('EEXIST: ' + p), { code: 'EEXIST' });
+      files.set(norm(p), Buffer.from(b));
+    },
     rename: async (a, b) => {
       if (failRename) throw failRename;
       const v = files.get(norm(a)); if (!v) throw enoent(a);
@@ -71,7 +76,7 @@ test('3. a failed rename: RetryableSaveError, original kept, tmp kept with the n
   const cause = Object.assign(new Error('EXDEV'), { code: 'EXDEV' });
   const fs = fakeFs({ [FILE]: 'old' }, { failRename: cause });
   await assert.rejects(
-    atomicReplace({ fs, path: FILE, bytes: Buffer.from('new'), expectedRevision: sha('old'), now }),
+    atomicReplace({ fs, path: FILE, bytes: Buffer.from('new'), expectedRevision: sha('old'), now, random }),
     (e) => e.name === 'RetryableSaveError' && norm(e.tmp) === TMP && e.cause === cause);
   assert.equal(fs.files.get(FILE).toString(), 'old');
   assert.equal(fs.files.get(TMP).toString(), 'new');
@@ -82,4 +87,30 @@ test('4. a missing file with expectedRevision null is created', async () => {
   const r = await atomicReplace({ fs, path: FILE, bytes: Buffer.from('first'), expectedRevision: null, now });
   assert.equal(fs.files.get(FILE).toString(), 'first');
   assert.equal(r.revision, sha('first'));
+});
+
+test('6. a link at the temp name is not followed: the target is untouched and the save picks another name', async () => {
+  const fsp = require('node:fs/promises');
+  const os = require('node:os');
+  const path = require('node:path');
+  const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'atomic-write-'));
+  try {
+    const file = path.join(dir, 'a.md');
+    const target = path.join(dir, 'victim.txt');
+    await fsp.writeFile(target, 'precious');
+    await fsp.writeFile(file, 'old');
+    // the old predictable name, and the first random name this save will try
+    await fsp.symlink(target, path.join(dir, '.a.md.neocraft-' + NOW + '.tmp'));
+    await fsp.symlink(target, path.join(dir, '.a.md.neocraft-' + NOW + '-aaaa.tmp'));
+    const suffixes = ['aaaa', 'bbbb'];
+    const r = await atomicReplace({
+      fs: fsp, path: file, bytes: Buffer.from('new'), expectedRevision: sha('old'), now,
+      random: () => suffixes.shift()
+    });
+    assert.equal(await fsp.readFile(target, 'utf8'), 'precious');
+    assert.equal(await fsp.readFile(file, 'utf8'), 'new');
+    assert.deepEqual(r, { revision: sha('new') });
+  } finally {
+    await fsp.rm(dir, { recursive: true, force: true });
+  }
 });

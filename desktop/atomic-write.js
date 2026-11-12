@@ -7,7 +7,35 @@ function contentRevision(bytes) {
   return crypto.createHash('sha256').update(bytes).digest('hex');
 }
 
-async function atomicReplace({ fs, path, bytes, expectedRevision, now = () => Date.now() }) {
+const TEMP_ATTEMPTS = 5;
+
+// Create the temp file exclusively (flag wx, O_EXCL): a name that already exists, even
+// as a link, is never followed or written through. On a name clash, pick another name.
+async function createTemp({ fs, dir, base, bytes, now, random }) {
+  for (let i = 0; i < TEMP_ATTEMPTS; i++) {
+    const tmpPath = `${dir}/.${base}.neocraft-${now()}-${random()}.tmp`;
+    try {
+      await fs.writeFile(tmpPath, bytes, { flag: 'wx' });
+    } catch (e) {
+      if (e.code === 'EEXIST') continue;
+      throw e;
+    }
+    const handle = await fs.open(tmpPath, 'r+');
+    await handle.sync();
+    await handle.close();
+    return tmpPath;
+  }
+  throw Object.assign(new Error('Could not create a temporary file'), { code: 'EEXIST' });
+}
+
+async function atomicReplace({
+  fs,
+  path,
+  bytes,
+  expectedRevision,
+  now = () => Date.now(),
+  random = () => crypto.randomBytes(8).toString('hex')
+}) {
   // Step 1: Read the current file and check revision
   let current;
   try {
@@ -37,15 +65,8 @@ async function atomicReplace({ fs, path, bytes, expectedRevision, now = () => Da
   // Step 2: Write to temporary file
   const dir = require('node:path').dirname(path);
   const base = require('node:path').basename(path);
-  const tmpPath = `${dir}/.${base}.neocraft-${now()}.tmp`;
-  
-  // Write bytes to temp file first
-  await fs.writeFile(tmpPath, bytes);
-  
-  // Open the temp file and sync it
-  const handle = await fs.open(tmpPath, 'r+');
-  await handle.sync();
-  await handle.close();
+  // Write bytes to a new temp file, created exclusively, and sync it
+  const tmpPath = await createTemp({ fs, dir, base, bytes, now, random });
 
   // Step 3: Rename temp file to target path
   try {
