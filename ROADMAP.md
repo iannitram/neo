@@ -72,9 +72,9 @@ Each milestone ends with something usable.
 ### M0 — Make it ours (setup)
 
 - Rename to NeoCraft: `productName`, `appId` `com.iannitram.neocraft`, and `build.publish` pointing at `iannitram/neo`, so it never auto-updates from Hugh's releases or clashes with an installed NEO. Use its own library and settings folder name.
-- Set up GitHub Actions to build all three platforms on the fork: Windows NSIS + portable, macOS dmg (arm64 + x64, unsigned, `notarize: false`), and Linux AppImage x64. Hugh's `build.yml` is the starting point.
+- Set up GitHub Actions to build all three platforms on the fork: Windows NSIS + portable, macOS dmg (arm64 + x64, unsigned, `notarize: false`), and Linux AppImage (x64 and arm64). Hugh's `build.yml` is the starting point.
 - Set up a monthly upstream merge (`git fetch upstream && git merge upstream/main`). Mark every hook in Hugh's files with a `// NEOCRAFT:` comment so merges stay readable.
-- Add a `depot.json` entry: `replaces: "Nextcloud Office (Collabora)"`, default_for md/txt/rtf (D15), and a golden task (below).
+- Add a `depot.json` entry: `replaces: "Nextcloud Office (Collabora)"`, default_for md/txt/rtf (D15), and a golden task (below). The Depot-side work is tracked in [iannitram/craft-launcher#76](https://github.com/iannitram/craft-launcher/issues/76).
 - **Done when:** a NeoCraft build from CI installs on Windows next to Hugh's NEO, and the two don't touch each other.
 
 ### M1 — Document mode in the editor (for the browser)
