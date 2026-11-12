@@ -2,6 +2,7 @@
 
 Newest first. One line per change of stage, release or decision that the next session needs. Upstream's history is upstream's.
 
+- 2026-11-12 #214 (M4a, split from #72): `npm run test:document-host` runs on a real Electron and has a library-move case; a document named while the library moves no longer opens a window mid-move, and it rides the restart's command line (`restartNeo` in `main.js`).
 - 2026-11-11 Roadmap map (owner: "Yes, board order"): the roadmap gains an Updated date and a features block of 20 features drawn from M0-M8 and the review fixes; each open issue gets one feature label and the 1.0 or After 1.0 milestone. No scope change.
 - 2026-11-11 Docs only: added CLAUDE.md pointing at AGENTS.fork.md, and replaced the Flatpak Nextcloud config path in the roadmap, code map and previous roadmap with a placeholder (repo-lint, R01).
 - 2026-11-03 My decision: Automation (command line, MCP server, scripts) added as ROADMAP M8, after 1.0 and built before 1.1, so 1.0 does not grow and the 1.1 and 1.2 views can be checked by script: SPEC "Automation" N18-N21, code map "Planned automation modules (M8)", issues #196 (N18a core, headless), #197 (N18b attach), #198 (N19 command line), #199 (N20 MCP server), #200 (N21 scripts), label after-1.0. Desktop only; no automation for the browser editor or Pocket. 1.0, 1.1 and 1.2 unchanged.
