@@ -34,8 +34,8 @@ A bracketed marker ends each feature line: what is built, checked against main o
 | books | mostly done | the save fixes are in, including every exit path (#15 closed 2026-11-12); #14 (Pocket atomic replace) is open |
 | document-mode | partial | the session core is on main; the Document-mode view (#36) and the typing switches (#79, #101) are not started |
 | md-txt | helpers only | frontmatter, wikilinks and span patching are on main; the .txt and .md adapters (#19, #49) and the corpus gate (#50) are not started |
-| docx | partial | limits, scanner, reader and patcher are on main; the fidelity warning (#55) and the owner-device check (#54) are open |
-| rtf | partial | tokenizer, scanner, reader and writer are on main; the owner-device check (#63) is open and no session calls them yet |
+| docx | partial | limits, scanner, reader and patcher are on main; the fidelity warning (#55) and the reopen check in WordCraft and LibreOffice (#54) are open |
+| rtf | partial | tokenizer, scanner, reader and writer are on main; the reopen and sample-file checks (#63) are open and no session calls them yet |
 | nextcloud-saves | helpers only | guarded PUT and conflict copies are on main; the Nextcloud host (#58), autosave (#30), the PHP compare-and-write (#59) and #109 are not started |
 | nextcloud-app | scaffold only | an empty page and the release fields; the spike (#17) and every feature after it are not started |
 | bug-report | not started | #83-#85 |
