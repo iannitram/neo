@@ -14,10 +14,11 @@ const APP_FILES = [
   'spellcheck', 'menu', 'options', 'export', 'print', 'startup'
 ].map((name) => `app/${name}.js`);
 
-// the whole window's source in one string, for tests that pick functions out
+// the whole window's source in one string, for tests that pick functions out,
+// with \n line ends (a Windows checkout's \r\n would hide them from the tests)
 function appSource() {
   const root = path.join(__dirname, '..');
-  return APP_FILES.map((f) => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
+  return APP_FILES.map((f) => fs.readFileSync(path.join(root, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
 }
 
 module.exports = { APP_FILES, appSource };

@@ -1,0 +1,3 @@
+# Published dictionaries stay byte for byte as published (their SHA-256
+# is checked against NOTICE.txt): no line-end conversion on checkout.
+dictionaries/** -text
