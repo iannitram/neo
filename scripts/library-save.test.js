@@ -1,12 +1,10 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const vm = require('node:vm');
 const { test } = require('node:test');
 const merge = require('../meta-merge');
-const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+const app = require('./app-files').appSource();
 const plain = (o) => JSON.parse(JSON.stringify(o));
 const turn = () => new Promise((resolve) => setImmediate(resolve));
 

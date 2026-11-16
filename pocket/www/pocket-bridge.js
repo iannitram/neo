@@ -302,12 +302,20 @@
       } catch { /* an empty list is honest enough */ }
       return out;
     },
-    // the same revision rule as main.js (meta-merge.js reviseBookMeta); the
-    // saved book comes back whole, and the page adopts it
-    writeBookMeta: async (bookId, meta) => {
+    // the same rules as main.js book:writeMeta. A chapter book.json lists that
+    // this page has never seen (`known`) was added on another device; it is
+    // taken in before anything is written over the list that names it. Then
+    // the revision rule (meta-merge.js reviseBookMeta): the saved book comes
+    // back whole, and the page adopts it
+    writeBookMeta: async (bookId, meta, known) => {
       const file = p(bookId, 'book.json');
+      const disk = await readJSONFile(file, null);
+      if (Array.isArray(known)) {
+        const unseen = disk && Array.isArray(disk.chapterOrder) ? disk.chapterOrder.filter((c) => typeof c === 'string' && !known.includes(c)) : [];
+        if (unseen.length) return { unseen };
+      }
       const base = (metaRevisions.get(bookId) || new Map()).get(meta.revision) || null;
-      const saved = window.NeoCraft_MetaMerge.reviseBookMeta(base, meta, await readJSONFile(file, null));
+      const saved = window.NeoCraft_MetaMerge.reviseBookMeta(base, meta, disk);
       saved.modified = new Date().toISOString();
       await writeJSONFile(file, saved);
       return keepMeta(bookId, saved);

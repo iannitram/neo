@@ -1,12 +1,10 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const vm = require('node:vm');
 const { test } = require('node:test');
 
-const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8').replace(/\r\n/g, '\n');
+const app = require('./app-files').appSource().replace(/\r\n/g, '\n');
 
 // Rule: a book whose chapter will not read stays on the shelf and the writer
 // is told which chapter and why; a refresh that cannot read says it once.
@@ -106,7 +104,7 @@ test('refreshFromDisk: a chapter new from the other device that will not read sa
 
 test('openBook returns true when the book opened, false when a chapter would not read', async () => {
   const ok = page(async () => '<p>x</p>', {
-    forgetSnapshots() {}, showWindowTitle() {}, applyBright() {}, renderChapters() {}, wordsFromDisk() {},
+    forgetSnapshots() {}, forgetSpelling() {}, showWindowTitle() {}, applyBright() {}, renderChapters() {}, wordsFromDisk() {},
     renderStickies() {}, migrateDarlingAnchors() {}, reconcileMarks() {}, updateCounters() {},
     switchTab() {}, spEditorMode() {}, spReportState() {}, showTitleStyle() {}, knowDisk() {},
     recoverDrafts: async () => ({ restored: 0, darlings: 0 }),

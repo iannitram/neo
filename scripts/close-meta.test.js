@@ -5,12 +5,10 @@
 // of book.json. writeBookMeta is the one door those writes go through.
 
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const vm = require('node:vm');
 const { test } = require('node:test');
 
-const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+const app = require('./app-files').appSource();
 
 // A book in memory with the real save code: chapters (persistChapter,
 // scheduleChapterSave), book metadata (metaSig, saveMeta, writeBookMeta),
@@ -49,6 +47,8 @@ function bookOnHeldDisk(chapters) {
     chapterHTML: { ...chapters },
     savedHTML: { ...chapters },
     savedMetaSig: '',
+    // upstream's chapter bookkeeping for book.json saves (knownChapters, savedOrder in app/core.js)
+    knownChapters: new Set(Object.keys(chapters)), savedOrder: Object.keys(chapters),
     writing: {},
     saveTimers: {}, stickies: [],
     tabPlaces: {},
@@ -67,7 +67,7 @@ function bookOnHeldDisk(chapters) {
   });
   for (const [from, to] of SLICES) {
     const at = app.indexOf(from);
-    assert.ok(at >= 0, 'app.js still has ' + from);
+    assert.ok(at >= 0, 'app/ still has ' + from);
     vm.runInContext(app.slice(at, app.indexOf(to, at)), page);
   }
   page.savedMetaSig = page.metaSig(page.book);
