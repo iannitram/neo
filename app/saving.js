@@ -269,6 +269,7 @@ const DRAFT_PREFIX = 'neo-draft:';
 const draftKey = (bookId, chId) => DRAFT_PREFIX + bookId + '/' + chId;
 function draftStore() { try { return window.localStorage || null; } catch { return null; } }
 function saveDraft(chId) {
+  if (documentMode()) return; // NEOCRAFT: no book drafts for a document
   const ls = draftStore();
   if (!ls || !book || chapterHTML[chId] === undefined) return;
   const html = chapterHTML[chId];
@@ -336,6 +337,8 @@ async function recoverDrafts(bookId, order, html, darlingList) {
 const chapterChain = {};
 function persistChapter(chId, html) {
   if (!book) return Promise.resolve(false);
+  // NEOCRAFT: Document mode saves the one file through its session, not a chapter file (#36)
+  if (documentMode()) return window.NeoCraft_DocumentView.persist(html === undefined ? chapterHTML[chId] || '' : html);
   if (html === undefined) html = chapterHTML[chId] || '';
   const bookId = book.id;
   const key = bookId + '/' + chId;
@@ -480,7 +483,7 @@ function saveMeta(again) {
   return job;
 }
 async function saveMetaNow(again) {
-  if (!book || shelfExport) return;
+  if (!book || shelfExport || documentMode()) return; // NEOCRAFT: a document has no book.json
   const bookId = book.id;
   noteRemovedChapters();
   for (const c of book.chapterOrder) knownChapters.add(c);
@@ -768,7 +771,7 @@ function snapHolderEl(html) {
 }
 const htmlWords = (html) => countWords(plainText(snapHolderEl(html)));
 const htmlParas = (html) => [...snapHolderEl(html).children].map((p) => p.textContent);
-const snapsCan = () => !!(window.neo && window.neo.snapshotWrite);
+const snapsCan = () => !documentMode() && !!(window.neo && window.neo.snapshotWrite); // NEOCRAFT: no book snapshots in Document mode
 const logSnap = (err) => window.neo.logError('snapshot: ' + ((err && err.message) || err));
 
 // The book's snapshots, oldest first: { name, at, kind, changed, words, files: Set }.

@@ -224,7 +224,10 @@ let libraryGeneration = 0;
 let libraryWritesPending = 0;
 // NEOCRAFT: serialize library saves so each uses the last acknowledged base.
 let libraryWriteQueue = Promise.resolve();
+// NEOCRAFT: a window opened on one file (editor/mode.js) is in Document mode: no book, no library written (#36)
+const documentMode = () => !!(window.NeoCraft_Mode && window.NeoCraft_Mode.document);
 function writeLibrary(lib = library) {
+  if (documentMode()) return Promise.resolve(lib); // NEOCRAFT: Document mode never writes library.json
   rememberDeviceLook(lib);
   libraryGeneration++;
   libraryWritesPending++;

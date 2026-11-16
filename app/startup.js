@@ -246,14 +246,15 @@ $('#nav-list').addEventListener('keydown', (e) => {
   if (rows[i]) rows[i].focus();
 });
 
-loadLibrary().then(() => {
+// NEOCRAFT: Document mode builds its page from one file instead of loading the library (#36)
+(documentMode() ? Promise.resolve(window.NeoCraft_DocumentView.boot()) : loadLibrary().then(() => {
   applyLook();
   typewriterEnabled = !!library.typewriter;
   applyTypewriter();
   // the voices load on the first ask, which on Linux can take a moment: ask
   // now, so they are there by the time Read Aloud is (#378)
   try { if (window.speechSynthesis) window.speechSynthesis.getVoices(); } catch { /* none to ask */ }
-});
+}));
 
 // The look the features and settings govern: at launch, and again whenever
 // Options turns a feature on or off. A feature that's off takes NEO's

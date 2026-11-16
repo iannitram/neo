@@ -924,7 +924,8 @@ function handleEnter(e, body, chId) {
   if (!block || !body.contains(block)) return false;
   // on a page (a dedication, a part, the copyright) Enter is only a new
   // line: breaks and new chapters belong to the story
-  if (!isStory(chId) && !block.classList.contains('poetry')) {
+  // NEOCRAFT: a document is one page: Enter is only a new line, never a break or a chapter (#36)
+  if ((documentMode() || !isStory(chId)) && !block.classList.contains('poetry')) {
     e.preventDefault();
     enterRun = 0;
     if (block.querySelector('span:not(.ph-mark):not(.fn)')) {

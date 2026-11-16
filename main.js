@@ -2579,7 +2579,8 @@ function libraryPageTheme() {
 }
 
 // ---------------------------------------------------------------------------
-function createWindow() {
+// NEOCRAFT: asDocument loads the page in Document mode (#36): one file, no library
+function createWindow({ asDocument = false } = {}) {
   // the window comes back the size and place it was left, when that place
   // is still on a screen (a monitor unplugged since gets the default)
   const saved = readSettings().window || {};
@@ -2624,7 +2625,8 @@ function createWindow() {
   }
   // a trial says so in the window bar
   if (TRY_DIR) win.on('page-title-updated', (e, title) => { e.preventDefault(); win.setTitle(title + ' (trial copy)'); });
-  win.loadFile('index.html');
+  if (asDocument) documentWindow = win;
+  win.loadFile('index.html', asDocument ? { query: { mode: 'document' } } : undefined); // NEOCRAFT: Document mode window
   // NEO's window only ever shows NEO. A chapter's file can hold a link (one
   // that came in a book folder from someone else, say), and clicked where the
   // page is read-only, in History, it took the whole window to that address,
@@ -3812,6 +3814,7 @@ if (!app.requestSingleInstanceLock()) {
 // Document mode. It never makes a book.
 const documentHost = createElectronDocumentHost();
 const startupDocuments = []; // macOS open-file before launch finishes; argv is read in whenReady
+let documentWindow = null; // the window in Document mode (index.html?mode=document)
 let documentSender = null; // the webContents that called document:ready
 const documentOutbox = []; // opened files waiting for that window
 const documentsForRestart = []; // files named while the library moves: no window, the restart opens them
@@ -3826,7 +3829,7 @@ async function requestDocument(filePath) {
   }
   // the library may have started to move while the file was read
   if (movingLibrary) { documentsForRestart.push(opened.path); return; }
-  if (app.isReady() && BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (app.isReady() && (!documentWindow || documentWindow.isDestroyed())) createWindow({ asDocument: true });
   documentOutbox.push(opened);
   flushDocuments();
 }
@@ -3918,9 +3921,9 @@ app.whenReady().then(() => {
     try { initLanguage(); } catch (err) { logError('language', err); }
     try { checkLibraryWritable(); } catch (err) { logError('library check', err); }
     try { ensureLibrary(); } catch (err) { logError('library', err); }
-    createWindow();
     // NEOCRAFT: files named at launch (or double-clicked before launch) open in Document mode (#72)
     const named = documentPathsFromArgv(process.argv, { isPackaged: app.isPackaged, cwd: process.cwd() });
+    createWindow({ asDocument: named.length > 0 || startupDocuments.length > 0 });
     for (const filePath of [...named, ...startupDocuments.splice(0)]) requestDocument(filePath);
     try { announceLibraryFallback(); } catch (err) { logError('library notice', err); }
     // NEO Pocket's folder may be here already, or arrive while NEO is open

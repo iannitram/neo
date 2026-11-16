@@ -1,0 +1,12 @@
+/* NEOCRAFT: Document mode (#36). The book's own furniture stays out of a
+   single file: no title page, chapter heading, chapter list, notes pane or
+   book tabs. Hidden, not removed, so the editing code finds the elements it
+   expects. */
+body.document-mode #title-page,
+body.document-mode .chapter-head,
+body.document-mode #nav-pane,
+body.document-mode #side-pane,
+body.document-mode #back-to-shelf,
+body.document-mode #bottombar .tab,
+body.document-mode #bookshelf-view,
+body.document-mode #firstrun { display: none !important; }

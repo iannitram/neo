@@ -35,7 +35,9 @@ process.argv.push(doc);
 
 const loadFile = BrowserWindow.prototype.loadFile;
 BrowserWindow.prototype.loadFile = function (file, opts) {
-  return loadFile.call(this, path.resolve(__dirname, '..', file), opts);
+  // NEOCRAFT: this test drives the bridge itself (ready, onOpen), so it loads the
+  // plain page; the Document-mode page would take the file for itself (#36)
+  return loadFile.call(this, path.resolve(__dirname, '..', file), { ...opts, query: undefined });
 };
 require('../main.js');
 
