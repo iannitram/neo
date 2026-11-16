@@ -10,8 +10,8 @@ const path = require('node:path');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'neo-snapshot-order-'));
 app.setPath('userData', path.join(tmp, 'app'));
 app.setPath('documents', tmp);
-fs.mkdirSync(path.join(tmp, 'NEO Library'));
-fs.writeFileSync(path.join(tmp, 'NEO Library', 'library.json'), JSON.stringify({ firstRunDone: true, moreFeatures: true,
+fs.mkdirSync(path.join(tmp, 'NeoCraft Library'));
+fs.writeFileSync(path.join(tmp, 'NeoCraft Library', 'library.json'), JSON.stringify({ firstRunDone: true, moreFeatures: true,
   shelves: [{ id: 'shelf-1', name: 'Tests', bookIds: [] }] }));
 const loadFile = BrowserWindow.prototype.loadFile;
 BrowserWindow.prototype.loadFile = function (file, opts) { return loadFile.call(this, path.resolve(__dirname, '..', file), opts); };

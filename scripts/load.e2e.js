@@ -15,8 +15,8 @@ const path = require('path');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `neo-load-test-${process.pid}-`));
 app.setPath('userData', path.join(tmp, 'app'));
 app.setPath('documents', tmp);
-fs.mkdirSync(path.join(tmp, 'NEO Library'));
-fs.writeFileSync(path.join(tmp, 'NEO Library', 'library.json'), JSON.stringify({
+fs.mkdirSync(path.join(tmp, 'NeoCraft Library'));
+fs.writeFileSync(path.join(tmp, 'NeoCraft Library', 'library.json'), JSON.stringify({
   authorName: '', penNames: [], firstRunDone: true, pageTheme: 'night', nbspMarks: true,
   features: { cards: true, notesPages: true, poetry: true, footnotes: true, formatting: true, penNames: true, covers: true, pages: true, focus: true, readAloud: true, vim: false, exports: true },
   shelves: [{ id: 'shelf-1', name: 'Works in Progress', bookIds: [] }]

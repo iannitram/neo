@@ -25,7 +25,7 @@ for (const name of fs.readdirSync(os.tmpdir())) {
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `neo-danish-test-${process.pid}-`));
 app.setPath('userData', path.join(tmp, 'app'));
 app.setPath('documents', tmp);
-const libraryFile = path.join(tmp, 'NEO Library', 'library.json');
+const libraryFile = path.join(tmp, 'NeoCraft Library', 'library.json');
 fs.mkdirSync(path.dirname(libraryFile));
 fs.writeFileSync(libraryFile, JSON.stringify({
   authorName: '', penNames: [], firstRunDone: true, moreFeatures: true, pageTheme: 'night',

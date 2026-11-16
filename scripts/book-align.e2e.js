@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'neo-book-align-'));
-const lib = path.join(tmp, 'NEO Library');
+const lib = path.join(tmp, 'NeoCraft Library');
 fs.mkdirSync(lib);
 app.setPath('documents', tmp);
 app.setPath('userData', path.join(tmp, 'app'));

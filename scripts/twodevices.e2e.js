@@ -25,8 +25,8 @@ for (const name of fs.readdirSync(os.tmpdir())) {
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `neo-twodevices-test-${process.pid}-`));
 app.setPath('userData', path.join(tmp, 'app'));
 app.setPath('documents', tmp);
-fs.mkdirSync(path.join(tmp, 'NEO Library'));
-fs.writeFileSync(path.join(tmp, 'NEO Library', 'library.json'), JSON.stringify({
+fs.mkdirSync(path.join(tmp, 'NeoCraft Library'));
+fs.writeFileSync(path.join(tmp, 'NeoCraft Library', 'library.json'), JSON.stringify({
   authorName: '', penNames: [], firstRunDone: true, moreFeatures: true, pageTheme: 'night',
   shelves: [{ id: 'shelf-1', name: 'Works in Progress', bookIds: [] }]
 }));
@@ -41,14 +41,15 @@ let wc;
 const js = (code) => wc.executeJavaScript(code, true);
 const tick = (ms = 40) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const lib = path.join(tmp, 'NEO Library');
+const lib = path.join(tmp, 'NeoCraft Library');
 let dir; // the book's folder
 const readMeta = () => JSON.parse(fs.readFileSync(path.join(dir, 'book.json'), 'utf8'));
 // the other device's book.json lands (a sync hands the file over whole)
 const theirBook = (meta) => fs.writeFileSync(path.join(dir, 'book.json'), JSON.stringify({ ...meta, modified: new Date(Date.now() + 1000).toISOString() }, null, 2));
 const theirChapter = (id, text) => fs.writeFileSync(path.join(dir, 'chapters', id + '.html'), `<p>${text}</p>`);
 const look = async () => { await js(`refreshFromDisk()`); await tick(400); };
-const saved = async () => { await js(`flushAllSaves()`); await tick(700); };
+// this fork's flush returns its writes (promises), which cannot cross to the test
+const saved = async () => { await js(`flushAllSaves(), undefined`); await tick(700); };
 const page = () => js(`document.getElementById('chapters').textContent`);
 const order = () => js(`book.chapterOrder`);
 async function typeKeys(text) {

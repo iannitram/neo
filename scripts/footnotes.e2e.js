@@ -245,7 +245,7 @@ test('deleting, typing or cutting across split text duplicates nothing', async (
 });
 
 test('on disk, the chapter holds the marker and its note', async () => {
-  await js(`flushAllSaves()`);
+  await js(`flushAllSaves(), undefined`); // this fork's flush returns its writes (promises), which cannot cross to the test
   await tick(600);
   const dir = path.join(bookDir(), 'chapters');
   const file = fs.readdirSync(dir).map((f) => fs.readFileSync(path.join(dir, f), 'utf8')).find((h) => h.includes('class="fn"'));

@@ -10,8 +10,8 @@ const path = require('node:path');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'neo-incoming-quotes-'));
 app.setPath('userData', path.join(tmp, 'app'));
 app.setPath('documents', tmp);
-fs.mkdirSync(path.join(tmp, 'NEO Library'));
-fs.writeFileSync(path.join(tmp, 'NEO Library', 'library.json'), JSON.stringify({
+fs.mkdirSync(path.join(tmp, 'NeoCraft Library'));
+fs.writeFileSync(path.join(tmp, 'NeoCraft Library', 'library.json'), JSON.stringify({
   firstRunDone: true, moreFeatures: true, spellLanguage: 'en-us',
   shelves: [{ id: 'shelf-1', name: 'Test', bookIds: [] }]
 }));
