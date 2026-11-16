@@ -6,12 +6,10 @@
 // already logs the failure, and the note stays queued for the next flush.
 
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const vm = require('node:vm');
 const { test } = require('node:test');
 
-const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+const app = require('./app-files').appSource();
 const SLICES = [
   ['function writeSidecar(', 'function renderDarlings('],
   ['function scheduleStickiesSave(', '// Pair every mark']
@@ -36,7 +34,7 @@ function bookWithStickies() {
   });
   for (const [from, to] of SLICES) {
     const at = app.indexOf(from);
-    assert.ok(at >= 0, 'app.js still has ' + from);
+    assert.ok(at >= 0, 'app/ still has ' + from);
     vm.runInContext(app.slice(at, app.indexOf(to, at)), page);
   }
   return { page, logged, run() { const fns = due.splice(0).filter(Boolean); fns.forEach((fn) => fn()); return fns.length; } };

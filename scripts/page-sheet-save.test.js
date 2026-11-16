@@ -12,8 +12,6 @@ function deepFreeze(o) {
   return o;
 }
 
-const fs = require('node:fs');
-const path = require('node:path');
 const vm = require('node:vm');
 
 // The save closure AND the close (Done / Escape) handler of openPageSheet,
@@ -22,7 +20,7 @@ const vm = require('node:vm');
 // knowDisk, diskKnown, keepOtherDeviceVersion, ...) are looked up in `scope`;
 // a name the test does not know is a recording stub, so a fix may use any
 // helper app.js already has.
-const app = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
+const app = require('./app-files').appSource();
 const from = app.indexOf('  let saved = body.innerHTML;');
 const to = app.indexOf("  bd.querySelector('.ps-done').onclick", from);
 assert.ok(from > 0 && to > from, 'the save and close handlers were not found in app.js');

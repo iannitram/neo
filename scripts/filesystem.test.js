@@ -100,6 +100,35 @@ describe('filesystem', { concurrency: 1 }, () => {
     }
   });
 
+  test('book.json is not written over a chapter list naming a chapter the window has never seen', () => {
+    const dir = tempLibrary();
+    try {
+      const book = main.call('book:create', { title: 'Two', author: 'Ada' });
+      const file = path.join(dir, book.id, 'book.json');
+      const mine = { ...book, chapterOrder: ['c1', 'c2'] };
+      // this fork's save answers with the book as the disk now holds it (the
+      // revision rule, meta-merge.js), and the window carries that forward
+      const first = main.call('book:writeMeta', book.id, mine, ['c1', 'c2']);
+      assert.equal(typeof first.modified, 'string');
+      // another device adds c3 and its book.json arrives
+      fs.writeFileSync(file, JSON.stringify({ ...first, chapterOrder: ['c1', 'c2', 'c3'] }));
+      const r = main.call('book:writeMeta', book.id, { ...first, wordCount: 9 }, ['c1', 'c2']);
+      assert.equal(JSON.stringify(r), JSON.stringify({ unseen: ['c3'] }));
+      assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')).chapterOrder, ['c1', 'c2', 'c3'], 'left as the other device wrote it');
+      // once the window has taken c3 in, or taken it out on purpose, the save lands
+      const took = main.call('book:writeMeta', book.id, { ...first, chapterOrder: ['c1', 'c2', 'c3'] }, ['c1', 'c2', 'c3']);
+      assert.equal(typeof took.modified, 'string');
+      const dropped = main.call('book:writeMeta', book.id, { ...took, chapterOrder: ['c1', 'c2'] }, ['c1', 'c2', 'c3']);
+      assert.equal(typeof dropped.modified, 'string');
+      assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')).chapterOrder, ['c1', 'c2']);
+      // a save that names no chapters it knows (the shelf's own) is not checked
+      fs.writeFileSync(file, JSON.stringify({ ...dropped, chapterOrder: ['c1', 'c2', 'c4'] }));
+      assert.equal(typeof main.call('book:writeMeta', book.id, dropped).modified, 'string');
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test('chapters round-trip, and a missing chapter reads back empty', () => {
     const dir = tempLibrary();
     try {

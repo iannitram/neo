@@ -13,7 +13,7 @@ contextBridge.exposeInMainWorld('neo', {
   duplicateBook: (bookId, title) => ipcRenderer.invoke('book:duplicate', bookId, title),
   listBooks: () => ipcRenderer.invoke('library:listBooks'),
   readBookMeta: (bookId) => ipcRenderer.invoke('book:readMeta', bookId),
-  writeBookMeta: (bookId, meta) => ipcRenderer.invoke('book:writeMeta', bookId, meta),
+  writeBookMeta: (bookId, meta, known) => ipcRenderer.invoke('book:writeMeta', bookId, meta, known),
   deleteBook: (bookId, title) => ipcRenderer.invoke('book:delete', bookId, title),
 
   readChapter: (bookId, chId) => ipcRenderer.invoke('chapter:read', bookId, chId),
@@ -57,6 +57,7 @@ contextBridge.exposeInMainWorld('neo', {
   spellLearn: (word) => ipcRenderer.invoke('spell:learn', word),
   setSpellLanguage: (code) => ipcRenderer.invoke('spell:setLanguage', code),
   appVersion: () => ipcRenderer.invoke('app:version'),
+  isPackaged: () => ipcRenderer.sendSync('app:packaged'),
   openRelease: () => ipcRenderer.invoke('update:openRelease'),
 
   poetryState: (on) => ipcRenderer.send('poetry:state', on),
@@ -74,6 +75,7 @@ contextBridge.exposeInMainWorld('neo', {
   nbspMarksState: (on) => ipcRenderer.send('nbspmarks:state', on),
   pagesState: (st) => ipcRenderer.send('pages:state', st),
   pageWidthState: (v) => ipcRenderer.send('pagewidth:state', v),
+  pressHold: () => ipcRenderer.sendSync('pressHold:get'),
   vimState: (on) => ipcRenderer.send('vim:state', on),
   uiZoomState: (z) => ipcRenderer.send('uizoom:state', z),
   // interface language, fetched once before the page's scripts run
@@ -82,7 +84,10 @@ contextBridge.exposeInMainWorld('neo', {
   reloadForLanguage: () => ipcRenderer.invoke('i18n:reload'),
 
   writingStyleState: (st) => ipcRenderer.send('style:state', st),
-  moreState: (on) => ipcRenderer.send('more:state', on),
+  featuresState: (on) => ipcRenderer.send('features:state', on),
+  uiLanguages: () => ipcRenderer.invoke('i18n:languages'),
+  setUiLanguage: (code) => ipcRenderer.send('i18n:set', code),
+  setPressHold: (on) => ipcRenderer.send('pressHold:set', on),
   viewState: (st) => ipcRenderer.send('view:state', st),
   onMenu: (cb) => ipcRenderer.on('menu', (_e, msg) => cb(msg)),
 

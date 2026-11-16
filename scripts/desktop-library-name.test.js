@@ -17,7 +17,7 @@ const OLD = [
 const NEW = OLD.map((s) => s.replace('NEO' + ' Library', 'NeoCraft Library'));
 
 test('app.js shows NeoCraft Library on desktop and keeps the old name only behind window.Capacitor', () => {
-  const app = read('app.js');
+  const app = require('./app-files').appSource();
   for (const s of NEW) assert.ok(app.includes(`t('${s}'`), `missing t('${s}')`);
   const all = app.split('\n');
   const oldName = 'NEO' + ' Library';

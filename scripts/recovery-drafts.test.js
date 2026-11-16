@@ -1,13 +1,10 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
 const vm = require('node:vm');
 const { describe, test } = require('node:test');
 
-const root = path.join(__dirname, '..');
-const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const app = require('./app-files').appSource();
 
 const SLICES = [
   ['const sidecarPending = {};', 'function renderDarlings('],
