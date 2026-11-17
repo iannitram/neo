@@ -23,31 +23,6 @@ main.js: eslint(prefer-const): `BACKUP_FILE_LIMIT_MS` is never reassigned.
 main.js: eslint(prefer-const): `BACKUP_LIMIT_MS` is never reassigned.
 main.js: eslint(prefer-const): `CLOUD_WAIT` is never reassigned.
 nextcloud/neocraft/src/excluded.js: eslint(prefer-const): `normalized` is never reassigned.
-pocket/www/editor/find.js: eslint(no-unused-vars): Function 'importChapters' is declared but never used.
-pocket/www/editor/find.js: eslint(no-unused-vars): Function 'importDroppedChapters' is declared but never used.
-pocket/www/editor/find.js: eslint(no-unused-vars): Function 'openSearch' is declared but never used.
-pocket/www/editor/find.js: eslint(no-unused-vars): Variable 'escAttr' is declared but never used.
-pocket/www/editor/spellcheck.js: eslint(no-unused-vars): Function 'changeSpellLanguage' is declared but never used.
-pocket/www/editor/spellcheck.js: eslint(no-unused-vars): Function 'forgetSpelling' is declared but never used.
-pocket/www/editor/spellcheck.js: eslint(no-unused-vars): Function 'scheduleSpellRescan' is declared but never used.
-pocket/www/editor/spellcheck.js: eslint(no-unused-vars): Function 'toggleSpellcheck' is declared but never used.
-pocket/www/editor/spellcheck.js: eslint(no-useless-escape): Unnecessary escape character '['
-pocket/www/editor/spellcheck.js: eslint(no-useless-escape): Unnecessary escape character '['
-pocket/www/editor/typing-rules.js: eslint(no-unused-vars): Catch parameter '_' is caught but never used.
-pocket/www/editor/typing-rules.js: eslint(no-unused-vars): Function 'caretEdges' is declared but never used.
-pocket/www/editor/typing-rules.js: eslint(no-unused-vars): Function 'cleanPasteHtml' is declared but never used.
-pocket/www/editor/typing-rules.js: eslint(no-unused-vars): Function 'dialogueDashes' is declared but never used.
-pocket/www/editor/typing-rules.js: eslint(no-unused-vars): Function 'markdownInline' is declared but never used.
-pocket/www/editor/typing-rules.js: eslint(no-unused-vars): Function 'sceneBreakDelete' is declared but never used.
-pocket/www/editor/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
-pocket/www/editor/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
-pocket/www/editor/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
-pocket/www/editor/typing-rules.js: eslint(no-void): Unexpected `void` operator
-pocket/www/editor/typing-rules.js: eslint(prefer-const): `el` is never reassigned.
-pocket/www/editor/typing.js: eslint(no-unused-vars): Function 'gotoChapter' is declared but never used.
-pocket/www/editor/typing.js: eslint(no-unused-vars): Function 'wireChapterBody' is declared but never used.
-pocket/www/editor/typing.js: eslint(no-unused-vars): Parameter 'chId' is declared but never used. Unused parameters should start with a '_'.
-pocket/www/editor/typing.js: eslint(prefer-const): `el` is never reassigned.
 scripts/caret.e2e.js: eslint(curly): Expected { after 'for-of'.
 scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'caretIn' is declared but never used.
 scripts/footnotes.e2e.js: eslint(no-unused-vars): Variable 'ch' is declared but never used.
