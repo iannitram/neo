@@ -18,8 +18,9 @@ const path = require('path');
 const { execFile } = require('child_process');
 
 const FILE_LIMIT_MS = 20000; // one file: as long as iCloud reasonably takes for a chapter
-// (tests: a file with no blocks counts as in iCloud, as their placeholders have no flag)
-const SPARSE_IS_CLOUD = process.env.NEO_TEST_SPARSE_IS_CLOUD === '1';
+// Test-only injection keeps placeholder and stalled-read cases portable.
+const TEST_CLOUD_FILES = new Set(JSON.parse(process.env.NEO_TEST_CLOUD_FILES || '[]'));
+const TEST_STUCK_FILE = process.env.NEO_TEST_STUCK_FILE || '';
 const SF_DATALESS = 0x40000000; // macOS: a file whose words are in iCloud, not on this Mac
 
 // a read with a time limit: the read itself can't be cut short, but the backup
@@ -27,7 +28,7 @@ const SF_DATALESS = 0x40000000; // macOS: a file whose words are in iCloud, not 
 function readWithin(file, ms) {
   let timer;
   return Promise.race([
-    fsp.readFile(file),
+    file === TEST_STUCK_FILE ? new Promise(() => {}) : fsp.readFile(file),
     new Promise((resolve, reject) => {
       timer = setTimeout(() => reject(Object.assign(new Error('took too long'), { code: 'ETIMEDOUT' })), ms);
     })
@@ -37,14 +38,16 @@ function readWithin(file, ms) {
 // the placeholders among these files (iCloud has their words, this Mac doesn't):
 // no blocks for a file with a size, confirmed by the "dataless" flag
 function cloudOnlyAmong(files) {
-  if (SPARSE_IS_CLOUD) return Promise.resolve(new Set(files));
+  const injected = files.filter((file) => TEST_CLOUD_FILES.has(file));
+  if (injected.length === files.length) return Promise.resolve(new Set(injected));
+  if (injected.length && process.platform !== 'darwin') return Promise.resolve(new Set(injected));
   if (process.platform !== 'darwin' || !files.length) return Promise.resolve(new Set());
   return new Promise((resolve) => {
     execFile('/usr/bin/stat', ['-f', '%Xf', ...files], { encoding: 'utf8', timeout: 10000, maxBuffer: 1 << 24 }, (err, stdout) => {
       const flags = !err && String(stdout).trim().split('\n');
       // no answer from stat: treat them all as away (the safe side)
       if (!flags || flags.length !== files.length) return resolve(new Set(files));
-      resolve(new Set(files.filter((f, i) => parseInt(flags[i], 16) & SF_DATALESS)));
+      resolve(new Set(files.filter((f, i) => TEST_CLOUD_FILES.has(f) || (parseInt(flags[i], 16) & SF_DATALESS))));
     });
   });
 }
@@ -83,7 +86,10 @@ async function backup({ libraryDir, target, keep, fileLimitMs = FILE_LIMIT_MS })
       try {
         const st = await fsp.stat(full);
         if (st.isDirectory()) await walk(full, relPath);
-        else if (st.isFile() || st.isFIFO()) files.push([full, relPath, (process.platform === 'darwin' || SPARSE_IS_CLOUD) && st.size > 0 && st.blocks === 0]);
+        else if (st.isFile() || st.isFIFO()) {
+          files.push([full, relPath,
+            TEST_CLOUD_FILES.has(full) || (process.platform === 'darwin' && st.size > 0 && st.blocks === 0)]);
+        }
       } catch (err) {
         missed.push(`${relPath} (${err.code || err.message})`);
       }
