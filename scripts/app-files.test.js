@@ -12,12 +12,12 @@ const root = path.join(__dirname, '..');
 for (const page of ['index.html', 'pocket/www/index.html']) {
   test(`${page} loads the window's files in order`, () => {
     const html = fs.readFileSync(path.join(root, page), 'utf8');
-    const listed = [...html.matchAll(/<script src="(app\/[^"]+)"><\/script>/g)].map((m) => m[1]);
+    const listed = [...html.matchAll(/<script src="((?:app|editor)\/[^"]+)"><\/script>/g)].map((m) => m[1]);
     assert.deepEqual(listed, APP_FILES);
   });
 }
-test('every file in app/ is listed, and each is strict', () => {
-  const onDisk = fs.readdirSync(path.join(root, 'app')).filter((f) => f.endsWith('.js')).map((f) => 'app/' + f).sort();
+test('every window module is listed, and each is strict', () => {
+  const onDisk = ['app', 'editor'].flatMap((dir) => fs.readdirSync(path.join(root, dir)).filter((f) => f.endsWith('.js')).map((f) => dir + '/' + f)).sort();
   assert.deepEqual(onDisk, [...APP_FILES].sort());
   for (const f of APP_FILES) assert.match(fs.readFileSync(path.join(root, f), 'utf8'), /^(\/\*.*\*\/\s*)?'use strict';/, f);
 });
