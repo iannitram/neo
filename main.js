@@ -801,6 +801,7 @@ const SF_DATALESS = 0x40000000;
 // a size, confirmed by its "dataless" flag (one stat for the lot)
 // Tests can supply the platform's placeholder check without manufacturing
 // filesystem-specific sparse files. Production leaves this unset.
+// oxlint-disable-next-line prefer-const -- scripts/icloud.test.js assigns it inside the vm context
 let cloudPlaceholderCheck = null;
 function cloudOnlyAmong(files) {
   const out = new Set();

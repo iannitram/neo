@@ -86,8 +86,10 @@ async function backup({ libraryDir, target, keep, fileLimitMs = FILE_LIMIT_MS })
       try {
         const st = await fsp.stat(full);
         if (st.isDirectory()) await walk(full, relPath);
-        else if (st.isFile() || st.isFIFO()) files.push([full, relPath,
-          TEST_CLOUD_FILES.has(full) || (process.platform === 'darwin' && st.size > 0 && st.blocks === 0)]);
+        else if (st.isFile() || st.isFIFO()) {
+          files.push([full, relPath,
+            TEST_CLOUD_FILES.has(full) || (process.platform === 'darwin' && st.size > 0 && st.blocks === 0)]);
+        }
       } catch (err) {
         missed.push(`${relPath} (${err.code || err.message})`);
       }
