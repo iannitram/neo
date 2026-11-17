@@ -1,5 +1,8 @@
 'use strict';
 
+// NEOCRAFT: extracted from the upstream window editor; keep its load position.
+
+
 /* ================================================================== */
 /*  TYPING RULES — scene breaks, the opening line, paste, emphasis,    */
 /*  capitals, quotes and dashes                                        */

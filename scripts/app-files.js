@@ -1,6 +1,6 @@
 'use strict';
 
-// NEO's window code, the files of app/ in the order they load. index.html
+// NEO's window code, the app/ and editor/ files in the order they load. index.html
 // and Pocket's page list them in this order (scripts/app-files.test.js
 // checks); they share one global scope, as one file did, and each starts
 // 'use strict'. A file's code that runs while it loads may only call what
@@ -9,10 +9,12 @@ const fs = require('fs');
 const path = require('path');
 
 const APP_FILES = [
-  'core', 'shelf', 'editor', 'typing', 'paragraphs', 'litrpg', 'typing-rules', 'vim',
-  'screenplay', 'footnotes', 'nav', 'tabs', 'cards', 'saving', 'undo', 'find',
-  'spellcheck', 'menu', 'options', 'export', 'print', 'startup'
-].map((name) => `app/${name}.js`);
+  'app/core.js', 'app/shelf.js', 'app/editor.js', 'editor/typing.js', 'app/paragraphs.js',
+  'app/litrpg.js', 'editor/typing-rules.js', 'app/vim.js', 'app/screenplay.js',
+  'app/footnotes.js', 'app/nav.js', 'app/tabs.js', 'app/cards.js', 'app/saving.js',
+  'app/undo.js', 'editor/find.js', 'editor/spellcheck.js', 'app/spellcheck.js',
+  'app/menu.js', 'app/options.js', 'app/export.js', 'app/print.js', 'app/startup.js'
+];
 
 // the whole window's source in one string, for tests that pick functions out,
 // with \n line ends (a Windows checkout's \r\n would hide them from the tests)

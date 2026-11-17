@@ -3,12 +3,12 @@ app/print.js: eslint(no-control-regex): Unexpected control characters
 app/print.js: eslint(no-useless-escape): Unnecessary escape character '['
 app/screenplay.js: eslint(no-control-regex): Unexpected control characters
 app/shelf.js: eslint(curly): Expected { after 'if' condition.
-app/spellcheck.js: eslint(no-useless-escape): Unnecessary escape character '['
-app/spellcheck.js: eslint(no-useless-escape): Unnecessary escape character '['
-app/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
-app/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
-app/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
-app/typing-rules.js: eslint(no-void): Unexpected `void` operator
+editor/spellcheck.js: eslint(no-useless-escape): Unnecessary escape character '['
+editor/spellcheck.js: eslint(no-useless-escape): Unnecessary escape character '['
+editor/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
+editor/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
+editor/typing-rules.js: eslint(no-useless-escape): Unnecessary escape character '['
+editor/typing-rules.js: eslint(no-void): Unexpected `void` operator
 app/vim.js: eslint(no-unmodified-loop-condition): 'cls' is not modified in this loop.
 app/vim.js: eslint(no-unmodified-loop-condition): 'start' is not modified in this loop.
 covers.js: eslint(no-unused-vars): Variable 'NeoCovers' is declared but never used.

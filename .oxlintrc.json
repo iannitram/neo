@@ -225,7 +225,8 @@
   "overrides": [
     {
       "files": [
-        "app/**"
+        "app/**",
+        "editor/**"
       ],
       "rules": {
         "no-unused-vars": "off",

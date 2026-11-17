@@ -27,6 +27,7 @@ const copyDir = (from, to) => {
 
 const { APP_FILES } = require('./app-files');
 fs.rmSync(path.join(www, 'app'), { recursive: true, force: true });
+fs.rmSync(path.join(www, 'editor'), { recursive: true, force: true });
 fs.rmSync(path.join(www, 'app.js'), { force: true }); // from before the window was split
 for (const f of [...APP_FILES, 'covers.js', 'styles.css', 'i18n.js', 'meta-merge.js']) copy(path.join(root, f), path.join(www, f));
 copy(path.join(mods, 'jszip', 'dist', 'jszip.min.js'), path.join(www, 'jszip.min.js'));

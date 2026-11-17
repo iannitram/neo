@@ -1,5 +1,8 @@
 'use strict';
 
+// NEOCRAFT: extracted from the upstream window editor; keep its load position.
+
+
 /* ================================================================== */
 /*  EDITOR — typing                                                    */
 /* ================================================================== */
