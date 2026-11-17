@@ -3,9 +3,7 @@
 // Files iCloud has taken off a Mac ("Optimize Mac Storage") are placeholders:
 // a read waits on iCloud, forever when iCloud is stuck, and NEO froze at
 // launch with no window. The real main.js runs against a temporary library,
-// with iCloud played by the test: a "placeholder" is a sparse file (a size and
-// no blocks on disk, as a placeholder looks), and "downloading" one writes its
-// words in.
+// with iCloud played by the test through an injected placeholder check.
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -64,7 +62,11 @@ function loadMain() {
     // the backup's own process: the real backup-worker.js, as a Node child
     utilityProcess: {
       fork: (file) => {
-        const child = require('node:child_process').fork(file, [], { env: { ...process.env, NEO_TEST_SPARSE_IS_CLOUD: '1' } });
+        const child = require('node:child_process').fork(file, [], { env: {
+          ...process.env,
+          NEO_TEST_CLOUD_FILES: JSON.stringify([...context.cloudFiles]),
+          NEO_TEST_STUCK_FILE: context.stuckFile || ''
+        } });
         activeChildren.add(child);
         child.on('exit', () => activeChildren.delete(child));
         return {
@@ -91,19 +93,22 @@ function loadMain() {
     clearInterval: trackedClearInterval,
     libraryRoot: os.tmpdir(),
     asked,
-    arrivals: new Map() // file → words iCloud brings down when asked
+    arrivals: new Map(), // file → words iCloud brings down when asked
+    cloudFiles: new Set(),
+    stuckFile: ''
   });
   vm.runInContext(source, context, { filename: path.join(root, 'main.js') });
-  // a placeholder is a file with a size and no blocks; asking for one brings
-  // its words down a moment later, if iCloud has them to give
+  // The test injects which paths are placeholders; production's Darwin check
+  // still runs unchanged when this hook is unset.
   vm.runInContext(`
-    cloudOnlyAmong = (files) => new Set(files.filter((f) => {
-      try { const st = fs.statSync(f); return st.size > 0 && st.blocks === 0; } catch { return false; }
-    }));
+    cloudPlaceholderCheck = (f) => cloudFiles.has(f);
     requestDownload = (files) => {
       for (const f of files) {
         asked.push(f);
-        if (arrivals.has(f)) setTimeout(() => fs.writeFileSync(f, arrivals.get(f)), 50);
+        if (arrivals.has(f)) setTimeout(() => {
+          fs.writeFileSync(f, arrivals.get(f));
+          cloudFiles.delete(f);
+        }, 50);
       }
     };
     CLOUD_WAIT = 600;
@@ -133,13 +138,10 @@ setTimeout(() => {
   process.exit(1);
 }, 60000).unref();
 
-// a placeholder for `file`: the same size, no words on this Mac
+// Keep a normal file in place and mark it unavailable through the injected
+// platform check. A download can replace its contents when requested.
 function sendToICloud(file) {
-  const size = fs.statSync(file).size;
-  fs.rmSync(file);
-  fs.closeSync(fs.openSync(file, 'w'));
-  fs.truncateSync(file, size);
-  assert.equal(fs.statSync(file).blocks, 0, 'this disk makes sparse files');
+  main.context.cloudFiles.add(file);
 }
 
 function libraryWithBook() {
@@ -160,14 +162,7 @@ function libraryWithBook() {
   return { dir, book, bookDir: path.join(dir, book.id) };
 }
 
-// These tests simulate macOS iCloud placeholders using APFS sparse files (a size,
-// no blocks on disk) and a named pipe (mkfifo). Windows lacks APFS dataless flags,
-// stat.blocks sparse detection, and mkfifo (#136), so the suite is gated on win32.
-const skipHere = process.platform === 'win32'
-  ? 'needs sparse files and mkfifo, which Windows lacks (#136)'
-  : false;
-
-describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
+describe('files still in iCloud', { concurrency: 1 }, () => {
   afterEach(() => {
     for (const t of activeTimers) clearTimeout(t);
     activeTimers.clear();
@@ -185,6 +180,8 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
       main.run('backupRunning = false; BACKUP_FILE_LIMIT_MS = 20000; BACKUP_LIMIT_MS = 3000;');
       main.asked.length = 0;
       main.context.arrivals.clear();
+      main.context.cloudFiles.clear();
+      main.context.stuckFile = '';
     } catch { /* ignore */ }
   });
 
@@ -232,7 +229,7 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     const file = path.join(dir, 'library.json');
     sendToICloud(file);
     await assert.rejects(Promise.resolve(main.call('library:read')), (err) => err.code === 'ECLOUD');
-    assert.equal(fs.statSync(file).blocks, 0, 'left as it was');
+    assert.ok(fs.readFileSync(file, 'utf8').length > 0, 'left as it was');
   });
 
   test('book.json iCloud never sends: the book waits, never rebuilt or rolled back to .bak', { timeout: 5000 }, async () => {
@@ -240,7 +237,7 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     const file = path.join(bookDir, 'book.json');
     sendToICloud(file);
     assert.equal(await main.call('book:readMeta', book.id), null);
-    assert.equal(fs.statSync(file).blocks, 0, 'not written over');
+    assert.ok(fs.readFileSync(file, 'utf8').length > 0, 'not written over');
   });
 
   test('a save never goes over a chapter or notes still in iCloud', { timeout: 5000 }, () => {
@@ -251,8 +248,8 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     sendToICloud(notes);
     assert.throws(() => main.call('chapter:write', book.id, 'ch-aaa', '<p>new</p>', ''), (err) => err.code === 'ECLOUD');
     assert.throws(() => main.call('aux:write', book.id, 'notes', '<p>new</p>'), (err) => err.code === 'ECLOUD');
-    assert.equal(fs.statSync(ch).blocks, 0);
-    assert.equal(fs.statSync(notes).blocks, 0);
+    assert.ok(fs.readFileSync(ch, 'utf8').includes('harbor'), 'chapter was not overwritten');
+    assert.ok(fs.readFileSync(notes, 'utf8').includes('Ferry'), 'notes were not overwritten');
   });
 
   test("the daily backup leaves out what's in iCloud and says so, instead of waiting on it", { timeout: 5000 }, async () => {
@@ -268,13 +265,13 @@ describe('files still in iCloud', { concurrency: 1, skip: skipHere }, () => {
     assert.ok(zip.file(path.basename(bookDir) + '/notes.html'), 'the rest is backed up');
   });
 
-  // a file that never answers (a named pipe: a read of one waits for ever, as
-  // a stuck iCloud file does) once held NEO's whole main process, at launch
+  // A worker hook makes one ordinary file's read never settle, as a stuck
+  // iCloud file does, without relying on named pipes.
   test('a file that never answers is left out of the backup, and NEO goes on meanwhile', { timeout: 10000 }, async () => {
     const { dir, bookDir } = libraryWithBook();
     const stuck = path.join(bookDir, 'stickies.json');
-    fs.rmSync(stuck, { force: true });
-    require('node:child_process').execFileSync('mkfifo', [stuck]);
+    fs.writeFileSync(stuck, '{"stuck":true}');
+    main.context.stuckFile = stuck;
     main.run('BACKUP_FILE_LIMIT_MS = 300');
     let ticks = 0;
     let beat = null;

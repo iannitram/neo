@@ -799,8 +799,12 @@ function parseJSONFile(file) {
 const SF_DATALESS = 0x40000000;
 // the placeholders among these files: no blocks on disk for a file that has
 // a size, confirmed by its "dataless" flag (one stat for the lot)
+// Tests can supply the platform's placeholder check without manufacturing
+// filesystem-specific sparse files. Production leaves this unset.
+let cloudPlaceholderCheck = null;
 function cloudOnlyAmong(files) {
   const out = new Set();
+  if (cloudPlaceholderCheck) return new Set(files.filter(cloudPlaceholderCheck));
   if (process.platform !== 'darwin') return out;
   const maybe = [];
   for (const f of files) {

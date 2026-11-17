@@ -16,6 +16,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  windows-icloud:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: iCloud placeholder tests
+        run: node --test scripts/icloud.test.js
+
   mac:
     runs-on: macos-latest
     timeout-minutes: 40
