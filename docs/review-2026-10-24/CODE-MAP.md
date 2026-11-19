@@ -1,14 +1,14 @@
 # Neo / NeoCraft code map
 
-Describes commit: `c1c2d9f` (2026-11-12). Line numbers below were moved forward from the 2026-11-02 check (`44c3118`) by the diff between the two commits, then spot-checked against `main.js` and `app.js` on `c1c2d9f`; the generated SYMBOL-INDEX.md and the bug report still carry the older baseline (`3f21d09`, 2026-10-24), so their line numbers sit about 4 to 60 lines earlier. Proposed Nextcloud modules are in NEXTCLOUD-PLAN.md; the small pure ones, the document-session core and the desktop document host have landed (see "NeoCraft modules on main") along with the empty `neocraft` app scaffold; the Document-mode view, the `txt` and `markdown` adapters, `hosts/nextcloud.js` and the PHP features do not exist yet.
+Describes commit: `f19d741` (2026-11-18; the `app.js` split into `app/` and `editor/` is reflected in the module table, other line numbers are from `c1c2d9f`). Line numbers below were moved forward from the 2026-11-02 check (`44c3118`) by the diff between the two commits, then spot-checked against `main.js` and `app.js` on `c1c2d9f`; the generated SYMBOL-INDEX.md and the bug report still carry the older baseline (`3f21d09`, 2026-10-24), so their line numbers sit about 4 to 60 lines earlier. Proposed Nextcloud modules are in NEXTCLOUD-PLAN.md; the small pure ones, the document-session core and the desktop document host have landed (see "NeoCraft modules on main") along with the empty `neocraft` app scaffold; the Document-mode view, the `txt` and `markdown` adapters, `hosts/nextcloud.js` and the PHP features do not exist yet.
 
-**Who owns what.** Upstream (hughhowey/neo) owns the editor, the library and book code, the exporters, Pocket and the build scripts: `app.js`, `main.js`, `preload.js`, `index.html`, `styles.css`, `manuscript.js`, `covers.js`, `art.js`, `i18n.js`, `locales/`, `spell-*.js`, `backup-worker.js`, `print/`, `pocket/`, `dictionaries/`, `fonts/`, `scripts/` (upstream's tests and tools) and the other files in the first tables below; it is merged into `main` monthly. Our fork adds new files (the modules listed under "NeoCraft modules on main" and "Planned 1.0 modules", with their `scripts/*.test.js`), small `// NEOCRAFT:` hooks in `main.js`, and the identity, build and pipeline files (`package.json` build block, `.github/workflows/`, `PIPELINE.md`, `SPEC.md`, `ROADMAP.md`, `CHANGELOG.md`, `AGENTS.fork.md`, this folder).
+**Who owns what.** Upstream (hughhowey/neo) owns the editor, the library and book code, the exporters, Pocket and the build scripts: `app/`, `main.js`, `preload.js`, `index.html`, `styles.css`, `manuscript.js`, `covers.js`, `art.js`, `i18n.js`, `locales/`, `spell-*.js`, `backup-worker.js`, `print/`, `pocket/`, `dictionaries/`, `fonts/`, `scripts/` (upstream's tests and tools) and the other files in the first tables below; it is merged into `main` monthly. Our fork adds new files (the modules listed under "NeoCraft modules on main" and "Planned 1.0 modules", with their `scripts/*.test.js`), small `// NEOCRAFT:` hooks in `main.js`, and the identity, build and pipeline files (`package.json` build block, `.github/workflows/`, `PIPELINE.md`, `SPEC.md`, `ROADMAP.md`, `CHANGELOG.md`, `AGENTS.fork.md`, this folder).
 
 ## Runtime and data flow
 
 ```mermaid
 flowchart LR
-  UI["index.html + app.js + styles.css"] --> BR["preload.js: window.neo"]
+  UI["index.html + app/*.js + editor/*.js + styles.css"] --> BR["preload.js: window.neo"]
   BR --> MAIN["main.js: IPC / filesystem / menus"]
   MAIN --> LIB["NeoCraft Library: JSON + chapter HTML"]
   MAIN --> SPELL["spell-worker.js: Hunspell WASM"]
@@ -27,7 +27,7 @@ Desktop uses contextIsolation and disables nodeIntegration. Browser-facing metho
 | File | Responsibility / useful starting point |
 |---|---|
 | `package.json` | Electron entrypoint, scripts, dependency/build configuration, product identity and updater publishing |
-| `index.html` | Desktop DOM, CSP, scripts, shelf/editor/auxiliary panes; tightly coupled to app.js selectors |
+| `index.html` | Desktop DOM, CSP, scripts, shelf/editor/auxiliary panes; tightly coupled to the app/ selectors |
 | `preload.js` | Complete desktop `window.neo` API, IPC invoke/send/event mapping; synchronous initial locale/paper data |
 | `main.js:17` | IPC error wrapper; logs and reports failures without changing handler timing |
 | `main.js:49` | Library root selection, settings, language and writable-folder fallback |
@@ -52,41 +52,35 @@ Desktop uses contextIsolation and disables nodeIntegration. Browser-facing metho
 | `styles.css` | Shared presentation tokens, book/editor/outline/print/accessibility styling |
 | `print/` | Vendored Paged.js and TeX hyphenation engine/patterns; external code, not independently audited here |
 
-## app.js navigation by section
+## app/ and editor/ navigation by module
 
-| Line on main | Feature and main concerns |
-|---|---|
-| 190 | Global library/book state, saved baselines, pending writes and device look |
-| 777 | Bookshelf rendering, author/shelf/book operations |
-| 1279 | Bound shelves, special pages and page sheets (separate save path) |
-| 2609 | Open book and render chapters; hydrate chapter and sidecar state |
-| 2968 | Typing, selection, paragraph transformations, normalization and paste |
-| 4045 | Poetry/flush paragraph behavior; keyboard and style helpers follow |
-| 5252 | Optional Vim-style movement |
-| 5689 | Screenplay model, scenes, line classes, pagination and Fountain/FDX conversion |
-| 7366 | Footnotes embedded in chapter HTML |
-| 7595 | Placeholders/stickies and navigation |
-| 7813 | Navigation pane and chapter operations |
-| 8250 | Per-book and per-chapter notes pages |
-| 8611 | Manuscript/Notes/Outline/Darlings tabs and editor swapping |
-| 8957 | Structured outline and chapter/section relationships |
-| 9384 | Outline cards, moving held writing, loose cards and scene/chapter manipulation |
-| 12256 | Word, page and daily counters, goals integration |
-| 12500 | Saving: diskKnown, chapterChain, persistChapter, metaSig, flushAllSaves |
-| 12833 | Differential snapshots, manifests, retention and restore UI |
-| 13460 | refreshFromDisk: chapter stamps, metadata/sidecar reconciliation, conflict twins |
-| 13778 | Structural undo/redo, preservation of writing changed since snapshots |
-| 14113 | Native speech synthesis read-aloud |
-| 14298 | Find/replace and non-persisted CSS highlights |
-| 14594 | Import-to-book UI and conversion |
-| 14755 | Spellcheck pass, suggestions and typewriter scrolling |
-| 15286 | Focus mode |
-| 15458 | Goals/sprints/charts, then cover-art settings at 15512 |
-| 15703 | Help, fonts and menu message handling |
-| 16108 | Export/email entrypoints; manuscript format at 16233 |
-| 16439 | Paperback/KDP and other export-building helpers |
-| 18523 | Error reporting; Linux font handling, accessibility at 18585 |
-| 18769 | Simple NEO feature gating and settings migration |
+Upstream split the old single `app.js` into `app/*.js` and our `editor/*.js` (extracted for Document mode, #1); `index.html` loads them as classic scripts in a fixed order (lines 154 to 177), so keep the load order. Line counts as of `f19d741`.
+
+| File | Lines | Feature and main concerns |
+|---|---|---|
+| `app/core.js` | 802 | Global library and book state, interface language, FEATURES table, saved baselines, device look |
+| `app/shelf.js` | 1840 | Bookshelf rendering, author, shelf and book operations, bound shelves and special pages |
+| `app/editor.js` | 363 | Open a book and render chapters; hydrate chapter and sidecar state |
+| `app/paragraphs.js` | 225 | Poetry paragraphs (Ctrl/Cmd+Shift+Enter) |
+| `app/litrpg.js` | 246 | LitRPG boxes (type `[[` at the start of a line) |
+| `app/vim.js` | 431 | Vim keys (View > Vim Keys, off unless chosen) |
+| `app/screenplay.js` | 1660 | Screenplays: books whose book.json says "format": "screenplay", Fountain handling |
+| `app/footnotes.js` | 448 | Footnotes at the caret |
+| `app/nav.js` | 799 | Navigation pane |
+| `app/tabs.js` | 774 | Manuscript, Notes, Outline and Darlings tabs |
+| `app/cards.js` | 2873 | Outline as index cards |
+| `app/saving.js` | 1631 | Counters, saving, snapshots and the save path (separate from bound shelves) |
+| `app/undo.js` | 522 | Structural undo: chapter deletes, replace-all, darlings |
+| `app/spellcheck.js` | 596 | Book-only spellcheck view tools, typewriter and nbsp marks |
+| `app/menu.js` | 455 | Help menu and fonts |
+| `app/options.js` | 181 | NEO > Options: feature switches |
+| `app/export.js` | 343 | Export and email |
+| `app/print.js` | 2231 | Paperback for KDP interior PDF |
+| `app/startup.js` | 274 | Safety net: errors logged, never eaten |
+| `editor/typing.js` | 1074 | Typing behaviour (quotes, dashes) extracted from the upstream editor; marked `// NEOCRAFT:` |
+| `editor/typing-rules.js` | 1231 | Typing rules table |
+| `editor/find.js` | 454 | Find and replace |
+| `editor/spellcheck.js` | 372 | Reusable spellcheck core |
 
 ## Persistence model and ownership
 
@@ -185,7 +179,7 @@ Added 2026-10-26 for the approved spec ([SPEC.md](../../SPEC.md)). Rows marked *
 |---|---|---|---|---|
 | `document-session.js` | partial: the core is present (see "NeoCraft modules on main", #34, with `document-session/serial.js`, #32, and `document-session/drafts.js`, #35); no view calls it yet | One open file: original bytes, base revision, dirty and saved generations, fidelity report, serial saves, recovery draft. Still to come: the Document-mode view and the autosave scheduler | called by the Document-mode view; calls a format adapter and a storage host | #18, #36 |
 | autosave scheduler (in the session) | planned | When to save: after a typing pause and on close | called by the session; calls `host.save` | #30 |
-| `editor/` | planned | Editing behaviour extracted from `app.js` (typing, quotes, dashes, find, spellcheck), without book-only commands | used by the Document-mode view; `app.js` keeps books | #18 |
+| `editor/` | partial: find, spellcheck, typing and typing-rules present | Editing behaviour extracted from `app.js` (typing, quotes, dashes, find, spellcheck), without book-only commands | used by the Document-mode view; `app.js` keeps books | #18 |
 | `formats/txt.js` | planned | .txt reader/writer keeping line endings, BOM and encoding | used by the session | #19 |
 | `formats/markdown.js` | planned (its parts `formats/markdown-frontmatter.js`, `formats/wikilinks.js` and `formats/span-patch.js` are present) | Byte-faithful .md: source spans, frontmatter held aside, wikilinks; builds on the landed `formats/markdown-frontmatter.js` and `formats/wikilinks.js`, and on the planned `formats/span-patch.js` (#47) | used by the session | #20, #49 |
 | `formats/docx.js` + fidelity scanner (issues split it into `formats/docx/{limits,scan,read,write}.js`) | partial: limits (#51), scan (#52), read (#53) and write (#54, `formats/docx/write.js`) are present; the session's use of them (#18, #55) is not | Simple .docx read, package-patching write; lists features it cannot keep | used by the session; the scanner result drives the fallback | #21 |
