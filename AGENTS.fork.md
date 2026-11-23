@@ -18,3 +18,5 @@ Upstream's `AGENTS.md` and `CONTRIBUTING.md` are upstream's: read them and follo
 - **Every save is guarded** (If-Match or mtime); a conflict saves a copy.
 - **Secure server links only:** never write a LAN name or a plain `http://` URL into a link.
 - **Golden task:** open a real .docx from Nextcloud Files in the browser, fix a paragraph, Launch external, keep editing on the desktop, save, reopen it in the browser and see the edit; then open a real .md with frontmatter, save it unchanged and confirm the bytes did not change.
+
+**Upstream and peers:** see `PEERS.md` at the repo root. When I say "upstream", I mean the repo in its Upstream section; reuse a peer's code only as that file allows.
